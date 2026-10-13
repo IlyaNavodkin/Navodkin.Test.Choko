@@ -4,17 +4,17 @@
 
 ## Что уже определено
 
-- React, десктопные версии Windows/macOS.
+- Tauri 2 как основа, React, десктопные версии Windows/macOS.
 - Работа и совместная работа через Git.
 - Совместимость с существующими репозиториями Casewright.
 - UI Kit из `D:/repo/testoritto/ui`, цветовые токены Citadelic.
 - OpenSpec и предоставленный React/TS навык установлены в проект.
 
-## Рекомендуемое решение
+## Выбранная основа
 
-**Electron + React 19 + TypeScript strict + electron-vite**, Git CLI через simple-git в main process, локальные Markdown/YAML файлы без собственного сервера. CSS Modules и `@codaa/ui`. Прогоны — совместимые Markdown folders текущей версии Casewright.
+**Tauri 2 + React 19 + TypeScript strict + Vite**, Rust backend для файлов и системного Git CLI, локальные Markdown/YAML файлы без собственного сервера. CSS Modules и `@codaa/ui`. Прогоны — совместимые Markdown folders текущей версии Casewright.
 
-Electron выбран для повторного использования существующего Node.js слоя. Переход с NW.js потребует вынести файловые операции из renderer в main и заменить обращения через preload IPC; это не простая замена названия runtime.
+Tauri 2 выбран пользователем 2026-10-13. Node.js fs/Git/window services исходника переписываются в Rust, без Node-sidecar. Формат данных и fixtures сохраняются; UI обращается к backend через типизированные Tauri commands.
 
 ## Читать в таком порядке
 
@@ -28,6 +28,6 @@ Electron выбран для повторного использования с�
 
 ## Первый результат разработки
 
-После согласования: минимальное Electron окно с React и UI Kit; сборка renderer/main/preload; dev-команды и smoke artifact для Windows/macOS. Следующий срез — открыть копию настоящего Casewright repo без изменения файлов, показать дерево и прочитать кейс. Затем безопасная запись, прогоны и Git workflow.
+Первый срез разработки после согласования продуктового scope: минимальное Tauri 2 окно с React и UI Kit; Vite frontend и Rust src-tauri; dev-команды и smoke artifact для Windows/macOS. Следующий срез — открыть копию настоящего Casewright repo без изменения файлов, показать дерево и прочитать кейс. Затем безопасная запись, прогоны и Git workflow.
 
 В текущем change все продуктовые задачи остаются незавершёнными. Установка навыков и подготовка ТЗ не означают реализацию приложения.

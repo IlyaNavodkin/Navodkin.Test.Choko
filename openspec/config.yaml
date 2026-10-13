@@ -5,17 +5,24 @@ context: |
   All artifacts must be written in Russian.
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
   Testoritto is a new Git-backed desktop application for manual test cases.
-  Confirmed: React, Windows/macOS, Git-based collaboration, compatibility with Casewright.
+  Confirmed: Tauri 2, React, Windows/macOS, Git-based collaboration, compatibility with Casewright.
   Preparation only; application implementation has not started.
-  Proposed stack: Electron, React 19, TypeScript strict, Vite/electron-vite, pnpm,
-  simple-git with system Git, Zod, TanStack Query, Zustand, typed i18n.
+  Selected foundation: Tauri 2, React 19, TypeScript strict, Vite, pnpm, Rust native backend.
+  System Git CLI is invoked by Rust; credentials use the OS helper/SSH.
+  Zod validates frontend forms/IPC responses; Rust validates deserialized command input.
+  TanStack Query, Zustand and typed i18n remain frontend patterns.
   UI Kit: @codaa/ui in ui/, CSS Modules, --app-* tokens from Citadelic.
   casewright-main/ is an unchanged source snapshot; code/tests outrank its stale README.
   Current runs are Markdown folders with _run.md and per-case sidecars, not CSV.
   Keep .casewright/config.yaml, declared workspace paths, case Markdown, .order and folder notes.
   No implicit migration on open; preserve unknown content; no automatic commit/push.
-  Main owns fs/Git; sandboxed renderer uses validated typed preload IPC.
-  No Node APIs or credentials in renderer; no inherited upstream update endpoints.
+  Rust owns fs/Git, watcher and sessions; WebView uses typed Tauri commands/events.
+  Custom commands have explicit AppManifest permissions and window-scoped capabilities.
+  No Node runtime, preload or Node sidecar; Node is frontend development tooling only.
+  No credentials in WebView and no inherited upstream update endpoints.
+  Node-dependent upstream services and parsers are reimplemented in Rust against compatibility fixtures.
+  Packaging uses Tauri CLI/bundler on native Windows/macOS runners.
+  Native E2E uses WebdriverIO Tauri service; test-only plugins are excluded from release.
   useCases folders and UseXxxArgs/UseXxxResult hooks follow the provided frontend skill.
   Hub HTTP/admin/auth examples are adapted to repository IPC rather than copied literally.
   Product scope and unresolved questions are in docs/PRD.md and docs/DISCUSSION.md.

@@ -1,52 +1,66 @@
-# Предложенная архитектура
+# Архитектура Tauri 2
 
-Статус: draft. Базовый выбор: Electron; подробности — [ADR-0001](adr/0001-desktop-stack.md).
+Основа Tauri 2 выбрана пользователем; детали реализации — проект. [ADR-0001](adr/0001-desktop-stack.md).
 
 ```mermaid
 flowchart LR
   U[React use case + @codaa/ui] --> H[Typed hook / TanStack Query]
   H --> A[Feature API facade]
-  A --> P[Preload contextBridge]
-  P --> I[Validated main IPC handlers]
-  I --> R[Repository / persistence services]
-  I --> G[Git service / simple-git]
+  A --> P[Typed Tauri invoke wrapper]
+  P --> I[Rust commands + validation]
+  I --> R[Rust repository / persistence]
+  I --> G[Rust Git service]
   R --> F[Markdown + YAML files]
   G --> C[System Git + credential helper]
   C --> Remote[Git remote]
-  W[Main watcher] --> R
-  W --> P
+  W[Rust watcher] --> R
+  W --> E[Tauri events / query invalidation]
+  E --> H
 ```
 
 ## Границы
 
 | Слой | Владеет | Контракт |
 | --- | --- | --- |
-| Renderer | Сценариями, editor draft, selection, queries, i18n | Сериализуемые DTO, без fs/process/credentials |
-| Preload | Конкретными разрешёнными методами | `openRepository`, `listCases`, `saveCase`, `gitStatus`, а не raw IPC |
-| Main | OS picker, repo session, IO, watcher, Git queue, recents | Проверка отправителя, Zod input, path scope, typed errors |
-| Core (если выделен) | Formats/domain, parser/serializer | Ноль React/Electron, pure tests |
-| UI Kit | Доступными примитивами и tokens | @codaa/ui public exports |
+| React WebView | Сценарии, draft, selection, queries, i18n | Serializable DTO, без fs/process/credentials |
+| Invoke facade | Конкретные commands и typed errors | openRepository/listCases/saveCase/gitStatus, без generic shell API |
+| Rust command layer | Session/window/payload validation | serde DTO, command permissions, typed Result |
+| Rust services/domain | IO, format parsing, watcher, Git queue, recents | Pure domain и service tests, без React |
+| UI Kit | Примитивы и tokens | @codaa/ui public exports |
 
-## IPC
+## IPC и permissions
 
-Открытие repo выполняется через main-native dialog. Main возвращает opaque session id; renderer не может подставить произвольный абсолютный path.
-Каждый метод проверяет session и relative path. `realpath` и проверка symlink target предотвращают выход за repo root. Глобальный `ipcRenderer`, `require`, shell commands и Node objects не экспортируются.
-Expected errors — сериализуемый Result/Problem с code, user title и field errors. Internal stack, remote credentials и arbitrary stderr не выводятся пользователю целиком.
-Long operations допускают cancellation/timeout, повторный запуск защищён pending state. Методы и события типизированы отдельно, подписки имеют cleanup.
+Folder picker — native Tauri dialog с минимальными permissions. Rust возвращает opaque repo session id; React не передаёт произвольный абсолютный repo root.
+Command handlers проверяют window/webview, payload, session, repo-relative paths и canonical/symlink targets. Input structs десериализуются в serde DTO и валидируются по бизнес-правилам; ошибки и результаты имеют соответствующие TS types/runtime schemas.
+Параметр типа invoke не проверяет входящий JSON автоматически: checks на обеих сторонах обязательны.
+
+Явно объявить custom commands в AppManifest и создать allow permissions/capabilities только для доверенного окна. По умолчанию custom app commands доступны всем app windows/webviews; одних plugin permissions недостаточно. Remote API access не включается.
+Ни filesystem wildcard, ни arbitrary shell execution из WebView не требуются для repo API. Node runtime и sidecar отсутствуют.
+
+Долгие Git/IO операции выполняются вне UI thread, имеют cancellation/timeout. Tauri events содержат только необходимые DTO, frontend subscriptions очищаются.
 
 ## State и persistence
 
-TanStack Query — асинхронные repo snapshots, queries и invalidation через facade. Это локальный IPC transport, а не повод создавать HTTP server. Zustand — selection/panels/settings. Editor draft остаётся в use-case hook и не дублируется в двух stores.
-Single-repo write queue сериализует saves и Git operations. Atomic writer пишет temp рядом с target и rename. Git commit/close ждут flush; failure сохраняет draft.
-Watcher фильтрует self-writes, invalidates clean entities. Dirty entity при внешнем изменении получает конфликт выбора; reload не уничтожает черновик.
+TanStack Query — repo snapshots/invalidation; Zustand — selection/panels/settings; editor draft — use-case hook. HTTP backend ради этих сценариев не создаётся.
+Rust управляет repo session и single-repo operation queue. Atomic writer пишет temp рядом с target и rename; close/commit ждут flush, errors сохраняют draft.
+Rust watcher фильтрует self-writes. Clean entities reload; dirty draft при внешнем изменении требует решения пользователя.
 
-## Security
+## Git
 
-Main создаёт sandboxed окно: `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`; preload bundling проверяется в smoke-тесте.
-Remote content не загружается в privileged окно; навигация и новые окна блокируются или разрешаются через явную политику. Внешние URLs — allowlist схем и безопасный OS handler, без исполнения строк как shell commands.
-Markdown HTML/script запрещены/санитизируются. В production — CSP, запрет произвольных permissions и проверка sender frame для IPC.
-Git arguments — массивы, без command interpolation. Credentials берёт Git. Git hooks и конфигурация выбранного repo требуют осознанной модели доверия: Electron sandbox не делает Git remote безопасным автоматически.
+Rust service запускает системный Git executable с фиксированным repo cwd и массивом аргументов, без shell interpolation. Команды, filenames, output limits, timeout/cancellation и credential errors проверяются сервисом.
+Credentials получают системный helper/SSH; Git2/libgit2 и simple-git runtime не нужны. Foreign staged files не коммитятся молча.
+OS Git hooks/config выполняются системным Git: capabilities WebView не заменяют проверку доверия к repo.
+
+## WebView и security
+
+Production CSP, запрет произвольной навигации/remote privileges, ограниченные dialog/opener capabilities. HTML/scripts в Markdown не исполняются. Paths/URL schemes проверяются перед OS APIs.
+Windows WebView2 и macOS WKWebView проверяются отдельно: одинаковый browser preview не доказывает одинаковое native поведение.
+Security controls — Tauri command permissions/capabilities и Rust validation; Electron preload/contextIsolation settings здесь не применяются.
 
 ## First vertical slice
 
-Открыть repo → main validation → pure format parser → typed DTO → tree и case read-only. Проверить отсутствие записи hashes. Затем один writer → flush → reopen → diff. Только после этого развернуть остальные CRUD/runs/Git workflows.
+Tauri window + React/Vite/Kit → typed command → Rust read-only load → tree/case; сравнить hashes до/после открытия. Затем один Rust writer → flush → reopen → diff и parity tests. Остальные CRUD/runs/Git — следующие срезы.
+
+## Primary sources
+
+[Tauri commands](https://v2.tauri.app/develop/calling-rust/), [capabilities](https://v2.tauri.app/security/capabilities/), [Vite/WebView configuration](https://v2.tauri.app/start/frontend/vite/).

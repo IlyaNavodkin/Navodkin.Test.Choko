@@ -14,7 +14,7 @@ description: >
 
 # React + TypeScript frontend patterns (Testoritto adaptation)
 
-> Testoritto: применять AGENTS.md. UI Kit — @codaa/ui из ui/. Hub admin/auth/HTTP являются примерами, а не требованиями продукта. Транспорт repository API — typed preload IPC, не HTTP server. useCases, typed hooks, state separation и strict TypeScript сохраняются. Справочники ниже описывают исходные Hub patterns.
+> Testoritto: применять AGENTS.md. UI Kit — @codaa/ui из ui/. Hub admin/auth/HTTP являются примерами, а не требованиями продукта. Транспорт repository API — typed Tauri 2 invoke facade → Rust commands/services, не HTTP server. Node.js нужен только для build/dev tooling, Node-sidecar не вводится. useCases, typed hooks, state separation и strict TypeScript сохраняются. Справочники ниже описывают исходные Hub patterns.
 
 Паттерны React-клиента с тем же каноном слайсов, что у Hub: React + Vite + TypeScript `strict`. Backend здесь не описывается — только клиент. Не переносить это в `apex.hub.webclient` (там Vue).
 

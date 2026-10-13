@@ -4,7 +4,7 @@
 
 **Этап: подготовка к обсуждению и началу разработки. Новое приложение ещё не реализовано.**
 
-Предложенный стек: **React 19 + TypeScript strict + Electron + Vite/electron-vite**. UI — локальный `@codaa/ui`, цвета — Citadelic. Windows и macOS; Git CLI и системные credentials. Совместимость с существующими данными Casewright обязательна.
+Выбранная основа: **Tauri 2 + React 19 + TypeScript strict + Vite**, нативная часть — **Rust**. UI — локальный `@codaa/ui`, цвета — Citadelic. Windows и macOS; Git CLI и системные credentials. Совместимость с существующими данными Casewright обязательна.
 
 Начать с [пакета обсуждения](docs/START-HERE.md), [ТЗ](docs/PRD.md) и [выбора стека](docs/adr/0001-desktop-stack.md).
 
@@ -23,7 +23,7 @@ apps/desktop/        описание целевой структуры; реа�
 
 ## Проверить подготовку
 
-Нужны Node.js >= 22.12 и pnpm 11.25.0. Версии фиксируются package.json и pnpm-lock.yaml.
+Для текущих проверок нужны Node.js >= 22.12 и pnpm 11.25.0. Для будущего Tauri приложения также нужны Rust и нативные инструменты ОС; [требования к сборке](docs/BUILD-AND-RELEASE.md). JS dependencies фиксируются pnpm-lock.yaml, Rust dependencies — будущим Cargo.lock.
 
 ```sh
 pnpm install --frozen-lockfile

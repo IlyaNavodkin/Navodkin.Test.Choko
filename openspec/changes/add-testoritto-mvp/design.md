@@ -1,45 +1,46 @@
 # Design
 
-Статус: проект архитектуры для обсуждения. Решения, не подтверждённые пользователем, — рекомендации, а не выполненная реализация.
+Tauri 2 как основа выбран пользователем 2026-10-13. Неподтверждённые детали продуктового scope остаются draft; implementation не началась.
 
 ## Context
 
-See proposal.md — Why. Reference Casewright 0.16.0 использует NW.js renderer с Node bridge. `services/repo-load.ts` читает declared workspaces и Markdown run directories. README/старый PRD описывают прежние форматы, поэтому контракт переноса определяется кодом и fixtures/tests.
-Kit пользователя — @codaa/ui с CSS Modules; tokens побайтно совпадают с Citadelic (SHA256 в docs/UI-KIT.md). React, Windows/macOS, Git и существующие data repos обязательны.
+See proposal.md — Why. Casewright 0.16.0 использует NW.js/Node bridge; current data format определяется services/repo-load.ts и format parsers, не устаревшим README.
+Выбранный runtime требует Rust реализации Node-dependent IO/Git/formats, сохраняя Casewright fixtures и данные. Kit — @codaa/ui/CSS Modules; tokens Citadelic совпадают по SHA256.
 
 ## Goals / Non-Goals
 
-**Goals:** повторно использовать чистые format/domain части, разделить OS services и UI, сохранить совместимость и данные, обеспечить воспроизводимые native builds.
-
-**Non-Goals:** прямой renderer fs/Node, собственный server/DB как источник данных, rewrite формата ради бренда, автоматическое наследование updater/CI исходника. Полный продуктовый scope и вопросы — proposal.md и docs/DISCUSSION.md.
+**Goals:** Tauri 2 desktop с React/Vite и Rust services, совместимые Markdown/YAML, узкий typed IPC, native Windows/macOS checks.
+**Non-Goals:** Node-sidecar, прямой filesystem/shell API из WebView, собственный backend/DB, автоматическая data migration, inherited upstream updater. Остальной scope — proposal.md/docs/DISCUSSION.md.
 
 ## Decisions
 
-1. **Предлагается Electron**, React 19/TS strict/electron-vite; обоснование и альтернативы в docs/adr/0001-desktop-stack.md. NW.js дешевле для прямого fork, но текущие Node privileges и отсутствующий macOS pipeline нужно переработать. Tauri потребует переписывания Node layer/sidecar; на старте это увеличивает объём переноса.
-2. Main владеет repo sessions, native picker, fs, watcher, recents и Git queue. Sandboxed renderer без Node; preload экспортирует конкретные typed API. Schema validation, sender checking и realpath scope выполняются main. Не экспортировать ipcRenderer/require/raw shell execution. Контракт — serialized Result/Problem, без secrets/Node objects.
-3. Product features организованы по useCases и typed hooks из предоставленного skill; @codaa/ui заменяет Apex Kit. HTTP facade в Hub адаптируется в IPC facade. TanStack Query — repo snapshots/invalidation; Zustand — UI state; drafts — локальный editor hook.
-4. `.casewright/config.yaml` и текущие Markdown formats сохраняются. При открытии нет записи/migration. Extras хранятся в parse result и проходят через store/write без потери. Writer атомарный; pending flush перед close/commit; conflicting external edits не затирают draft.
-5. Git CLI/simple-git в main с credential helper/SSH. Repo-scoped serial queue, args arrays, явный selection файлов; чужой index не коммитится автоматически. Pull при dirty state требует сохранённой стратегии без reset/clean. Конкретные UX-команды для stash/branches согласовать до реализации зависимых шагов.
-6. Конфликты: spec требует сохранения и явного разрешения; этот draft предлагает внешний инструмент + recheck/abort для MVP. Structured merge — отдельный scope decision до выполнения задачи Git UI.
-7. Native per-OS builds electron-builder, publish never для первых internal artifacts; Windows x64 и macOS arm64/x64 предлагаются как baseline. Signing/notarization и updater отдельным change, без private repo token внутри app.
+1. **Tauri 2 + React 19 + TypeScript strict + Vite**, Rust backend; решение принято пользователем, ADR в docs/adr/0001-desktop-stack.md. Node.js остаётся frontend tooling. Вместо reuse Node runtime переносится контракт поведения/формата, Rust services реализуются заново.
+2. React use-case hook → feature API → typed invoke facade → Rust command → service. Rust владеет sessions/picker/IO/watcher/Git. serde DTO и validation; TS types/runtime schemas на frontend. Custom commands ограничиваются AppManifest/permissions/capabilities конкретного окна, handlers проверяют session/path/payload.
+3. useCases и typed hooks сохраняют frontend skill. TanStack Query — async repo state через commands, Zustand — UI state, draft — editor hook. HTTP server не требуется.
+4. Rust parsers/writers сохраняют .casewright/config.yaml, workspaces, Markdown cases/runs, extras и ordering. Upstream fixtures и независимые expected outputs → Rust parity/round-trip tests до включения writer. No-write open, atomic writes и flush остаются обязательными.
+5. Rust Git service запускает системный Git CLI с args array/cwd/timeouts; credential helper/SSH и repo-scoped operation queue. simple-git/git2 не выбраны как runtime. Scoped commits не захватывают чужой index. Dirty-state recovery и conflicts не используют destructive auto-reset.
+6. Conflict workflow draft: внешний editor + recheck/abort; structured merge scope согласовать отдельно. Выбор Tauri не требует нового согласования runtime.
+7. Tauri CLI/bundler на native Windows/macOS runners: Windows NSIS .exe, macOS .app/.dmg; target architectures остаются draft baseline. Signing/updater — отдельный future change, без private GitHub token в app.
+8. cargo test/fmt/clippy + TypeScript/Vitest; native WebdriverIO Tauri service. Embedded driver поддерживает обе ОС; test-only plugins исключены из release. Прямой tauri-driver не заменяет macOS smoke. UI/WebView2/WKWebView и установку проверять отдельно.
 
 ## Risks / Trade-offs
 
-- Stale docs и разные форматы → fixtures по фактическому parser/writer; no-write hashes; unsupported version diagnosis.
-- Extras читаются upstream, но могут теряться дальше → end-to-end round-trip tests до включения writer.
-- NW runtime bridge глубоко связан со store → переносить слой за слоем; не выключать sandbox ради совместимости.
-- Git hook/credential/helper behavior → явная repo trust model и temp repo integration tests; renderer isolation не изолирует Git.
-- Private distribution и macOS signing → сначала internal artifacts; не обещать публичный install без signing smoke.
-- Large repo/watch storm → измерения на согласованном fixture, debounced invalidation, bounded queries; без выдуманного SLA.
-- Kit particles 3.x deprecated → сохранить на старте; миграцию необязательных animations вынести отдельно после usage audit.
+- Rewrite вместо Node reuse → ранний Rust read-only slice, parity fixtures и writer preservation tests.
+- Разные OS WebView → native UI/smoke на Windows/macOS, не полагаться на Chromium preview.
+- Custom commands разрешены app windows по умолчанию → explicit AppManifest permissions/capabilities и handler validation; один plugin ACL недостаточен.
+- Upstream extras могут теряться после parse → end-to-end preservation до writer.
+- Git hooks/credentials → repo trust model, timeout/error handling, temp-remote tests; capabilities не изолируют исполняемый Git.
+- Rust/OS tooling и private signing → закреплённые toolchains и separate internal/public release steps.
+- Test-only WebDriver backend → feature-gated test builds, отдельный release smoke без debug access.
+- Large repo/watch storms и deprecated Kit animations → измерять реальную нагрузку, отдельные migration tasks без расширения текущего scope.
 
 ## Migration Plan
 
-Сначала runtime + Kit smoke; затем pure formats/tests; read-only repository load; один безопасный writer; остальные cases/runs; Git collaboration; native packaging.
-Testoritto открывает копии реальных repos в QA. Production repos не мигрируются при открытии. Rollback — предыдущий app build и обычная Git history; destructive reset/clean не используются как автоматическая recovery.
-Отдельная будущая migration содержит backup, preview, format version и явное подтверждение. Если stack/scope изменятся на обсуждении, artifacts обновляются до apply.
+Tauri/Rust/React window и command smoke → Rust formats parity → read-only repo load и hashes → один atomic writer → cases/runs → system Git workflow → native packaging/tests.
+Не выполнять migration пользовательских repos при открытии. Rollback: прежний app build и обычная Git history, без автоматического reset/clean.
+Продуктовые вопросы фиксируются до зависимых задач; Tauri уже выбран. Все implementation tasks остаются unchecked.
 
 ## References
 
-Локальный audit: `docs/SOURCE-AUDIT.md`; формат: `docs/DATA-COMPATIBILITY.md`; границы: `docs/ARCHITECTURE.md`; builds: `docs/BUILD-AND-RELEASE.md`.
-[Electron security](https://www.electronjs.org/docs/latest/tutorial/security), [electron-vite guide](https://electron-vite.org/guide/), [Tauri frontend](https://tauri.app/start/frontend/), [electron-builder architecture](https://www.electron.build/docs/architecture/).
+docs/SOURCE-AUDIT.md, docs/DATA-COMPATIBILITY.md, docs/ARCHITECTURE.md, docs/BUILD-AND-RELEASE.md.
+[Tauri commands](https://v2.tauri.app/develop/calling-rust/), [capabilities](https://v2.tauri.app/security/capabilities/), [Vite](https://v2.tauri.app/start/frontend/vite/), [prerequisites](https://v2.tauri.app/start/prerequisites/), [distribution](https://v2.tauri.app/distribute/), [native tests](https://v2.tauri.app/develop/tests/webdriver/).

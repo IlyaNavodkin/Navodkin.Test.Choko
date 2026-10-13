@@ -5,13 +5,13 @@ Draft план после обсуждения. Установка OpenSpec/на
 
 ## 1. Scope и runtime
 
-- [ ] 1.1 Согласовать Electron, conflict workflow, OS targets и MVP extensions; обновить PRD/design/specs/tasks и пройти strict validation.
-- [ ] 1.2 Создать apps/desktop package с main/preload/React renderer, закрепить версии и добавить dev/typecheck/build; проверить реальное окно с @codaa/ui/Citadelic tokens и отсутствие renderer Node APIs.
+- [ ] 1.1 Для уже выбранной основы Tauri 2 согласовать conflict workflow, OS targets и MVP extensions; обновить PRD/design/specs/tasks и пройти strict validation.
+- [ ] 1.2 Создать apps/desktop с React/Vite и src-tauri Rust crate, закрепить JS/Rust toolchains и оба lockfiles; добавить tauri dev/build, typecheck и Rust checks; проверить окно с @codaa/ui/Citadelic tokens, capabilities и отсутствие Node-sidecar.
 
 ## 2. Formats и чтение repo
 
-- [ ] 2.1 Перенести согласованные pure formats/schemas и MIT notice; пройти round-trip tests для cases, config, order, folder notes и Markdown runs с unknown content.
-- [ ] 2.2 Реализовать scoped repo sessions, picker и read-only load через typed IPC; проверить path/symlink rejection и неизменность file hashes на real fixture; описать API/unsupported formats.
+- [ ] 2.1 Реализовать Rust domain/parsers/serializers по upstream fixtures, сохранить MIT notice для переносимого кода; пройти cargo test с parity и round-trip tests для cases, config, order, folder notes и Markdown runs с unknown content.
+- [ ] 2.2 Реализовать scoped repo sessions, picker и read-only load через typed Tauri commands с serde DTO и runtime validation; проверить path/symlink rejection и неизменность file hashes на real fixture; описать API/unsupported formats.
 - [ ] 2.3 Добавить workspace selection/tree/recents и явную initialization; проверить empty/missing path, отказ инициализации и duplicate writable session.
 
 ## 3. Persistence и кейсы
@@ -26,18 +26,18 @@ Draft план после обсуждения. Установка OpenSpec/на
 
 ## 5. Git collaboration
 
-- [ ] 5.1 Реализовать typed main Git status/diff/commit/pull/push с system credentials и scoped staging; пройти temp-remote two-clone tests, foreign index, pending flush, offline/auth/upstream/rejected push; описать setup Git.
+- [ ] 5.1 Реализовать Rust Git service и typed commands status/diff/commit/pull/push с system credentials и scoped staging; пройти temp-remote two-clone tests, foreign index, pending flush, offline/auth/upstream/rejected push; описать setup Git.
 - [ ] 5.2 Реализовать согласованный conflict workflow без destructive auto-recovery; проверить A/B conflict, external resolution/recheck и явный abort с сохранением работы; описать recovery пользователю.
 
 ## 6. ОС и качество интерфейса
 
-- [ ] 6.1 Проверить labels/focus/keyboard, loading/error/empty/pending, native shortcuts/picker, close with failed save, runtime CSP/IPC/navigation и hostile Markdown; зафиксировать результаты и ограничения.
+- [ ] 6.1 Проверить labels/focus/keyboard, loading/error/empty/pending, native shortcuts/picker, close with failed save, Tauri CSP/capabilities/custom-command permissions и hostile Markdown; зафиксировать результаты и ограничения.
 - [ ] 6.2 Измерить согласованный large fixture, устранить доказанные bottlenecks и установить реалистичные performance targets; документировать машину, объём данных и результаты.
 
 ## 7. Packaging и интеграционная приёмка
 
-- [ ] 7.1 Добавить native Windows/macOS packaging jobs с publish never и private artifacts; проверить установку/запуск на каждом согласованном target, собственное имя/icons и отсутствие upstream updater; описать сборку/signing gaps.
-- [ ] 7.2 Пройти полный open → edit → save → run → commit → push → second-clone pull сценарий на обеих ОС и проверить repo compatibility; выполнить openspec verify, финализировать release scope и результаты приёмки.
+- [ ] 7.1 Добавить native Windows/macOS jobs для tauri build с private artifacts без публикации; проверить Rust prerequisites, WebView2 installer policy и macOS bundles; проверить установку/запуск на каждом согласованном target, собственное имя/icons и отсутствие upstream updater; описать сборку/signing gaps.
+- [ ] 7.2 Пройти native WebdriverIO/Tauri smoke и полный open → edit → save → run → commit → push → second-clone pull сценарий на обеих ОС; исключить test-only WebDriver plugins из release и проверить repo compatibility; выполнить openspec verify, финализировать release scope и результаты приёмки.
 
 ## Workflow follow-up
 

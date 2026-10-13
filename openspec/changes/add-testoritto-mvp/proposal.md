@@ -8,8 +8,8 @@
 
 ## What Changes
 
-- Подтверждённые требования: React, Windows/macOS, Git collaboration, совместимость существующих Casewright repos, @codaa/ui и палитра Citadelic.
-- Предложение: Electron + TypeScript strict + electron-vite, main-process fs/Git и typed preload IPC; Git CLI с credentials ОС.
+- Подтверждённые требования: Tauri 2, React, Windows/macOS, Git collaboration, совместимость существующих Casewright repos, @codaa/ui и палитра Citadelic.
+- Выбранная пользователем основа: Tauri 2 + React/TypeScript strict + Vite; Rust fs/Git services и typed commands/events. Git CLI с credentials ОС, без Node-sidecar.
 - Основные сценарии: открытие repo/workspaces, suites и кейсы, Markdown runs, явные status/diff/commit/pull/push.
 - No-write open, сохранение unknown fields/sections, защита pending drafts и конфликтов.
 - Новая UI композиция на предоставленном Kit и tokens вместо upstream Tailwind/brand.
@@ -36,7 +36,7 @@
 
 ## Impact
 
-Будущие `apps/desktop/{main,preload,renderer,contracts}` и при необходимости `packages/core`; UI workspace `ui/`. Перенос formats/tests и services из `casewright-main/apps/desktop/src` с сохранением MIT notice.
-Новый typed IPC API вместо renderer Node bridge. Новые native build jobs вместо upstream release/updater. Существующие пользовательские data repos не мигрируются автоматически.
+Будущие `apps/desktop/src`, `apps/desktop/src-tauri/{src,capabilities,permissions}` и frontend contracts; UI workspace `ui/`. Node-dependent formats и fs/Git services переписываются на Rust по fixtures исходника с сохранением совместимости и MIT notice при переносе кода.
+Новый typed Tauri command API вместо NW.js Node bridge. Новые native build jobs вместо upstream release/updater. Существующие пользовательские data repos не мигрируются автоматически.
 
-Полное ТЗ — `docs/PRD.md`, audit — `docs/SOURCE-AUDIT.md`, предложенный стек — `docs/adr/0001-desktop-stack.md`.
+Полное ТЗ — `docs/PRD.md`, audit — `docs/SOURCE-AUDIT.md`, выбранный стек — `docs/adr/0001-desktop-stack.md`.

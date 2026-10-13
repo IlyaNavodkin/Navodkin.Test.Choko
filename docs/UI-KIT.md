@@ -11,14 +11,14 @@ SHA256 7b0775ff8e3bb48e64288d66e062936d74f62e8e665879669bea19aea8d903ce
 
 Поэтому повторная копия палитры не создавалась. Clone Testoritto самодостаточен: tokens уже находятся в tracked ui; absolute path Citadelic — только provenance, не build dependency.
 
-## Использование в будущем renderer
+## Использование в будущем React WebView
 
 ```tsx
 import '@codaa/ui/theme/tokens.css';
 import { Button, Input, FileTree, Table, StatusPill, ToastHost } from '@codaa/ui';
 ```
 
-Продуктовые wrappers/layout — `renderer/src/shared/ui/`; components — CSS Modules и `var(--app-*)`. Не менять Kit ради продуктового сценария, если достаточно composition.
+Продуктовые wrappers/layout — `apps/desktop/src/shared/ui/`; components — CSS Modules и `var(--app-*)`. Не менять Kit ради продуктового сценария, если достаточно composition.
 
 ## Основная палитра
 
@@ -51,7 +51,7 @@ import { Button, Input, FileTree, Table, StatusPill, ToastHost } from '@codaa/ui
 ## Frontend skill
 
 Все справочники исходного `react-ts-frontend-patterns` установлены в `.agents/skills/react-ts-frontend-patterns/`.
-Проектная адаптация: @codaa/ui вместо Apex Kit, domains вместо искусственного Hub admin, IPC вместо обязательного HTTP, те же useCases/typed hooks/query/UI state patterns.
+Проектная адаптация: @codaa/ui вместо Apex Kit, domains вместо искусственного Hub admin, Tauri commands/invoke facade вместо обязательного HTTP, те же useCases/typed hooks/query/UI state patterns.
 Предоставленная оригинальная папка остаётся локально; установленная копия tracked в GitHub. Проектные правила в AGENTS.md имеют приоритет над демонстрационными Hub путями.
 
 ## Проверка и известные ограничения

@@ -6,6 +6,13 @@
 
 ## ADDED Requirements
 
+### Requirement: Tauri desktop foundation
+Система SHALL поставляться как Tauri 2 desktop application с React интерфейсом и Rust native backend, без зависимости от Node.js runtime или Node-sidecar на пользовательской машине.
+
+#### Scenario: Installed runtime dependencies
+- **WHEN** пользователь запускает установленное приложение с требуемым OS WebView и системным Git, без установленного Node.js
+- **THEN** открытие repo, edit/save и Git workflow доступны
+
 ### Requirement: Windows and macOS desktop delivery
 Система SHALL предоставлять устанавливаемые desktop artifacts для согласованных Windows/macOS targets и поддерживать запуск, выбор repo и основной edit/save/Git workflow на каждой платформе.
 
@@ -28,7 +35,7 @@
 - **WHEN** пользователь выполняет основной shortcut на macOS
 - **THEN** действие использует Cmd conventions и соответствует доступной команде интерфейса
 
-### Requirement: Restricted renderer privileges
+### Requirement: Restricted WebView privileges
 Система SHALL ограничивать интерфейс разрешённым типизированным API и SHALL NOT предоставлять доступ к произвольным файлам, shell execution, Node runtime или credentials через контент репозитория.
 
 #### Scenario: Hostile Markdown content

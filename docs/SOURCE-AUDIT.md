@@ -8,17 +8,17 @@
 
 | Область | Найдено | Решение по переносу |
 | --- | --- | --- |
-| Runtime | NW.js + React/TS; Vite; `lib/node.ts` runtime require; `lib/nwjs.ts` OS/window helpers | React/domain reuse; NW bridge заменить main/preload |
+| Runtime | NW.js + React/TS; Vite; `lib/node.ts` runtime require; `lib/nwjs.ts` OS/window helpers | React UI/contracts reuse; NW bridge заменить Tauri commands, Node services — Rust |
 | UI | Tailwind v4, Radix/shadcn-style primitives, исходная brand palette | Сценарии/композицию изучить; UI переписать на @codaa/ui/CSS Modules |
-| Formats | `services/format/` cases, run cases/details, workspace, config, folder notes, `.order` | Самый полезный кандидат на перенос с тестами; сохранение unknown content требует аудита end-to-end |
-| Repo | `repo-load.ts`, `repo-fs.ts`, `repo-metadata.ts`, `repo-paths.ts`, `repo-migration.ts` | Перенести с main-process ownership; migration по умолчанию отключить |
+| Formats | `services/format/` cases, run cases/details, workspace, config, folder notes, `.order` | Контракт для Rust parsers/serializers и parity fixtures; Node parsers не переносить в WebView; unknown content проверить end-to-end |
+| Repo | `repo-load.ts`, `repo-fs.ts`, `repo-metadata.ts`, `repo-paths.ts`, `repo-migration.ts` | Переписать на Rust repo services; migration по умолчанию отключить |
 | Config | `serializeConfigYaml`, `openRepo` читают declared `workspaces:` | Не полагаться на README про auto-discovery как главный формат |
 | Runs | `loadRuns` читает directories с `_run.md` и case `.md` | CSV из старого README не является текущим форматом |
-| Git | `services/git.ts` — status/info/diff/commit/fetch/pull/push, stash/discard | Переиспользовать после проверки scope/staging/errors и IPC boundary |
+| Git | `services/git.ts` — status/info/diff/commit/fetch/pull/push, stash/discard | Использовать как поведенческий reference; Rust вызывает системный Git CLI, scope/staging/errors проверяются заново |
 | Watch/save | watch.ts, persist.ts, repo-self-write.ts | Проверить shutdown/dirty reload/races, затем переносить |
-| State | Большой `store/app-store.ts` связывает UI и disk/Git | Не переносить целиком в renderer; разделить query state и UI state |
+| State | Большой `store/app-store.ts` связывает UI и disk/Git | Не переносить целиком в WebView; IO/state sessions — Rust, queries/UI state — frontend |
 | Merge | MergeResolver UI есть; app-store явно содержит deferred structured engine | Не заявлять о готовом merge; проектировать отдельный scope |
-| Native shell | Sidebar содержит toast-заглушки `nw.Shell.showItemInFolder/openItem` | Реализовать через Electron shell после проверки разрешённых paths |
+| Native shell | Sidebar содержит toast-заглушки `nw.Shell.showItemInFolder/openItem` | Реализовать через Tauri native APIs/opener с capabilities и проверкой разрешённых paths |
 | Reports/variables | Сервисы HTML reports, run snapshots, checks, date overrides и approvals | Сохранение данных обязательно; UI scope обсудить |
 | Updater | Исходный NW.js updater и его tests | Не включать upstream endpoints/исполнители в новый продукт |
 | Distribution | Windows portable/installer pipeline; macOS описан как next step | Новый packaging и per-OS CI, без наследования upstream publish |
@@ -34,11 +34,11 @@
 
 ## Порядок переноса
 
-1. Создать Electron runtime и typed IPC без доступа renderer к Node.
-2. Перенести чистые parsers/serializers и применимые format tests с MIT notice.
+1. Создать Tauri 2 runtime, Rust commands с permissions/capabilities и React/Vite frontend без Node runtime.
+2. Реализовать Rust parsers/serializers по upstream schemas, fixtures и round-trip tests; перенести только browser-safe TS helpers. Сохранять MIT notice для переносимого кода.
 3. Read-only загрузка реального repo; зафиксировать file hashes до/после.
 4. Сохранение по одному use case; unknown fields/content не теряются.
-5. Repo/Git services и temp-remote integration tests.
+5. Rust repo/Git services и cargo integration tests с temp remote.
 6. UI workflows на предоставленном Kit, then native OS and packaging smoke.
 
 ## Происхождение и snapshot

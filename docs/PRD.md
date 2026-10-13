@@ -1,6 +1,6 @@
 # Testoritto — проект технического задания
 
-Версия 0.1, 2026-10-13. Статус: **для обсуждения**. Подтверждённые ограничения перечислены отдельно от предложенного MVP.
+Версия 0.2, 2026-10-13. Статус: **для обсуждения**. Подтверждённые ограничения перечислены отдельно от предложенного MVP.
 
 ## 1. Назначение
 
@@ -10,12 +10,14 @@ Testoritto — десктопный редактор ручных тест-ке�
 
 ## 2. Обязательные ограничения
 
-1. React frontend.
+1. Tauri 2 как desktop runtime; React + TypeScript + Vite frontend; Rust native backend.
 2. Desktop на Windows и macOS.
 3. Данные и совместная работа через Git.
 4. Совместимость с существующими репозиториями Casewright.
 5. UI Kit из `ui/`; палитра из Citadelic.
 6. Работа по OpenSpec с предоставленным frontend skill.
+
+Основа Tauri 2 выбрана пользователем. Файловые операции, Git и OS integration выполняются Rust backend через ограниченный Tauri IPC. Формат Casewright сохраняется; Node.js используется для frontend tooling, Node-sidecar не планируется.
 
 ## 3. Рекомендуемый MVP
 
@@ -70,7 +72,7 @@ Testoritto — десктопный редактор ручных тест-ке�
 - Atomic writes через временный файл в той же папке и rename. Pending saves завершаются перед close/commit; ошибки оставляют dirty state.
 - Watcher уведомляет о внешних изменениях; reload чистого файла допустим, dirty editor требует выбора пользователя.
 - Перечислить ownership data paths; работа внутри чужого code repo не должна захватывать `.env` или сторонние staged files.
-- Symlink/path traversal за пределы открытого repo отклонять. Не запускать встроенные scripts из контента кейсов, не выдавать Markdown Node privileges.
+- Symlink/path traversal за пределы открытого repo отклонять. Не запускать встроенные scripts из контента кейсов, не предоставлять Markdown произвольный доступ к Tauri commands, fs или процессам.
 - Auth secrets отсутствуют в files/cache/logs приложения. Git hooks исполняются системным Git в рамках доверия к выбранному repo; политику для чужих repos обсудить перед релизом.
 
 ## 5. Предложенная приёмка

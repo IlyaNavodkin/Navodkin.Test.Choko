@@ -1,0 +1,157 @@
+/* ============================================================
+   Casewright marketing site - base styles
+   Brand tokens come from @casewright/brand (imported in Base.astro).
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+::selection {
+  background: var(--select);
+}
+
+/* ---- layout helpers ---- */
+.wrap {
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding-inline: 24px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+/* ---- buttons (echoing the desktop app) ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: var(--r);
+  border: 1px solid var(--border-2);
+  background: var(--panel);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, box-shadow 0.14s, transform 0.14s;
+}
+
+.btn:hover {
+  background: var(--raise);
+  text-decoration: none;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent-press);
+  box-shadow: 0 1px 2px oklch(0.3 0.05 283 / 0.25);
+}
+
+.btn.primary:hover {
+  background: var(--accent-press);
+}
+
+/* ---- the brand wordmark ---- */
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.wordmark:hover {
+  text-decoration: none;
+}
+
+.wordmark .mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  flex: none;
+  box-shadow: 0 1px 2px oklch(0.3 0.05 283 / 0.3);
+}
+
+.wordmark .name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  letter-spacing: 0.03em;
+  color: var(--ink-2);
+}

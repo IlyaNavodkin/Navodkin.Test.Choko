@@ -1,0 +1,69 @@
+/* ============================================================
+   Casewright - shared design tokens
+   Engineering workbench, warmed by editorial calm.
+
+   Single source of truth for the brand. Consumed by both the
+   desktop app (apps/desktop) and the marketing site (apps/web).
+   ============================================================ */
+
+:root {
+  /* ---- warm-neutral surfaces ---- */
+  --bg:            oklch(0.972 0.004 80);   /* app backdrop */
+  --panel:         oklch(0.995 0.002 85);   /* primary surfaces / editor */
+  --panel-2:       oklch(0.980 0.004 80);   /* sidebars, rails */
+  --raise:         oklch(0.965 0.005 78);   /* hover wells */
+  --sunken:        oklch(0.958 0.006 75);   /* inputs, code wells */
+  --border:        oklch(0.905 0.005 75);   /* hairline */
+  --border-2:      oklch(0.855 0.006 72);   /* stronger divider */
+  --shadow:        oklch(0.5 0.02 70 / 0.10);
+  --desk:          oklch(0.62 0.02 70);     /* desk surface behind the window */
+
+  /* ---- ink ---- */
+  --ink:           oklch(0.28 0.012 60);
+  --ink-2:         oklch(0.46 0.010 60);
+  --ink-3:         oklch(0.60 0.008 62);
+  --ink-faint:     oklch(0.72 0.006 64);
+
+  /* ---- accent: bluish-purple iris (primary actions + selection only) ---- */
+  --accent:        oklch(0.55 0.13 283);
+  --accent-press:  oklch(0.47 0.13 283);
+  --accent-fg:     oklch(0.99 0 0);
+  --accent-soft:   oklch(0.952 0.028 283);
+  --accent-line:   oklch(0.84 0.06 283);
+  --accent-ink:    oklch(0.46 0.12 283);
+  /* text-selection highlight - distinctly brighter/more saturated than
+     --accent-soft so it never blends into the pale tinted surfaces that
+     reuse accent-soft (focus rings, badges, hover wells). Still light
+     enough to keep dark ink readable. */
+  --select:        oklch(0.84 0.13 283);
+
+  /* ---- status palette (the loudest signal; pair with glyphs) ---- */
+  --pass:          oklch(0.58 0.12 152);
+  --pass-soft:     oklch(0.95 0.04 152);
+  --fail:          oklch(0.56 0.19 27);
+  --fail-soft:     oklch(0.95 0.045 27);
+  --blocked:       oklch(0.62 0.16 52);     /* orange */
+  --blocked-soft:  oklch(0.95 0.05 58);
+  --inprogress:    oklch(0.58 0.13 250);     /* blue */
+  --inprogress-soft: oklch(0.95 0.04 250);
+  --skipped:       oklch(0.60 0.008 65);     /* neutral gray (formerly the "not run" gray) */
+  --skipped-soft:  oklch(0.95 0.005 75);
+  --notrun:        oklch(0.90 0.003 80);     /* super light gray, almost white */
+  --notrun-soft:   oklch(0.955 0.004 75);
+
+  /* ---- diff colors (calm, not alarming) ---- */
+  --add:           oklch(0.56 0.10 152);
+  --add-bg:        oklch(0.95 0.035 152);
+  --del:           oklch(0.56 0.14 28);
+  --del-bg:        oklch(0.955 0.035 28);
+
+  /* ---- type roles ---- */
+  --font-ui:    "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-mono:  "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-read:  "Newsreader", Georgia, serif;
+
+  /* ---- radii ---- */
+  --r-sm: 4px;
+  --r:    6px;
+  --r-lg: 9px;
+}

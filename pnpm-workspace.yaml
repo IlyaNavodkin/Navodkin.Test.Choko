@@ -1,0 +1,8 @@
+packages:
+  - ui
+  # Add apps/desktop and packages/core when their implementation begins.
+
+storeDir: .pnpm-store
+allowBuilds:
+  # The package's postinstall only prints promotional/compatibility messages.
+  '@tsparticles/engine': false

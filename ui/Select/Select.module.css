@@ -1,0 +1,134 @@
+.trigger {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  width: 100%;
+  min-width: 0;
+  padding: 0 0.875rem 0 var(--app-control-px-md);
+  line-height: normal;
+  color: var(--app-fg);
+  background: var(--app-control-bg);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  cursor: pointer;
+  font-family: var(--app-font-family);
+  font-size: var(--app-text-md);
+  text-align: left;
+  transition:
+    background var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.trigger:hover:not(:disabled) {
+  background: var(--app-control-hover-bg);
+  border-color: var(--app-border-strong);
+}
+
+.trigger:focus-visible {
+  outline: 2px solid var(--app-accent-bg);
+  outline-offset: 1px;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Exact heights, the scale `Input` uses (`--app-control-h-*`): an Input and a Select of one size
+   line up to the pixel whatever the trigger holds (value, placeholder, spinner, chevron). */
+.size-xs {
+  height: var(--app-control-h-xs);
+  padding: 0 var(--app-control-px-xs);
+  font-size: var(--app-text-sm);
+  border-radius: var(--app-radius-sm);
+}
+
+.size-sm {
+  height: var(--app-control-h-sm);
+  padding: 0 var(--app-control-px-xs) 0 var(--app-control-px-sm);
+  font-size: var(--app-text-sm);
+}
+
+.size-md {
+  height: var(--app-control-h-md);
+  font-size: var(--app-font-size);
+}
+
+.size-xs .chevron,
+.size-sm .chevron {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.value,
+.placeholder {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.placeholder {
+  color: var(--app-fg4);
+}
+
+.chevron {
+  flex: 0 0 auto;
+  color: var(--app-fg4);
+  transition: transform var(--app-transition-fast);
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.content {
+  display: grid;
+  max-height: min(15rem, calc(100vh - 2rem));
+  padding: var(--app-space-2);
+  overflow-y: auto;
+}
+
+.empty {
+  padding: var(--app-space-4);
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-4);
+  min-height: 2rem;
+  padding: var(--app-space-3) var(--app-space-4);
+  color: var(--app-fg2);
+  background: transparent;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  cursor: pointer;
+  font-family: var(--app-font-family);
+  font-size: var(--app-text-md);
+  text-align: left;
+}
+
+.option:hover:not(:disabled),
+.focused {
+  background: var(--app-bg3);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--app-accent-bg);
+  outline-offset: -2px;
+}
+
+.option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.selected {
+  color: var(--app-fg);
+}

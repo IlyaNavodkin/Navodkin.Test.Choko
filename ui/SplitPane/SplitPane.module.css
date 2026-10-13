@@ -1,0 +1,44 @@
+.root {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+}
+
+.horizontal {
+  flex-direction: row;
+}
+
+.vertical {
+  flex-direction: column;
+}
+
+.first {
+  position: relative;
+  flex: none;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.second {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.handleSlot {
+  position: relative;
+  flex: none;
+}
+
+.horizontal > .handleSlot {
+  width: 0.75rem;
+  align-self: stretch;
+}
+
+.vertical > .handleSlot {
+  width: 100%;
+  height: 0.75rem;
+}

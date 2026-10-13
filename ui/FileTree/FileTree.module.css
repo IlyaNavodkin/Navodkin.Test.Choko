@@ -1,0 +1,133 @@
+.tree {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--app-space-3) 0;
+  overflow: auto;
+  outline: none;
+}
+
+.tree:focus-visible {
+  outline: 1px solid var(--app-border-strong);
+  outline-offset: -2px;
+}
+
+.empty {
+  padding: var(--app-space-6);
+  color: var(--app-text-secondary);
+  font-size: var(--app-text-sm);
+  text-align: center;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-3);
+  height: 28px;
+  padding-right: var(--app-space-4);
+  border-left: 2px solid transparent;
+  color: var(--app-fg3);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    background var(--app-transition-fast),
+    color var(--app-transition-fast);
+}
+
+.row:hover {
+  background: var(--app-surface-hover);
+}
+
+/* Selection = accent bar + readable accent text, never a filled row. */
+.selected {
+  border-left-color: var(--app-accent-bg);
+  color: var(--app-accent-readable);
+}
+
+.disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.dropOver {
+  outline: 1px dashed var(--app-accent-bg);
+  outline-offset: -2px;
+}
+
+.rootDrop {
+  outline: 1px dashed var(--app-accent-bg);
+  outline-offset: -2px;
+}
+
+.chevron {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--app-fg5);
+  cursor: pointer;
+  transition:
+    color var(--app-transition-fast),
+    transform var(--app-transition-fast);
+}
+
+.chevron:hover {
+  color: var(--app-fg2);
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.chevronHidden {
+  visibility: hidden;
+  cursor: default;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--app-fg4);
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.meta {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--app-text-muted);
+}
+
+.actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity var(--app-transition-fast);
+}
+
+.row:hover .actions,
+.row:focus-within .actions,
+.tree:focus-within .active .actions {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row,
+  .chevron,
+  .actions {
+    transition: none;
+  }
+}

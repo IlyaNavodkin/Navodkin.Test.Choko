@@ -1,0 +1,278 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+/* Column, not a wrapping row: the slot holds one toolbar strip (`DataTableToolbar` or a filter
+   row of a page's own), and a column stretches it to the width of the table. As a row item it
+   shrank to its own content — the strip ended in the middle of the card and its search field
+   wrapped the count onto a second line. */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.surface {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-bg2);
+}
+
+.scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.th {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--app-border);
+  color: var(--app-fg4);
+  font-size: var(--app-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--app-border);
+  color: var(--app-fg);
+  font-size: var(--app-text-sm);
+  vertical-align: middle;
+}
+
+.tr:last-child .td {
+  border-bottom: 0;
+}
+
+.tr:hover .td {
+  background: color-mix(in srgb, var(--app-accent-bg) 6%, transparent);
+}
+
+.trClickable {
+  cursor: pointer;
+}
+
+/* Selection language: accent edge and accent-readable text, never a filled row. */
+.selectable .table th:first-child,
+.selectable .table td:first-child {
+  border-left: 2px solid transparent;
+}
+
+.trSelected .td {
+  color: var(--app-accent-readable);
+}
+
+/* Same specificity as the transparent base rule above, so the accent edge wins. */
+.selectable .trSelected .td:first-child {
+  border-left-color: var(--app-accent-bg);
+}
+
+.dense .td {
+  height: 2rem;
+  padding-block: 0;
+}
+
+.stickyHead {
+  position: sticky;
+  top: 0;
+  z-index: var(--app-z-sticky);
+  background: var(--app-bg2);
+}
+
+.selectCell {
+  width: 2.5rem;
+}
+
+.checkboxWrapper {
+  display: inline-flex;
+  align-items: center;
+}
+
+.checkbox {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  background: var(--app-bg);
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-xs);
+  cursor: pointer;
+}
+
+.checkbox:checked,
+.checkbox:indeterminate {
+  background: var(--app-accent-bg);
+  border-color: var(--app-accent-bg);
+}
+
+.checkbox::after {
+  content: '';
+  display: block;
+  opacity: 0;
+}
+
+.checkbox:checked::after {
+  width: 3px;
+  height: 7px;
+  border: solid var(--app-accent-fg);
+  border-width: 0 1.5px 1.5px 0;
+  opacity: 1;
+  transform: rotate(45deg) translateY(-1px);
+}
+
+.checkbox:indeterminate::after {
+  width: 7px;
+  height: 0;
+  border-top: 1.5px solid var(--app-accent-fg);
+  opacity: 1;
+}
+
+.checkbox:focus-visible {
+  outline: 2px solid var(--app-accent-bg);
+  outline-offset: 1px;
+}
+
+.checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.sortButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sortButton:hover,
+.sortActive {
+  color: var(--app-fg);
+}
+
+.empty {
+  padding: 1.5rem 0;
+}
+
+.pagination {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--app-border);
+  background: color-mix(in srgb, var(--app-bg3) 55%, transparent);
+}
+
+.pageRange {
+  justify-self: start;
+}
+
+.pageControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  justify-self: center;
+}
+
+.pageNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-md);
+  color: var(--app-fg4);
+  background: transparent;
+  font: inherit;
+  font-size: var(--app-text-xs);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    color var(--app-transition-fast),
+    background var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.pageNumber:hover {
+  color: var(--app-fg);
+  background: var(--app-bg3);
+}
+
+.pageNumberActive {
+  color: var(--app-fg);
+  border-color: var(--app-border-strong);
+  background: var(--app-bg3);
+  font-weight: 600;
+}
+
+.pageEllipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.5rem;
+  color: var(--app-fg5);
+  font-size: var(--app-text-xs);
+  user-select: none;
+}
+
+.pageSize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  justify-self: end;
+}
+
+.pageSize .pageSizeSelect {
+  width: auto;
+  min-width: 4.25rem;
+}
+
+.pageMeta {
+  color: var(--app-fg4);
+  font-size: var(--app-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .pageRange,
+  .pageSize {
+    justify-self: center;
+  }
+}

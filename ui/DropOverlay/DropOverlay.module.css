@@ -1,0 +1,51 @@
+.root {
+  position: absolute;
+  inset: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  background: color-mix(in srgb, var(--app-accent-bg) 10%, transparent);
+  border: 2px dashed color-mix(in srgb, var(--app-accent-bg) 65%, transparent);
+  border-radius: var(--app-radius-lg);
+  backdrop-filter: blur(1px);
+}
+
+.passive {
+  pointer-events: none;
+}
+
+.interactive {
+  pointer-events: auto;
+}
+
+.halo {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 10px;
+  color: var(--app-accent-readable);
+  background: var(--app-accent-soft);
+  border-radius: var(--app-radius-full);
+}
+
+.halo svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.title {
+  color: var(--app-fg);
+  font-size: var(--app-text-md);
+  font-weight: 600;
+}
+
+.description {
+  margin-top: 4px;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}

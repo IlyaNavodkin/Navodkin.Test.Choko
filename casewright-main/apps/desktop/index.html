@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Casewright</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Fonts are loaded via @import in src/styles/app.css (kept preconnects above). -->
+  </head>
+  <body>
+    <div id="root"></div>
+    <script>
+      // Safety net for the manifest's `window.show:false`: app boot (main.tsx) reveals
+      // the window after restoring its saved geometry. If boot never runs (a fatal load
+      // error, or Vite's error overlay in dev), show it anyway so we never strand an
+      // invisible window. A no-op once boot has already shown it.
+      if (window.nw) {
+        setTimeout(function () {
+          try {
+            window.nw.Window.get().show();
+          } catch (e) {
+            /* not in NW.js / window gone */
+          }
+        }, 3000);
+      }
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

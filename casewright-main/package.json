@@ -1,0 +1,25 @@
+{
+  "name": "casewright",
+  "version": "0.16.0",
+  "private": true,
+  "description": "A git-backed desktop application for writing and running test cases.",
+  "license": "MIT",
+  "author": "Jim Buck",
+  "packageManager": "pnpm@11.5.2",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=11"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:desktop": "turbo run dev --filter=@casewright/desktop",
+    "dev:web": "turbo run dev --filter=@casewright/web",
+    "build": "turbo run build",
+    "build:web": "turbo run build --filter=@casewright/web",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.16"
+  }
+}

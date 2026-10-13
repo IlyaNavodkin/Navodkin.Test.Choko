@@ -1,0 +1,600 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { REPO_URL, DOWNLOAD_URL, VERSION } from '../consts';
+
+const features = [
+  {
+    title: 'Cases are plain markdown',
+    body: 'Every test case is a Markdown file with YAML front-matter. Diff it, grep it, review it in a pull request. No proprietary database, no lock-in - just files you already know how to read.',
+    icon: 'repo',
+  },
+  {
+    title: 'Suites are just folders',
+    body: 'Organize work by dragging folders in the tree. The hierarchy is your filesystem - nothing to sync, nothing to reconcile. Rename a suite and every case comes with it.',
+    icon: 'layers',
+  },
+  {
+    title: 'Structured 3-way merge',
+    body: 'When two testers edit the same case, resolve it field-by-field - objective, steps, acceptance criteria - instead of untangling raw text conflicts. The merge view is the showpiece, not an afterthought.',
+    icon: 'merge',
+  },
+];
+
+const steps = [
+  {
+    n: '01',
+    title: 'Author',
+    body: 'A structured editor with a serif authoring surface: objective, systems in scope, numbered steps, and acceptance criteria. Tags and status as front-matter.',
+  },
+  {
+    n: '02',
+    title: 'Run',
+    body: 'A guided runner walks the tester through setup, steps, and acceptance as checklists. Record a result only once every item is checked.',
+  },
+  {
+    n: '03',
+    title: 'Sync',
+    body: 'Commit, push, and pull against any Git remote. Conflicts surface in the structured resolver - auto-merged elements reassure, real conflicts get a side-by-side diff.',
+  },
+];
+
+const results = [
+  { label: 'Pass', cls: 'res-pass', glyph: '✓' },
+  { label: 'Fail', cls: 'res-fail', glyph: '✕' },
+  { label: 'Blocked', cls: 'res-blocked', glyph: '▲' },
+  { label: 'Skipped', cls: 'res-skipped', glyph: '»' },
+  { label: 'Not run', cls: 'res-not_run', glyph: '·' },
+];
+---
+
+<Base>
+  <Header />
+
+  <main id="top">
+    <!-- ======================= hero ======================= -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow">Manual testing, version-controlled</p>
+          <h1>Write test cases<br />like an artisan.</h1>
+          <p class="lead">
+            Casewright is a git-backed desktop editor for manual test cases -
+            <strong>markdown on disk, Git as the data store.</strong> No spreadsheets, no
+            sprawling SaaS, no telemetry. Just your test suite, in your repo, where it belongs.
+          </p>
+          <div class="cta-row">
+            <a class="btn primary" href={DOWNLOAD_URL}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12" /><path d="m7 11 5 5 5-5" /><path d="M5 21h14" /></svg>
+              Download for desktop
+            </a>
+            <a class="btn" href={REPO_URL}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-4 1.5-4-2-6-2.5" /><path d="M15 22v-3.9a3.4 3.4 0 0 0-.9-2.6c3-.3 6.2-1.5 6.2-6.7a5.2 5.2 0 0 0-1.5-3.6 4.8 4.8 0 0 0-.1-3.6s-1.2-.4-3.9 1.5a13.4 13.4 0 0 0-7 0C4.1 1.7 2.9 2.1 2.9 2.1a4.8 4.8 0 0 0-.1 3.6A5.2 5.2 0 0 0 1.3 9.3c0 5.2 3.2 6.4 6.2 6.7a3.4 3.4 0 0 0-.9 2.6V22" /></svg>
+              View on GitHub
+            </a>
+          </div>
+          <p class="hero-meta"><span class="mono">v{VERSION}</span> · local-first · no telemetry · MIT licensed</p>
+        </div>
+
+        <!-- decorative app window mock -->
+        <div class="hero-art" aria-hidden="true">
+          <div class="appwin">
+            <div class="appwin-bar">
+              <span class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+              <span class="appwin-title"><b>Casewright</b> - payments</span>
+            </div>
+            <div class="appwin-body">
+              <aside class="appwin-side">
+                <div class="side-search">Search cases…</div>
+                <div class="tree">
+                  <div class="tnode folder">▾ Authentication</div>
+                  <div class="tnode case sel">Reset password <span class="did">PAY&#8209;0042</span></div>
+                  <div class="tnode case">Account locks <span class="did">PAY&#8209;0043</span></div>
+                  <div class="tnode folder">▾ Refunds</div>
+                  <div class="tnode case indent">Partial refund <span class="did">PAY&#8209;0051</span></div>
+                  <div class="tnode case indent">Refund to card <span class="did">PAY&#8209;0052</span></div>
+                </div>
+              </aside>
+              <div class="appwin-main">
+                <div class="ed-meta">
+                  <span class="status-pill status-active">Active</span>
+                  <span class="chip">#Auth</span>
+                  <span class="chip">#Smoke</span>
+                </div>
+                <div class="ed-label">Objective</div>
+                <p class="ed-obj">
+                  A user with a valid account can reset a forgotten password and sign in with the
+                  new credentials within a single session.
+                </p>
+                <div class="ed-label">Steps</div>
+                <ol class="ed-steps">
+                  <li>Open the sign-in page and choose <em>Forgot password</em>.</li>
+                  <li>Enter the registered email and submit.</li>
+                  <li>Follow the reset link from the inbox.</li>
+                </ol>
+                <div class="ed-results">
+                  <span class="res res-pass"><span class="dot"></span>Pass</span>
+                  <span class="res res-not_run"><span class="dot"></span>Not run</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= features ======================= -->
+    <section id="features" class="section">
+      <div class="wrap">
+        <p class="eyebrow">Why Casewright</p>
+        <h2 class="section-title">An engineering workbench for the people who test.</h2>
+        <div class="feature-grid">
+          {
+            features.map((f) => (
+              <article class="card">
+                <span class="card-icon" aria-hidden="true">
+                  {f.icon === 'repo' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                  )}
+                  {f.icon === 'layers' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></svg>
+                  )}
+                  {f.icon === 'merge' && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5" /><circle cx="6" cy="18" r="2.5" /><circle cx="18" cy="12" r="2.5" /><path d="M6 8.5v7" /><path d="M8.5 6H12a3.5 3.5 0 0 1 3.5 3.5" /></svg>
+                  )}
+                </span>
+                <h3>{f.title}</h3>
+                <p>{f.body}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= how it works ======================= -->
+    <section id="how" class="section how">
+      <div class="wrap">
+        <p class="eyebrow">The loop</p>
+        <h2 class="section-title">Author. Run. Sync. Repeat.</h2>
+        <div class="steps">
+          {
+            steps.map((s) => (
+              <article class="step">
+                <span class="step-n mono">{s.n}</span>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= status palette ======================= -->
+    <section class="section palette">
+      <div class="wrap palette-inner">
+        <div>
+          <p class="eyebrow">Honest signal</p>
+          <h2 class="section-title">Results speak in color - never <em>only</em> in color.</h2>
+          <p class="palette-copy">
+            The status palette is the loudest thing on screen, and every result pairs its color
+            with a glyph, so pass and fail read clearly for colorblind testers too.
+          </p>
+        </div>
+        <div class="swatches">
+          {
+            results.map((r) => (
+              <span class={`res ${r.cls}`}>
+                <span class="glyph mono">{r.glyph}</span>
+                {r.label}
+              </span>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================= closing CTA ======================= -->
+    <section class="section cta">
+      <div class="wrap cta-inner">
+        <h2 class="section-title">Your test suite belongs in your repo.</h2>
+        <p>Local-first, Git-native, and quiet by design. Bring your manual tests home.</p>
+        <div class="cta-row center">
+          <a class="btn primary" href={DOWNLOAD_URL}>Download Casewright</a>
+          <a class="btn" href={REPO_URL}>Read the source</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  /* ---------------- hero ---------------- */
+  .hero {
+    padding: clamp(48px, 8vw, 104px) 0 clamp(40px, 6vw, 80px);
+    background:
+      radial-gradient(120% 90% at 88% -10%, var(--accent-soft) 0%, transparent 46%),
+      linear-gradient(var(--bg), var(--panel));
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    gap: clamp(32px, 5vw, 72px);
+  }
+  .hero h1 {
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 600;
+    margin: 18px 0 0;
+  }
+  .lead {
+    margin-top: 22px;
+    font-size: clamp(16px, 1.6vw, 19px);
+    color: var(--ink-2);
+    max-width: 36ch;
+  }
+  .lead strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .cta-row.center {
+    justify-content: center;
+  }
+  .hero-meta {
+    margin-top: 20px;
+    font-size: 13.5px;
+    color: var(--ink-3);
+  }
+  .hero-meta .mono {
+    font-family: var(--font-mono);
+    color: var(--accent-ink);
+  }
+
+  /* ---------------- hero app-window mock ---------------- */
+  .hero-art {
+    perspective: 1600px;
+  }
+  .appwin {
+    border-radius: 11px;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--border-2);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 0.6) inset,
+      0 30px 60px oklch(0.3 0.02 70 / 0.26),
+      0 4px 12px oklch(0.3 0.02 70 / 0.18);
+    transform: rotateY(-7deg) rotateX(3deg);
+    transform-origin: center;
+  }
+  .appwin-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    padding: 0 13px;
+    background: linear-gradient(var(--panel-2), oklch(0.972 0.004 80));
+    border-bottom: 1px solid var(--border);
+  }
+  .traffic {
+    display: flex;
+    gap: 7px;
+  }
+  .traffic i {
+    width: 11px;
+    height: 11px;
+    border-radius: 99px;
+    display: block;
+  }
+  .traffic .r { background: oklch(0.68 0.17 25); }
+  .traffic .y { background: oklch(0.8 0.13 85); }
+  .traffic .g { background: oklch(0.72 0.14 145); }
+  .appwin-title {
+    margin: 0 auto;
+    font-size: 12px;
+    color: var(--ink-3);
+  }
+  .appwin-title b {
+    color: var(--ink-2);
+    font-weight: 600;
+  }
+  .appwin-body {
+    display: grid;
+    grid-template-columns: 184px 1fr;
+    min-height: 320px;
+  }
+  .appwin-side {
+    background: var(--panel-2);
+    border-right: 1px solid var(--border);
+    padding: 12px 10px;
+  }
+  .side-search {
+    font-size: 12px;
+    color: var(--ink-faint);
+    background: var(--sunken);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 6px 9px;
+    margin-bottom: 12px;
+  }
+  .tree {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .tnode {
+    font-size: 12.5px;
+    padding: 4px 8px;
+    border-radius: var(--r-sm);
+    color: var(--ink-2);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .tnode.folder {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .tnode.case {
+    color: var(--ink-2);
+  }
+  .tnode.indent {
+    margin-left: 14px;
+  }
+  .tnode.sel {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+  .tnode .did {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-faint);
+  }
+  .appwin-main {
+    padding: 16px 18px;
+    background: var(--panel);
+  }
+  .ed-meta {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 14px;
+  }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 1px 8px;
+    border-radius: 99px;
+  }
+  .status-active {
+    color: var(--pass);
+    background: var(--pass-soft);
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--accent-ink);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: var(--r-sm);
+    padding: 1px 6px;
+  }
+  .ed-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 14px 0 6px;
+  }
+  .ed-obj {
+    font-family: var(--font-read);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .ed-steps {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ed-results {
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  /* ---------------- result swatches (shared) ---------------- */
+  .res {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .res .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    background: currentColor;
+    flex: none;
+  }
+  .res-pass { color: var(--pass); background: var(--pass-soft); border-color: oklch(0.85 0.06 152); }
+  .res-fail { color: var(--fail); background: var(--fail-soft); border-color: oklch(0.85 0.07 27); }
+  .res-blocked { color: var(--blocked); background: var(--blocked-soft); border-color: oklch(0.85 0.1 58); }
+  .res-skipped { color: var(--skipped); background: var(--skipped-soft); border-color: oklch(0.87 0.006 75); }
+  .res-not_run { color: var(--ink-3); background: var(--notrun-soft); border-color: var(--border); }
+
+  /* ---------------- sections ---------------- */
+  .section {
+    padding: clamp(56px, 8vw, 96px) 0;
+  }
+  .section-title {
+    font-size: clamp(26px, 3.4vw, 38px);
+    font-weight: 600;
+    margin: 10px 0 0;
+    max-width: 22ch;
+  }
+  .section-title em {
+    font-family: var(--font-read);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 26px 24px;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .card-icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--r);
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+    margin-bottom: 16px;
+  }
+  .card-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .card h3 {
+    font-size: 18px;
+    font-weight: 600;
+  }
+  .card p {
+    margin-top: 9px;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  /* ---------------- how it works ---------------- */
+  .how {
+    background: var(--panel-2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 40px;
+  }
+  .step {
+    padding: 24px;
+    border-left: 2px solid var(--accent-line);
+  }
+  .step-n {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent-ink);
+  }
+  .step h3 {
+    font-size: 19px;
+    font-weight: 600;
+    margin-top: 8px;
+  }
+  .step p {
+    margin-top: 9px;
+    color: var(--ink-2);
+    font-size: 15px;
+  }
+
+  /* ---------------- palette ---------------- */
+  .palette-inner {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    align-items: center;
+    gap: 40px;
+  }
+  .palette-copy {
+    margin-top: 16px;
+    color: var(--ink-2);
+    max-width: 44ch;
+  }
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .swatches .res {
+    font-size: 14px;
+    padding: 7px 14px;
+  }
+  .swatches .glyph {
+    font-size: 13px;
+  }
+
+  /* ---------------- closing CTA ---------------- */
+  .cta {
+    text-align: center;
+  }
+  .cta-inner p {
+    margin: 14px auto 0;
+    color: var(--ink-2);
+    font-size: 17px;
+    max-width: 46ch;
+  }
+  .cta .section-title {
+    margin-inline: auto;
+  }
+  .cta .cta-row {
+    margin-top: 30px;
+  }
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width: 880px) {
+    .hero-grid,
+    .palette-inner {
+      grid-template-columns: 1fr;
+    }
+    .hero-art {
+      order: -1;
+      max-width: 460px;
+    }
+    .appwin {
+      transform: none;
+    }
+    .feature-grid,
+    .steps {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .lead {
+      max-width: none;
+    }
+  }
+</style>

@@ -1,0 +1,153 @@
+﻿.root {
+  display: inline-flex;
+  align-items: stretch;
+  min-width: 0;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.35rem 0.9rem rgba(0, 0, 0, 0.18);
+}
+
+.rootActive-accent {
+  border-color: color-mix(
+    in srgb,
+    var(--app-accent-bg, var(--lk-accent-bg, #894040)) 65%,
+    rgba(255, 255, 255, 0.15)
+  );
+}
+
+.rootActive-success {
+  border-color: color-mix(in srgb, var(--app-success) 42%, var(--app-border-strong));
+}
+
+.rootActive-danger {
+  border-color: color-mix(in srgb, var(--app-danger) 42%, var(--app-border-strong));
+}
+
+.section {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  min-height: 2.1rem;
+  padding: 0 0.55rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+.section:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.section:focus-visible {
+  position: relative;
+  z-index: 1;
+  outline: 2px solid var(--app-accent-bg, var(--lk-accent-bg, #894040));
+  outline-offset: -2px;
+}
+
+.section:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.left {
+  flex: 1 1 auto;
+}
+
+.right {
+  width: 2rem;
+  min-width: 2rem;
+  padding: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.single {
+  padding-inline: 0.65rem;
+}
+
+.sectionActive-accent {
+  color: #fff;
+  background: var(--app-accent-bg, var(--lk-accent-bg, #894040));
+}
+
+.sectionActive-accent:hover:not(:disabled) {
+  background: var(--app-accent-hover-bg, var(--lk-accent2, #3998fa));
+}
+
+.sectionActive-success {
+  color: var(--app-success);
+  background: color-mix(in srgb, var(--app-success) 14%, var(--app-bg2));
+}
+
+.sectionActive-success:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-success) 22%, var(--app-bg2));
+}
+
+.sectionActive-danger {
+  color: var(--app-danger);
+  background: color-mix(in srgb, var(--app-danger) 14%, var(--app-bg2));
+}
+
+.sectionActive-danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-danger) 22%, var(--app-bg2));
+}
+
+.sectionActive {
+  color: var(--app-success);
+  background: color-mix(in srgb, var(--app-success) 14%, var(--app-bg2));
+}
+
+.sectionActive:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--app-success) 22%, var(--app-bg2));
+}
+
+.size-control .section {
+  min-height: 2.875rem;
+}
+
+.size-control {
+  background: var(--app-bg2);
+  border: 0;
+  border-radius: var(--app-radius-md);
+  box-shadow: none;
+}
+
+.size-control .left {
+  flex: 0 0 2.875rem;
+  width: 2.875rem;
+  padding: 0;
+}
+
+.size-control .right {
+  width: 2.875rem;
+  min-width: 2.875rem;
+  border-left-color: var(--app-border);
+}
+
+.size-control.rootActive-success,
+.size-control.rootActive-danger,
+.size-control.rootActive-accent {
+  border: 0;
+}
+
+@media (max-width: 550px) {
+  .size-control .section {
+    min-height: 2.25rem;
+  }
+
+  .size-control .left {
+    flex: 0 0 2.25rem;
+    width: 2.25rem;
+  }
+
+  .size-control .right {
+    width: 2.25rem;
+    min-width: 2.25rem;
+  }
+}
+

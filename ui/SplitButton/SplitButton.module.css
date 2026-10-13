@@ -1,0 +1,120 @@
+.root {
+  display: inline-flex;
+  align-items: stretch;
+  box-sizing: border-box;
+  border-radius: var(--app-radius-sm);
+  overflow: hidden;
+}
+
+.disabled {
+  opacity: 0.5;
+}
+
+.action,
+.caret {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  font-family: var(--app-font-family);
+  font-size: var(--app-text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background var(--app-transition-fast);
+}
+
+.action {
+  gap: 6px;
+  padding: 0 var(--app-space-5);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.icon svg {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+/* rgba(255,255,255,0.18) expressed through the token palette. */
+.caret {
+  padding: 0 6px;
+  border-left: 1px solid color-mix(in srgb, var(--app-accent-fg) 18%, transparent);
+}
+
+.caretOpen {
+  background: color-mix(in srgb, var(--app-accent-fg) 12%, transparent);
+}
+
+.action:focus-visible,
+.caret:focus-visible {
+  outline: 2px solid var(--app-accent-fg);
+  outline-offset: -2px;
+}
+
+.action:disabled,
+.caret:disabled {
+  cursor: not-allowed;
+}
+
+.size-sm {
+  height: 28px;
+}
+
+.size-md {
+  height: 34px;
+}
+
+.size-md .action,
+.size-md .caret {
+  font-size: var(--app-text-md);
+}
+
+.primary {
+  color: var(--app-accent-fg);
+  background: var(--app-accent-bg);
+  border: 1px solid transparent;
+}
+
+.primary .action:hover:not(:disabled),
+.primary .caret:hover:not(:disabled) {
+  background: var(--app-accent-hover-bg);
+}
+
+.primary .caret:focus-visible,
+.primary .action:focus-visible {
+  outline-color: var(--app-accent-fg);
+}
+
+.secondary {
+  color: var(--app-fg2);
+  background: var(--app-surface-raised);
+  border: 1px solid var(--app-border);
+}
+
+.secondary .action:hover:not(:disabled),
+.secondary .caret:hover:not(:disabled) {
+  color: var(--app-fg);
+  background: var(--app-surface-hover);
+}
+
+.secondary .caret {
+  border-left-color: var(--app-border-strong);
+}
+
+.secondary .action:focus-visible,
+.secondary .caret:focus-visible {
+  outline-color: var(--app-accent-bg);
+}

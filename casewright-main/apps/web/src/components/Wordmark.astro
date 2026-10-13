@@ -1,0 +1,16 @@
+---
+// The Casewright wordmark - the shared brand mark (@casewright/brand) plus the name.
+// Using the real mark here keeps the site in lockstep with the desktop app icon.
+import logoMark from '@casewright/brand/logo-mark.svg?url';
+import { withBase } from '../consts';
+
+interface Props {
+  href?: string;
+}
+const { href = withBase() } = Astro.props;
+---
+
+<a class="wordmark" href={href} aria-label="Casewright home">
+  <img class="mark" src={logoMark} width="28" height="28" alt="" />
+  <span class="name">casewright</span>
+</a>

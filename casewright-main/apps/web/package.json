@@ -1,0 +1,24 @@
+{
+  "name": "@casewright/web",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Casewright marketing site — static, built with Astro, deployed to GitHub Pages.",
+  "homepage": "https://casewright.dev",
+  "license": "MIT",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "lint": "astro check"
+  },
+  "dependencies": {
+    "@casewright/brand": "workspace:*",
+    "astro": "^6.4.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "@types/node": "^22.10.0",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,135 @@
+.nav {
+  min-width: 0;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-1);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.separator {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--app-text-muted);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  min-width: 0;
+  padding: var(--app-space-1) var(--app-space-2);
+  color: var(--app-fg4);
+  background: transparent;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  font: inherit;
+  font-size: var(--app-text-sm);
+  line-height: var(--app-line-height);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+button.crumb {
+  cursor: pointer;
+  transition: color var(--app-transition-fast), background var(--app-transition-fast);
+}
+
+button.crumb:hover {
+  color: var(--app-fg);
+  background: var(--app-surface-hover);
+}
+
+button.crumb:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.current {
+  color: var(--app-fg);
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  display: block;
+}
+
+.ellipsisTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  color: var(--app-fg4);
+  background: transparent;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  cursor: pointer;
+}
+
+.ellipsisTrigger:hover {
+  color: var(--app-fg);
+  background: var(--app-surface-hover);
+}
+
+.ellipsisTrigger:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 1px;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  min-width: 10rem;
+  padding: var(--app-space-2);
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  padding: var(--app-space-2) var(--app-space-3);
+  color: var(--app-fg4);
+  background: transparent;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  font: inherit;
+  font-size: var(--app-text-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.menuItem:hover {
+  color: var(--app-fg);
+  background: var(--app-surface-hover);
+}
+
+.menuItem:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: -2px;
+}

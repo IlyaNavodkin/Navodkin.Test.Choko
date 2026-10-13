@@ -1,0 +1,88 @@
+﻿.input {
+  color: var(--app-fg, var(--lk-fg, var(--fg, #fff)));
+  font-family: var(
+    --app-font-family,
+    var(--lk-font-family, var(--font-family, system-ui, sans-serif))
+  );
+}
+
+.input:not([type='checkbox']):not([type='radio']) {
+  box-sizing: border-box;
+  /* an exact height, never min-height: a Select of the same size lines up to the pixel */
+  height: var(--app-control-h-md, 2.875rem);
+  padding: 0 var(--app-control-px-md, 1rem);
+  font-size: var(--app-font-size, 16px);
+  line-height: normal;
+  background-color: var(
+    --app-control-bg,
+    var(--lk-control-bg, var(--control-bg, var(--bg2, #1a1a1a)))
+  );
+  border: 1px solid var(--app-border, rgba(255, 255, 255, 0.1));
+  border-radius: var(--app-radius, var(--lk-border-radius, var(--border-radius, 0.5rem)));
+  transition:
+    background-color var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    box-shadow var(--app-transition-fast);
+}
+
+.input:not([type='checkbox']):not([type='radio']):hover:not(:disabled) {
+  background-color: var(--app-control-hover-bg, var(--app-bg3));
+  border-color: var(--app-border-strong, rgba(255, 255, 255, 0.15));
+}
+
+.input:not([type='checkbox']):not([type='radio']):disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input:not([type='checkbox']):not([type='radio']):focus-visible {
+  border-color: var(--app-accent-bg, var(--lk-accent-bg, var(--accent-bg, #894040)));
+  outline: 0;
+  box-shadow: inset 0 0 0 1px var(--app-accent-bg, var(--lk-accent-bg, var(--accent-bg, #894040)));
+}
+
+.control { position: relative; display: block; width: 100%; min-width: 0; }
+.leading { position: absolute; z-index: 1; top: 50%; left: 1rem; display: inline-flex; align-items: center; justify-content: center; color: var(--app-fg5); pointer-events: none; transform: translateY(-50%); }
+.leading svg { display: block; width: 1rem; height: 1rem; }
+.trailing {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--app-fg5);
+  transform: translateY(-50%);
+}
+.control .input.withLeading { width: 100%; padding-left: 2.75rem; }
+.control .input.withTrailing { width: 100%; padding-right: 2.75rem; }
+
+/* `size="xs"`: the 28px control dense toolbars use (mockups/files-section.html, search field). */
+.input.xs:not([type='checkbox']):not([type='radio']) {
+  height: var(--app-control-h-xs, 1.75rem);
+  padding: 0 var(--app-control-px-xs, 0.5rem);
+  font-size: var(--app-text-sm, 0.75rem);
+  border-radius: var(--app-radius-sm, 4px);
+}
+
+/* `size="sm"`: the 32px thin control — the height of `Select size="sm"`. */
+.input.sm:not([type='checkbox']):not([type='radio']) {
+  height: var(--app-control-h-sm, 2rem);
+  padding: 0 var(--app-control-px-sm, 0.75rem);
+  font-size: var(--app-text-sm, 0.75rem);
+}
+
+.control .input.xs.withLeading { padding-left: 1.75rem; }
+.control .input.xs.withTrailing { padding-right: 1.75rem; }
+.control.xs .leading { left: 0.5rem; }
+.control.xs .trailing { right: 0.5rem; }
+.control.xs .leading svg,
+.control.xs .trailing svg { width: 0.875rem; height: 0.875rem; }
+
+.control .input.sm.withLeading { padding-left: 2.25rem; }
+.control .input.sm.withTrailing { padding-right: 2.25rem; }
+.control.sm .leading { left: 0.75rem; }
+.control.sm .trailing { right: 0.5rem; }
+.control.sm .leading svg,
+.control.sm .trailing svg { width: 0.875rem; height: 0.875rem; }

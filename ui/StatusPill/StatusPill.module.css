@@ -1,0 +1,101 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-2);
+  border: 1px solid transparent;
+  border-radius: var(--app-radius-full);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-2xs);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.size-sm {
+  min-height: 1rem;
+  padding: 0 var(--app-space-2);
+}
+
+.size-md {
+  min-height: 1.25rem;
+  padding: 0 var(--app-space-3);
+}
+
+.label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  display: block;
+}
+
+.dot {
+  flex: none;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: var(--app-radius-full);
+  background: currentColor;
+  animation: status-pill-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes status-pill-pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.7);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    animation: none;
+  }
+}
+
+.neutral {
+  color: var(--app-fg4);
+  background: color-mix(in srgb, var(--app-fg4) 12%, transparent);
+  border-color: var(--app-border);
+}
+
+.info {
+  color: var(--app-accent-active-bg);
+  background: color-mix(in srgb, var(--app-accent-bg) 16%, transparent);
+  border-color: color-mix(in srgb, var(--app-accent-bg) 42%, transparent);
+}
+
+.success {
+  color: var(--app-success-soft);
+  background: color-mix(in srgb, var(--app-success) 16%, transparent);
+  border-color: color-mix(in srgb, var(--app-success) 42%, transparent);
+}
+
+.warning {
+  color: var(--app-warning-soft);
+  background: color-mix(in srgb, var(--app-warning) 16%, transparent);
+  border-color: color-mix(in srgb, var(--app-warning) 42%, transparent);
+}
+
+.danger {
+  color: var(--app-danger-soft);
+  background: color-mix(in srgb, var(--app-danger) 16%, transparent);
+  border-color: color-mix(in srgb, var(--app-danger) 42%, transparent);
+}
+
+.brand {
+  color: var(--app-accent-active-bg);
+  background: var(--app-accent-soft);
+  border-color: var(--app-accent-glow);
+}

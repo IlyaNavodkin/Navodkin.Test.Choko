@@ -1,0 +1,74 @@
+name: Release
+
+# Fully automatic release on every push to main:
+#
+#   1. semantic-release reads the Conventional Commits since the last tag and
+#      decides the next version — fix → patch, feat → minor, a `!` / BREAKING
+#      CHANGE → major. You never pick the number. It updates CHANGELOG.md and both
+#      package.json versions, commits that, and pushes the v<version> tag.
+#      (It does NOT create the GitHub Release — that happens in step 2, with the
+#      installer attached, so the Release never appears without its download.)
+#
+#   2. If — and only if — a release was cut, the reusable build workflow builds the
+#      Windows app + installer and publishes the GitHub Release with the assets and
+#      the changelog notes. The in-app auto-updater then picks it up.
+#
+# A push with no releasable commits (only chore/docs/refactor/style/test/ci) does
+# nothing. The release commit is pushed with GITHUB_TOKEN and carries [skip ci], so
+# it never re-triggers this workflow.
+#
+# Prerequisite: main must allow the GitHub Actions bot to push (semantic-release
+# pushes the bump commit + tag). If main is a protected branch, add a ruleset
+# bypass for the actions bot, or this step will fail.
+
+on:
+  push:
+    branches: [main]
+
+# Let semantic-release push the bump commit + tag.
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      published: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      tag: ${{ steps.semantic.outputs.new_release_git_tag }}
+      notes: ${{ steps.semantic.outputs.new_release_notes }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # semantic-release needs full history + tags to find the last release
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+
+      - name: semantic-release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/exec@6
+            @semantic-release/git@10
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Build + publish the desktop release only when semantic-release cut a new version.
+  build:
+    needs: release
+    if: ${{ needs.release.outputs.published == 'true' }}
+    permissions:
+      contents: write
+    uses: ./.github/workflows/release-desktop.yml
+    with:
+      version: ${{ needs.release.outputs.version }}
+      ref: ${{ needs.release.outputs.tag }}
+      notes: ${{ needs.release.outputs.notes }}

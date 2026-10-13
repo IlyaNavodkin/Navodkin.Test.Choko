@@ -1,0 +1,137 @@
+.root {
+  min-width: 0;
+}
+
+.waveformFrame {
+  position: relative;
+}
+
+.waveform {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  height: 4.5rem;
+  overflow: hidden;
+}
+
+.waveform > span {
+  flex: 1;
+  min-width: 2px;
+  background: var(--app-fg4);
+  border-radius: var(--app-radius-full);
+  opacity: 0.25;
+  transition: height 80ms linear, background var(--app-transition-fast), opacity var(--app-transition-fast);
+}
+
+.active > span,
+.waveform > .played {
+  background: var(--app-accent-bg);
+  opacity: 0.92;
+}
+
+.interactive .waveformFrame {
+  padding-inline: var(--app-space-1);
+}
+
+.scrubber {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.scrubber:disabled {
+  cursor: not-allowed;
+}
+
+.playbackMarker,
+.hoverMarker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: var(--waveform-marker-position);
+  width: 2px;
+  pointer-events: none;
+  border-radius: var(--app-radius-full);
+}
+
+.playbackMarker {
+  z-index: 1;
+  background: var(--app-accent-bg);
+  box-shadow: 0 0 4px color-mix(in srgb, var(--app-accent-bg) 50%, transparent);
+}
+
+.hoverMarker {
+  z-index: 2;
+  width: 1px;
+  background: var(--app-fg);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--app-bg) 55%, transparent);
+}
+
+.playbackMarker span,
+.hoverMarker span {
+  position: absolute;
+  top: 4px;
+  bottom: auto;
+  left: 50%;
+  padding: 2px 5px;
+  border-radius: var(--app-radius-sm);
+  color: var(--app-bg);
+  background: var(--app-accent-bg);
+  font-family: var(--app-font-mono);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.hoverMarker span {
+  color: var(--app-bg);
+  background: var(--app-fg);
+}
+
+.markerStart span {
+  left: 0;
+  transform: translateX(0);
+}
+
+.markerEnd span {
+  right: 0;
+  left: auto;
+  transform: translateX(0);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--app-space-4);
+  align-items: center;
+  margin-top: var(--app-space-4);
+}
+
+.timeGroup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  margin-left: auto;
+}
+
+.time,
+.timeMuted {
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.time {
+  color: var(--app-fg1);
+}
+
+.timeMuted {
+  color: var(--app-fg4);
+}

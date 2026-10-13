@@ -1,0 +1,576 @@
+.main {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 100%;
+  overflow: auto;
+  padding: 1.5rem 1rem;
+  color: var(--app-fg);
+  background: var(--app-bg);
+  isolation: isolate;
+}
+
+.mainChrome {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  place-items: stretch;
+  padding: 0;
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.width-sm {
+  max-width: 24rem;
+}
+
+.width-md {
+  max-width: 48rem;
+}
+
+.width-lg {
+  max-width: 64rem;
+}
+
+.chrome {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 100%;
+  width: 100%;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  border-bottom: 1px solid var(--app-border);
+  background: var(--app-bg2);
+}
+
+.topbarCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.topbarActions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chromeBody {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1rem;
+  width: min(64rem, 100%);
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 2rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brandLg {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.brandMark {
+  display: grid;
+  flex: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border-radius: var(--app-radius);
+  color: var(--app-accent-fg);
+  background: var(--app-accent-bg);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-sm);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brandLg .brandMark {
+  width: 6rem;
+  height: 6rem;
+  font-size: 1.5rem;
+  border-radius: var(--app-radius-lg, 12px);
+}
+
+.brandLogo {
+  display: block;
+  flex: none;
+  height: 2.75rem;
+  width: auto;
+  max-width: 14rem;
+  object-fit: contain;
+}
+
+.brandLg .brandLogo {
+  height: 6rem;
+  width: auto;
+  max-width: 12rem;
+}
+
+.brandCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.brandLg .brandCopy {
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--app-fg4);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-xs);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.title {
+  margin: 0;
+  color: var(--app-fg);
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.brandLg .title {
+  font-size: 1.75rem;
+  letter-spacing: -0.02em;
+}
+
+.brandDescription {
+  margin: 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-md, 0.875rem);
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.brandLg .brandDescription {
+  max-width: 22rem;
+  text-align: center;
+}
+
+.description {
+  margin: 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-md);
+  line-height: 1.45;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.headerCopy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.headerActions {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.meta {
+  color: var(--app-fg4);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-xs);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.link {
+  color: var(--app-fg3);
+  font-size: var(--app-text-sm);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.link:hover {
+  color: var(--app-fg);
+  border-bottom-color: var(--app-accent-bg);
+}
+
+.textButton {
+  padding: 0;
+  border: 0;
+  color: var(--app-fg4);
+  background: transparent;
+  font: inherit;
+  font-size: var(--app-text-sm);
+  text-align: center;
+  cursor: pointer;
+  transition: color var(--app-transition-fast);
+}
+
+.textButton:hover {
+  color: var(--app-accent-bg);
+}
+
+.segmented {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  gap: 0.125rem;
+  padding: 0.125rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-bg2);
+}
+
+.segment {
+  flex: none;
+  min-height: 1.875rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: var(--app-radius-sm);
+  color: var(--app-fg4);
+  background: transparent;
+  font: inherit;
+  font-size: var(--app-text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--app-transition-fast),
+    background var(--app-transition-fast);
+}
+
+.segment:hover {
+  color: var(--app-fg);
+}
+
+.segmentActive {
+  color: var(--app-fg);
+  background: color-mix(in srgb, var(--app-accent-bg) 18%, var(--app-bg3));
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.toolbarCopy h2 {
+  margin: 0;
+  color: var(--app-fg);
+  font-size: var(--app-text-md);
+  font-weight: 600;
+}
+
+.toolbarCopy p {
+  margin: 0.25rem 0 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: var(--app-bg2);
+}
+
+.scrollList {
+  display: grid;
+  gap: 0.375rem;
+  max-height: 16.5rem;
+  overflow: auto;
+  padding-right: 0.125rem;
+}
+
+.list {
+  display: grid;
+  gap: 0.375rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  background: transparent;
+  transition:
+    border-color var(--app-transition-fast),
+    background var(--app-transition-fast);
+}
+
+.row:hover {
+  border-color: var(--app-border-strong);
+  background: color-mix(in srgb, var(--app-bg3) 55%, transparent);
+}
+
+.rowBody {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.rowTitle {
+  margin: 0;
+  color: var(--app-fg);
+  font-size: var(--app-text-md);
+  font-weight: 600;
+}
+
+.rowSubtitle {
+  margin: 0.2rem 0 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+  line-height: 1.35;
+}
+
+.rowActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.joinRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+.joinRow > :last-child {
+  min-width: 7.5rem;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.userChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-full);
+  background: var(--app-bg2);
+}
+
+.userChipButton {
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.userChipButton:hover {
+  border-color: color-mix(in srgb, var(--app-accent) 35%, var(--app-border));
+  background: color-mix(in srgb, var(--app-accent-bg) 18%, var(--app-bg2));
+}
+
+.userChipButton:focus-visible {
+  outline: 2px solid var(--app-accent);
+  outline-offset: 2px;
+}
+
+.userAvatar {
+  display: grid;
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--app-fg);
+  background: var(--app-bg4);
+  font-family: var(--app-font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.muted {
+  margin: 0;
+  color: var(--app-fg4);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-sm);
+}
+
+.form {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form label {
+  margin-top: 0.375rem;
+  color: var(--app-fg3);
+  font-size: var(--app-text-sm);
+}
+
+.form > :global(button[type='submit']) {
+  width: 100%;
+  margin-top: 0.375rem;
+}
+
+.help {
+  margin: 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--app-border);
+}
+
+.ssoLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.875rem;
+  padding: 0 1rem;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius);
+  color: var(--app-fg);
+  background: var(--app-bg2);
+  font-size: var(--app-text-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background var(--app-transition-fast),
+    border-color var(--app-transition-fast);
+}
+
+.ssoLink:hover {
+  border-color: var(--app-border-strong);
+  background: var(--app-bg3);
+}
+
+.searchField {
+  max-width: 22rem;
+}
+
+@media (max-width: 650px) {
+  .main {
+    padding: 1rem 0.75rem;
+  }
+
+  .chromeBody {
+    padding: 1rem 0.75rem 1.5rem;
+  }
+
+  .topbar,
+  .header,
+  .toolbar,
+  .footer,
+  .row,
+  .rowBody,
+  .joinRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .joinRow {
+    grid-template-columns: 1fr;
+  }
+
+  .joinRow > :last-child {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .headerActions,
+  .topbarActions,
+  .rowActions {
+    width: 100%;
+  }
+
+  .footer .headerActions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .footer .headerActions > * {
+    width: 100%;
+  }
+
+  .meta {
+    white-space: normal;
+  }
+}

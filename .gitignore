@@ -1,0 +1,21 @@
+node_modules/
+.pnpm-store/
+.cache/
+dist/
+out/
+release/
+coverage/
+*.tsbuildinfo
+*.log
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+.DS_Store
+Thumbs.db
+.playwright-mcp/
+# Skill is installed under .agents/skills with project adaptations.
+/react-ts-frontend-patterns/

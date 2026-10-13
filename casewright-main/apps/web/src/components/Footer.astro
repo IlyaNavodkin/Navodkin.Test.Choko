@@ -1,0 +1,44 @@
+---
+import Wordmark from './Wordmark.astro';
+import { REPO_URL, DOWNLOAD_URL, LICENSE_URL, withBase } from '../consts';
+---
+
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <Wordmark />
+    <p class="footer-tag">A bespoke editor for manual test cases.</p>
+    <nav class="footer-links" aria-label="Footer">
+      <a href={withBase('docs')}>Docs</a>
+      <a href={REPO_URL}>GitHub</a>
+      <a href={DOWNLOAD_URL}>Download</a>
+      <a href={LICENSE_URL}>MIT License</a>
+    </nav>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--panel);
+    padding: 36px 0;
+  }
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .footer-tag {
+    color: var(--ink-3);
+    font-size: 14px;
+  }
+  .footer-links {
+    margin-left: auto;
+    display: flex;
+    gap: 20px;
+  }
+  .footer-links a {
+    color: var(--ink-2);
+    font-size: 14px;
+  }
+</style>

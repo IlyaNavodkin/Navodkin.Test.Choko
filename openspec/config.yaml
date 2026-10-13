@@ -1,0 +1,55 @@
+schema: spec-driven
+
+context: |
+  Language: Russian
+  All artifacts must be written in Russian.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
+  Testoritto is a new Git-backed desktop application for manual test cases.
+  Confirmed: React, Windows/macOS, Git-based collaboration, compatibility with Casewright.
+  Preparation only; application implementation has not started.
+  Proposed stack: Electron, React 19, TypeScript strict, Vite/electron-vite, pnpm,
+  simple-git with system Git, Zod, TanStack Query, Zustand, typed i18n.
+  UI Kit: @codaa/ui in ui/, CSS Modules, --app-* tokens from Citadelic.
+  casewright-main/ is an unchanged source snapshot; code/tests outrank its stale README.
+  Current runs are Markdown folders with _run.md and per-case sidecars, not CSV.
+  Keep .casewright/config.yaml, declared workspace paths, case Markdown, .order and folder notes.
+  No implicit migration on open; preserve unknown content; no automatic commit/push.
+  Main owns fs/Git; sandboxed renderer uses validated typed preload IPC.
+  No Node APIs or credentials in renderer; no inherited upstream update endpoints.
+  useCases folders and UseXxxArgs/UseXxxResult hooks follow the provided frontend skill.
+  Hub HTTP/admin/auth examples are adapted to repository IPC rather than copied literally.
+  Product scope and unresolved questions are in docs/PRD.md and docs/DISCUSSION.md.
+
+rules:
+  proposal:
+    - Distinguish confirmed requirements, proposed decisions and unresolved questions.
+  design:
+    - Explain Git collaboration, compatibility, IPC boundaries and per-OS packaging.
+    - Cite inspected source files and primary documentation for technical choices.
+  specs:
+    - Every requirement SHALL have observable scenarios including failure paths.
+  tasks:
+    - Use numbered checkbox tasks ordered by dependencies with verification outcomes.
+    - Keep implementation tasks unchecked until actually verified.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always state what is out of scope
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing

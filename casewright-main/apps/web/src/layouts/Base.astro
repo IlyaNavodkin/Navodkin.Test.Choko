@@ -1,0 +1,44 @@
+---
+import '@casewright/brand/tokens.css';
+import '../styles/global.css';
+// The favicon is the shared brand mark, so the site and the desktop app icon never diverge.
+import favicon from '@casewright/brand/logo-mark.svg?url';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Casewright - a bespoke editor for manual test cases',
+  description = 'Casewright is a git-backed desktop app for writing and running manual test cases. Markdown on disk, suites as folders, and a structured 3-way merge. Local-first, no telemetry.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {Astro.site && <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

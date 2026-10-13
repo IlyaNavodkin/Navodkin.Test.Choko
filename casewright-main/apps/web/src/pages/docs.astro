@@ -1,0 +1,541 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { DOWNLOAD_URL } from '../consts';
+
+const toc = [
+  { id: 'open', label: 'Open a repository' },
+  { id: 'workbench', label: 'The workbench' },
+  { id: 'author', label: 'Author a case' },
+  { id: 'organize', label: 'Organize suites' },
+  { id: 'run', label: 'Run tests' },
+  { id: 'sync', label: 'Sync with Git' },
+  { id: 'menus', label: 'Menu reference' },
+];
+
+const sections = [
+  { name: 'Objective', body: 'A one- or two-sentence statement of what the case verifies.' },
+  { name: 'Systems in Scope', body: 'The systems or components this case touches.' },
+  { name: 'Setup', body: 'Named preconditions, each with a short markdown body.' },
+  { name: 'Steps', body: 'Ordered, optionally nested actions for the tester to perform.' },
+  { name: 'Acceptance Criteria', body: 'The observable outcomes that decide pass or fail.' },
+];
+
+const statuses = [
+  { label: 'Draft', cls: 'st-draft', body: 'A work in progress, not yet ready to run.' },
+  { label: 'Active', cls: 'st-active', body: 'Ready and in rotation.' },
+  { label: 'Deprecated', cls: 'st-deprecated', body: 'Retired; kept for history.' },
+];
+
+const results = [
+  { label: 'Pass', cls: 'res-pass', glyph: '✓' },
+  { label: 'Fail', cls: 'res-fail', glyph: '✕' },
+  { label: 'Blocked', cls: 'res-blocked', glyph: '▲' },
+  { label: 'Skipped', cls: 'res-skipped', glyph: '»' },
+  { label: 'Not run', cls: 'res-not_run', glyph: '·' },
+];
+
+const checks = [
+  { mark: '[ ]', label: 'Unchecked', body: 'Not yet evaluated.' },
+  { mark: '[x]', label: 'Pass', body: 'The item behaved as expected.' },
+  { mark: '[-]', label: 'Fail', body: 'The item failed - add a note describing what happened.' },
+];
+
+const variables = [
+  { token: '{{today}}', body: 'The run’s test date, formatted as ISO YYYY-MM-DD.' },
+  { token: '{{today+7}}', body: 'Seven days after - a bare number means days.' },
+  { token: '{{today-30}}', body: 'Thirty days before the test date.' },
+  { token: '{{today+2w}}', body: 'Two weeks after (units: d, w, m, y).' },
+  { token: '{{today+1m}}', body: 'One month after, clamped to the month’s last day.' },
+  { token: '{{{today}}}', body: 'Escaped - renders the literal {{today}}, never resolved.' },
+];
+
+const menus = [
+  { name: 'File', items: 'Add / Edit / Remove Workspace · Repositories · Exit' },
+  { name: 'Edit', items: 'New Case · New Suite' },
+  { name: 'View', items: 'Cases · Runs · Reload · Toggle Developer Tools' },
+  { name: 'Git', items: 'Pull · Push · Commit…' },
+  { name: 'Help', items: 'About Casewright · Documentation' },
+];
+---
+
+<Base
+  title="Documentation - Casewright"
+  description="Basic usage for Casewright: open a repository, author cases, organize suites, run tests, and sync with Git."
+>
+  <Header />
+
+  <main class="doc">
+    <section class="doc-hero">
+      <div class="wrap">
+        <p class="eyebrow">Documentation</p>
+        <h1>Using Casewright</h1>
+        <p class="lead">
+          Casewright is a git-backed desktop editor for manual test cases - cases are Markdown
+          files, suites are folders, and runs are plain files in your repository. This guide walks
+          the everyday loop: open a repo, author cases, run them, and sync.
+        </p>
+      </div>
+    </section>
+
+    <div class="wrap doc-layout">
+      <!-- table of contents -->
+      <aside class="doc-toc" aria-label="On this page">
+        <p class="toc-label">On this page</p>
+        <nav>
+          {toc.map((t) => <a href={`#${t.id}`}>{t.label}</a>)}
+        </nav>
+      </aside>
+
+      <article class="doc-content">
+        <!-- ===== open a repository ===== -->
+        <section id="open">
+          <h2>Open a repository</h2>
+          <p>
+            Casewright uses a Git repository as its data store - there's no separate database to
+            set up. On the launcher, pick a <strong>recent repository</strong> or choose a folder to
+            open.
+          </p>
+          <p>
+            A repository can hold one or more <strong>workspaces</strong>. Each workspace owns a set
+            of suites and a display-ID prefix, so cases get stable, human-readable IDs like
+            <span class="mono">PAY&#8209;0042</span>. Manage workspaces from the <strong>File</strong>
+            menu.
+          </p>
+        </section>
+
+        <!-- ===== the workbench ===== -->
+        <section id="workbench">
+          <h2>The workbench</h2>
+          <p>The main window has three parts:</p>
+          <ul class="doc-list">
+            <li><strong>Title-bar menus</strong> - File, Edit, View, Git, and Help (see the reference below).</li>
+            <li>
+              <strong>The sidebar</strong> - a tree of suites (folders) and cases. Drag the right
+              edge to resize it; double-click the edge to reset.
+            </li>
+            <li>
+              <strong>The main panel</strong> - the case editor, or the runs view, depending on what
+              you select. Switch between them from the <strong>View</strong> menu.
+            </li>
+          </ul>
+        </section>
+
+        <!-- ===== author a case ===== -->
+        <section id="author">
+          <h2>Author a case</h2>
+          <p>
+            Every case is a single Markdown file with YAML front-matter (title, display ID, status,
+            tags) and five reserved <span class="mono">##</span> sections:
+          </p>
+          <dl class="doc-defs">
+            {sections.map((s) => (
+              <div class="def">
+                <dt>{s.name}</dt>
+                <dd>{s.body}</dd>
+              </div>
+            ))}
+          </dl>
+          <p>
+            The editor round-trips cleanly to those five sections with a single trailing newline,
+            so diffs stay minimal and reviewable. Each case carries a <strong>status</strong>:
+          </p>
+          <div class="legend">
+            {statuses.map((s) => (
+              <span class={`pill ${s.cls}`}>{s.label}</span>
+            ))}
+          </div>
+          <p class="muted">
+            Draft is amber, Active reads green, and Deprecated is muted - the same colors the editor
+            uses.
+          </p>
+
+          <h3>Date variables</h3>
+          <p>
+            Any case text can use the <span class="mono">{'{{today}}'}</span> variable, which resolves
+            to a real date <em>when the case is run</em> - so a case stays accurate without edits. Date
+            math is supported:
+          </p>
+          <dl class="doc-defs">
+            {variables.map((v) => (
+              <div class="def">
+                <dt class="mono">{v.token}</dt>
+                <dd>{v.body}</dd>
+              </div>
+            ))}
+          </dl>
+          <p>
+            Tokens are stored verbatim on disk and resolve in the guided runner, the generated run
+            summary, and the defect report. Each run has a <strong>test date</strong> (defaulting to
+            the day it was created) that the tester can change - per run, and per case - so you can
+            exercise date-sensitive behavior without touching the system clock. The editor’s
+            <strong>Resolve variables</strong> toggle previews resolution against any date.
+          </p>
+        </section>
+
+        <!-- ===== organize suites ===== -->
+        <section id="organize">
+          <h2>Organize suites</h2>
+          <p>
+            Suites are just folders, so the hierarchy <em>is</em> your filesystem. Drag cases and
+            suites in the tree to reorganize - rename a suite and every case moves with it.
+          </p>
+          <p>
+            Create a <strong>New Case</strong> or <strong>New Suite</strong> from the
+            <strong>Edit</strong> menu (or the tree's right-click menu). New cases land in the
+            selected suite.
+          </p>
+        </section>
+
+        <!-- ===== run tests ===== -->
+        <section id="run">
+          <h2>Run tests</h2>
+          <p>
+            Open the runs view from <strong>View → Runs</strong> and choose <strong>New run</strong>,
+            then select the cases to include. A run is a folder under
+            <span class="mono">.casewright/runs</span> - a snapshot you execute and commit alongside
+            your cases.
+          </p>
+          <p>
+            In the run grid, record a <strong>result</strong> for each case and walk its setup,
+            steps, and acceptance items with tri-state checks:
+          </p>
+          <div class="legend">
+            {results.map((r) => (
+              <span class={`res ${r.cls}`}>
+                <span class="glyph mono">{r.glyph}</span>
+                {r.label}
+              </span>
+            ))}
+          </div>
+          <div class="checks">
+            {checks.map((c) => (
+              <div class="check">
+                <span class="mono mark">{c.mark}</span>
+                <div>
+                  <strong>{c.label}</strong>
+                  <p class="muted">{c.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p>
+            A generated <strong>Summary</strong> surfaces the cases that need attention with their
+            failed steps and notes. Capture sign-off with <strong>Tester</strong> and
+            <strong>Reviewer</strong> approvals, and keep a written run summary and notes in the
+            run's details panel. Closing a run freezes its snapshot.
+          </p>
+        </section>
+
+        <!-- ===== sync with git ===== -->
+        <section id="sync">
+          <h2>Sync with Git</h2>
+          <p>
+            The <strong>Git</strong> menu drives the whole loop - <strong>Commit…</strong>,
+            <strong>Pull</strong>, and <strong>Push</strong>. The status indicator shows your branch
+            and how far ahead or behind you are, and the commit dialog lists exactly which cases and
+            runs changed.
+          </p>
+          <p>
+            Because everything is plain Markdown and CSV on disk, you can diff it, grep it, and
+            review it in a pull request - no proprietary format, no lock-in.
+          </p>
+        </section>
+
+        <!-- ===== menu reference ===== -->
+        <section id="menus">
+          <h2>Menu reference</h2>
+          <dl class="doc-defs menus">
+            {menus.map((m) => (
+              <div class="def">
+                <dt>{m.name}</dt>
+                <dd>{m.items}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <div class="doc-cta">
+          <h2>Ready to try it?</h2>
+          <p class="muted">Download the desktop app and point it at any Git repository.</p>
+          <a class="btn primary" href={DOWNLOAD_URL}>Download Casewright</a>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <Footer />
+</Base>
+
+<style>
+  /* ---------------- doc hero ---------------- */
+  .doc-hero {
+    padding: clamp(40px, 6vw, 72px) 0 clamp(20px, 3vw, 32px);
+    background:
+      radial-gradient(120% 90% at 92% -20%, var(--accent-soft) 0%, transparent 50%),
+      linear-gradient(var(--bg), var(--panel));
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-hero h1 {
+    font-size: clamp(34px, 5vw, 52px);
+    font-weight: 600;
+    margin: 14px 0 0;
+  }
+  .doc-hero .lead {
+    margin-top: 18px;
+    font-size: clamp(16px, 1.5vw, 18px);
+    color: var(--ink-2);
+    max-width: 60ch;
+  }
+  .doc-hero .lead strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ---------------- layout ---------------- */
+  .doc-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: clamp(28px, 5vw, 64px);
+    padding-top: clamp(36px, 5vw, 56px);
+    padding-bottom: clamp(56px, 8vw, 96px);
+    align-items: start;
+  }
+  .doc-toc {
+    position: sticky;
+    top: 88px;
+  }
+  .toc-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 12px;
+  }
+  .doc-toc nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-left: 2px solid var(--border);
+  }
+  .doc-toc a {
+    color: var(--ink-2);
+    font-size: 14px;
+    padding: 5px 0 5px 14px;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+  }
+  .doc-toc a:hover {
+    color: var(--accent-ink);
+    border-left-color: var(--accent-line);
+    text-decoration: none;
+  }
+
+  /* ---------------- content ---------------- */
+  .doc-content {
+    min-width: 0;
+    max-width: 72ch;
+  }
+  .doc-content section {
+    scroll-margin-top: 84px;
+    padding-bottom: 40px;
+    margin-bottom: 40px;
+    border-bottom: 1px solid var(--border);
+  }
+  .doc-content h2 {
+    font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600;
+    margin: 0 0 14px;
+  }
+  .doc-content p {
+    color: var(--ink-2);
+    font-size: 16px;
+    margin-top: 14px;
+  }
+  .doc-content p:first-of-type {
+    margin-top: 0;
+  }
+  .doc-content strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .doc-content em {
+    font-family: var(--font-read);
+    font-style: italic;
+  }
+  .muted {
+    color: var(--ink-3) !important;
+    font-size: 14.5px !important;
+  }
+  .mono {
+    font-family: var(--font-mono);
+  }
+
+  .doc-list {
+    margin: 16px 0 0;
+    padding-left: 20px;
+    color: var(--ink-2);
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ---------------- definition lists ---------------- */
+  .doc-defs {
+    margin: 18px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    overflow: hidden;
+  }
+  .doc-defs .def {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 16px;
+    padding: 13px 16px;
+    background: var(--panel);
+  }
+  .doc-defs dt {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 15px;
+  }
+  .doc-defs.menus dt {
+    font-family: var(--font-mono);
+    font-size: 13.5px;
+    color: var(--accent-ink);
+  }
+  .doc-defs dd {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 14.5px;
+  }
+
+  /* ---------------- legends ---------------- */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .pill {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 3px 11px;
+    border-radius: 99px;
+    border: 1px solid transparent;
+  }
+  .st-active {
+    color: var(--pass);
+    background: var(--pass-soft);
+    border-color: oklch(0.85 0.06 152);
+  }
+  .st-draft {
+    color: var(--blocked);
+    background: var(--blocked-soft);
+    border-color: oklch(0.85 0.1 58);
+  }
+  .st-deprecated {
+    color: var(--ink-3);
+    background: var(--notrun-soft);
+    border-color: var(--border);
+  }
+
+  .res {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+  .res-pass { color: var(--pass); background: var(--pass-soft); border-color: oklch(0.85 0.06 152); }
+  .res-fail { color: var(--fail); background: var(--fail-soft); border-color: oklch(0.85 0.07 27); }
+  .res-blocked { color: var(--blocked); background: var(--blocked-soft); border-color: oklch(0.85 0.1 58); }
+  .res-skipped { color: var(--skipped); background: var(--skipped-soft); border-color: oklch(0.87 0.006 75); }
+  .res-not_run { color: var(--ink-3); background: var(--notrun-soft); border-color: var(--border); }
+
+  /* ---------------- check states ---------------- */
+  .checks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+  }
+  .check {
+    display: flex;
+    gap: 11px;
+    padding: 14px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+  }
+  .check .mark {
+    font-size: 14px;
+    color: var(--accent-ink);
+    font-weight: 600;
+    flex: none;
+    padding-top: 1px;
+  }
+  .check strong {
+    font-size: 14.5px;
+  }
+  .check p {
+    margin-top: 3px !important;
+  }
+
+  /* ---------------- closing cta ---------------- */
+  .doc-cta {
+    text-align: center;
+    padding: 8px 0 0;
+  }
+  .doc-cta h2 {
+    font-size: clamp(22px, 2.6vw, 28px);
+    font-weight: 600;
+  }
+  .doc-cta .btn {
+    margin-top: 18px;
+  }
+
+  /* ---------------- responsive ---------------- */
+  @media (max-width: 820px) {
+    .doc-layout {
+      grid-template-columns: 1fr;
+    }
+    .doc-toc {
+      position: static;
+      top: auto;
+    }
+    .doc-toc nav {
+      flex-direction: row;
+      flex-wrap: wrap;
+      border-left: 0;
+      gap: 4px 16px;
+    }
+    .doc-toc a {
+      padding: 2px 0;
+      margin-left: 0;
+      border-left: 0;
+    }
+    .checks {
+      grid-template-columns: 1fr;
+    }
+    .doc-defs .def {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+  }
+</style>

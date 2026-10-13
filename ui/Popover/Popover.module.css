@@ -1,0 +1,57 @@
+.trigger {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+}
+
+.content {
+  position: fixed;
+  z-index: var(--app-z-popover, var(--app-popover-z-index, 1000));
+  max-width: calc(100vw - 1rem);
+  max-height: calc(100vh - 1rem);
+  overflow: auto;
+  color: var(--app-fg, var(--lk-fg, var(--fg, #fff)));
+  font-family: var(
+    --app-font-family,
+    var(--lk-font-family, var(--font-family, system-ui, sans-serif))
+  );
+  background: var(--app-popover-bg, var(--app-bg2, var(--lk-bg2, #1a1a1a)));
+  border: 1px solid
+    var(--app-border, var(--lk-border-color, var(--border-color, rgba(255, 255, 255, 0.14))));
+  border-radius: var(--app-popover-radius, 0.75rem);
+  box-shadow: var(
+    --app-popover-shadow,
+    0 0.75rem 2.5rem rgba(0, 0, 0, 0.42),
+    0 0.125rem 0.5rem rgba(0, 0, 0, 0.28)
+  );
+  animation: popover-in 140ms ease-out;
+}
+
+.content[data-placement='bottom'] {
+  transform-origin: top center;
+}
+
+.content[data-placement='top'] {
+  transform-origin: bottom center;
+}
+
+.content:focus-visible {
+  outline: none;
+}
+
+@keyframes popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .content {
+    animation: none;
+  }
+}

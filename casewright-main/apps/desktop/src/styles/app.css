@@ -1,0 +1,147 @@
+/* ============================================================
+   Casewright — Tailwind v4 entry stylesheet
+
+   Order matters: the Google Fonts @import MUST come first (an @import
+   after the Tailwind import is dropped by the CSS parser), then Tailwind,
+   then the shared brand tokens, then the @theme bridge that exposes those
+   brand vars to Tailwind utilities (bg-panel, text-ink, rounded-md, …).
+
+   The brand tokens (packages/brand/tokens.css) remain the single source of
+   truth — also consumed by the marketing site. We only *reference* them here.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');
+
+@import 'tailwindcss';
+
+@import '@casewright/brand/tokens.css';
+
+/* Bridge the brand oklch tokens → Tailwind theme tokens. `inline` keeps the
+   var() references live (utilities resolve to var(--bg) etc.) so the brand
+   layer stays the source of truth rather than being inlined at build time. */
+@theme inline {
+  /* surfaces */
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-raise: var(--raise);
+  --color-sunken: var(--sunken);
+  --color-border: var(--border);
+  --color-border-2: var(--border-2);
+  --color-desk: var(--desk);
+
+  /* ink */
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-faint: var(--ink-faint);
+
+  /* accent */
+  --color-accent: var(--accent);
+  --color-accent-press: var(--accent-press);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+  --color-accent-ink: var(--accent-ink);
+
+  /* status */
+  --color-pass: var(--pass);
+  --color-pass-soft: var(--pass-soft);
+  --color-fail: var(--fail);
+  --color-fail-soft: var(--fail-soft);
+  --color-blocked: var(--blocked);
+  --color-blocked-soft: var(--blocked-soft);
+  --color-inprogress: var(--inprogress);
+  --color-inprogress-soft: var(--inprogress-soft);
+  --color-skipped: var(--skipped);
+  --color-skipped-soft: var(--skipped-soft);
+  --color-notrun: var(--notrun);
+  --color-notrun-soft: var(--notrun-soft);
+
+  /* diff */
+  --color-add: var(--add);
+  --color-add-bg: var(--add-bg);
+  --color-del: var(--del);
+  --color-del-bg: var(--del-bg);
+
+  /* type roles (literal stacks — keys differ from brand var names to avoid
+     a self-referential var() cycle; utilities: font-ui / font-mono / font-read) */
+  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --font-read: 'Newsreader', Georgia, serif;
+
+  /* radii (4 / 6 / 9 px → rounded-sm / rounded-md / rounded-lg) */
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r);
+  --radius-lg: var(--r-lg);
+}
+
+/* Base resets that used to live in styles/base.css; kept here so they survive
+   once base.css is deleted at the end of the re-platform. */
+@layer base {
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    font-family: var(--font-ui);
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 13px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  #root {
+    height: 100%;
+  }
+  button {
+    cursor: pointer;
+  }
+  ::selection {
+    background: var(--select);
+  }
+
+  /* thin, quiet scrollbars */
+  *::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: oklch(0.8 0.006 70);
+    border-radius: 99px;
+    border: 3px solid transparent;
+    background-clip: padding-box;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.72 0.008 70);
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* Modal / scrim entrance animations (referenced via animate-[fade…] / animate-[pop…]). */
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes pop {
+  from {
+    transform: translateY(6px) scale(0.99);
+    opacity: 0;
+  }
+}
+@keyframes ctxin {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+@keyframes toastin {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}

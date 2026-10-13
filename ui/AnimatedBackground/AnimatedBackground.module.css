@@ -1,0 +1,38 @@
+.layer {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.previewLayer {
+  position: relative;
+  width: 100%;
+  height: 11.25rem;
+  overflow: hidden;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-bg);
+  pointer-events: none;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.particles :global(canvas) {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .layer,
+  .previewLayer {
+    display: none;
+  }
+}

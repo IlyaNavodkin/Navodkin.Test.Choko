@@ -1,0 +1,157 @@
+/**
+ * Single source of truth for the shared design language.
+ *
+ * Every value consumed by the UI library lives here as a `--app-*` token.
+ * Other products depend on these token names, so names are never removed;
+ * values may change and new tokens are appended. Per-product overrides must
+ * be expressed as token re-declarations (or brand-new tokens) in the product
+ * stylesheet — never as inline styles or hardcoded hex values in components.
+ *
+ * Dark-first palette. See the target design language in the project docs.
+ */
+:root {
+  color-scheme: dark;
+
+  /* Surfaces */
+  --app-bg: #141518;
+  --app-bg2: #1a1b1e;
+  --app-bg3: #202124;
+  --app-bg4: #26272b;
+  --app-bg5: #2e2f34;
+  --app-surface: var(--app-bg2);
+  --app-surface-raised: var(--app-bg3);
+  --app-surface-hover: var(--app-bg4);
+  --app-surface-active: var(--app-bg5);
+  --app-scene-bg: #0e0f11;
+  --app-overlay-scrim: rgba(0, 0, 0, 0.7);
+
+  /* Foreground / text */
+  --app-fg: #d9dad8;
+  --app-fg1: var(--app-fg);
+  --app-fg2: #c9cac8;
+  --app-fg3: #b0b1af;
+  --app-fg4: #8b8c8a;
+  --app-fg5: #6f706e;
+  --app-text: var(--app-fg);
+  --app-text-secondary: var(--app-fg4);
+  --app-text-muted: var(--app-fg5);
+
+  /* Borders */
+  --app-border: rgba(255, 255, 255, 0.08);
+  --app-border-strong: rgba(255, 255, 255, 0.16);
+
+  /* Accent (muted slate blue) */
+  --app-accent: var(--app-accent-bg);
+  --app-accent-fg: #fff;
+  --app-accent-bg: #5e7b96;
+  --app-accent-hover-bg: #6d8aa6;
+  --app-accent-active-bg: #7d99b5;
+  --app-accent-soft: color-mix(in srgb, var(--app-accent-bg) 15%, transparent);
+  --app-accent-dim: color-mix(in srgb, var(--app-accent-bg) 15%, transparent);
+  --app-accent-glow: color-mix(in srgb, var(--app-accent-bg) 25%, transparent);
+  /* Accent that stays readable as text on a surface (selected tree/row labels). */
+  --app-accent-readable: color-mix(in srgb, var(--app-accent-bg) 62%, var(--app-fg));
+
+  /* Semantic colors */
+  --app-danger-fg: #fff;
+  --app-danger: #c96f5f;
+  --app-danger-hover: color-mix(in srgb, var(--app-danger) 85%, #fff);
+  --app-danger-active: color-mix(in srgb, var(--app-danger) 72%, #fff);
+  --app-danger-soft: color-mix(in srgb, var(--app-danger) 65%, #fff);
+
+  --app-warning: #d9a55b;
+  --app-warning-soft: color-mix(in srgb, var(--app-warning) 65%, #fff);
+
+  --app-success-fg: #fff;
+  --app-success: #85b294;
+  --app-success-hover: color-mix(in srgb, var(--app-success) 85%, #fff);
+  --app-success-active: color-mix(in srgb, var(--app-success) 72%, #fff);
+  --app-success-soft: color-mix(in srgb, var(--app-success) 65%, #fff);
+
+  /* Controls */
+  --app-control-fg: var(--app-fg);
+  --app-control-bg: var(--app-bg3);
+  --app-control-hover-bg: var(--app-bg4);
+  --app-control-active-bg: var(--app-bg5);
+  --app-control-active-hover-bg: var(--app-bg5);
+
+  /* Connection strength */
+  --app-connection-excellent: var(--app-success);
+  --app-connection-good: var(--app-warning);
+  --app-connection-poor: var(--app-danger);
+
+  /* Typography */
+  --app-font-family: 'Inter', system-ui, sans-serif;
+  --app-font-display: 'Inter', system-ui, sans-serif;
+  --app-font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --app-font-size: 13px;
+  --app-line-height: 1.4;
+  --app-text-2xs: 0.625rem;
+  --app-text-xs: 0.6875rem;
+  --app-text-sm: 0.75rem;
+  --app-text-base: 0.8125rem;
+  --app-text-md: 0.875rem;
+  --app-text-lg: 1rem;
+
+  /* Spacing scale: 2, 4, 6, 8, 10, 12, 16, 20 px */
+  --app-space-1: 0.125rem;
+  --app-space-2: 0.25rem;
+  --app-space-3: 0.375rem;
+  --app-space-4: 0.5rem;
+  --app-space-5: 0.625rem;
+  --app-space-6: 0.75rem;
+  --app-space-7: 1rem;
+  --app-space-8: 1.25rem;
+
+  /* Radii */
+  --app-radius-xs: 0.125rem;
+  --app-radius-sm: 4px;
+  --app-radius-md: 6px;
+  --app-radius-lg: 12px;
+  --app-radius-xl: 10px;
+  --app-radius-full: 9999px;
+  --app-radius: var(--app-radius-md);
+
+  /* Single-line controls (Input, Select, SearchInput): one height scale, border included */
+  --app-control-h-xs: 1.75rem;
+  --app-control-h-sm: 2rem;
+  --app-control-h-md: 2.875rem;
+  --app-control-px-xs: 0.5rem;
+  --app-control-px-sm: 0.75rem;
+  --app-control-px-md: 1rem;
+
+  /* Elevation */
+  --app-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  --app-shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --app-drop-shadow: rgba(255, 255, 255, 0.2) 0 0 24px;
+
+  /* Popover surface */
+  --app-popover-bg: var(--app-bg3);
+  --app-popover-radius: var(--app-radius-lg);
+  --app-popover-shadow: var(--app-shadow);
+  --app-popover-z-index: var(--app-z-popover);
+
+  /* Motion */
+  --app-transition-fast: 120ms ease;
+  --app-transition-base: 200ms ease;
+
+  /* Layering */
+  --app-z-sticky: 100;
+  --app-z-modal: 1010;
+  --app-z-popover: 1100;
+  --app-z-tooltip: 1200;
+  --app-z-toast: 1300;
+  --app-z-blocking: 10050;
+
+  /* Layout / chrome */
+  --app-ribbon-tab-h: 48px;
+  --app-ribbon-body-h: 76px;
+  --app-activity-w: 44px;
+  --app-status-h: 28px;
+  --app-topbar-h: 48px;
+  --app-sidebar-w: 300px;
+  --app-inspector-w: 320px;
+  --app-grid-gap: 0.5rem;
+  --app-control-bar-height: 69px;
+  --app-chat-header-height: 69px;
+}

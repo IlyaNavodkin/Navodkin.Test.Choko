@@ -1,0 +1,4 @@
+.list { display: flex; flex-direction: column; gap: 0.125rem; }
+.item { border-radius: var(--app-radius-md); transition: opacity var(--app-transition-fast), transform var(--app-transition-fast); }
+.dragging { opacity: 0.35; }
+.over { outline: 1px dashed var(--app-accent-bg); transform: translateY(-1px); }

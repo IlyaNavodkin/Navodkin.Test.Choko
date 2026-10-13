@@ -1,0 +1,53 @@
+.root {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-3);
+  min-width: 0;
+  padding: var(--app-space-2) var(--app-space-3);
+  background: var(--app-surface-raised);
+  border-bottom: 1px solid var(--app-border);
+}
+
+/* Grows into the free space of the strip and stops at a readable width: a search field as wide as
+   a widescreen monitor reads as a text editor, not as a table filter. */
+.search {
+  flex: 1 1 18rem;
+  min-width: 10rem;
+  max-width: 40rem;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--app-space-2);
+  min-width: 0;
+}
+
+/* Filters are content-sized. A `Select` is `width: 100%` (it fills a form field), and inside this
+   wrapping row every select claimed a whole line of the strip — three selects stacked into three
+   rows. Scoped to `.root` on purpose: it must outrank the control's own `width`. */
+.root .filters > * {
+  width: auto;
+  max-width: 18rem;
+}
+
+.spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.meta {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-2);
+}

@@ -1,0 +1,59 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--app-space-4);
+  min-height: 1.5rem;
+  color: var(--app-fg2);
+  cursor: pointer;
+  font-size: var(--app-text-md);
+}
+
+.root input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-xs);
+  background: var(--app-bg2);
+  color: transparent;
+  transition:
+    background var(--app-transition-fast),
+    border-color var(--app-transition-fast),
+    color var(--app-transition-fast);
+}
+
+.root input:checked + .control {
+  border-color: var(--app-accent-bg);
+  background: var(--app-accent-bg);
+  color: var(--app-accent-fg);
+}
+
+.root input:focus-visible + .control {
+  outline: 2px solid color-mix(in srgb, var(--app-accent-bg) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.root:hover:not(.disabled) .control {
+  border-color: var(--app-accent-bg);
+}
+
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.label {
+  line-height: 1.25rem;
+}

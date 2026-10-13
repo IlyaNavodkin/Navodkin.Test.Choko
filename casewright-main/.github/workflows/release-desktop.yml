@@ -1,0 +1,146 @@
+name: Build desktop release
+
+# Builds the Windows NW.js desktop app + installer and publishes (or updates) its
+# GitHub Release with two assets:
+#   • Casewright-Setup-<version>.exe   — per-user installer (the auto-update target)
+#   • Casewright-<version>-win-x64.zip — portable build (unzip + run Casewright.exe)
+#
+# This workflow is NOT triggered by tags. Two entry points:
+#   • workflow_call    — invoked by release.yml right after semantic-release cuts a
+#                        version (the v<version> tag already exists; this builds and
+#                        attaches the assets + release notes — so the Release only
+#                        appears once the installer is actually present).
+#   • workflow_dispatch — manual fallback: rebuild/republish a specific version, e.g.
+#                        when the build failed after the tag was already created.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "Release version, no leading 'v' (e.g. 0.4.0)"
+        required: true
+        type: string
+      ref:
+        description: "Git ref to build (tag/sha). Empty → the triggering ref."
+        required: false
+        type: string
+        default: ""
+      notes:
+        description: "Release body (from semantic-release). Empty → auto-generate."
+        required: false
+        type: string
+        default: ""
+      prerelease:
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 0.4.0) — without the leading 'v'"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark the GitHub Release as a pre-release"
+        required: false
+        type: boolean
+        default: false
+
+# Allow the job to create/update releases and tags.
+permissions:
+  contents: write
+
+concurrency:
+  group: build-desktop-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.ref }}
+
+      # Normalize the version and derive the tag (both entry points provide `version`).
+      - name: Resolve version
+        id: ver
+        shell: pwsh
+        run: |
+          $v = '${{ inputs.version }}' -replace '^v', ''
+          if ($v -notmatch '^\d+\.\d+\.\d+') {
+            Write-Error "Version '$v' is not a valid semver — e.g. 0.4.0."
+            exit 1
+          }
+          "version=$v" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          "tag=v$v"    | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Building Casewright v$v"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # Cache the downloaded NW.js runtime so reruns don't re-fetch ~100 MB.
+      - name: Cache NW.js runtime
+        uses: actions/cache@v5
+        with:
+          path: apps/desktop/.nwcache
+          key: nwjs-win-x64-${{ hashFiles('apps/desktop/package.json') }}
+
+      # Only install what the desktop app needs (+ its workspace deps).
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter @casewright/desktop...
+
+      - name: Typecheck
+        run: pnpm --filter @casewright/desktop typecheck
+
+      - name: Test
+        run: pnpm --filter @casewright/desktop test
+
+      # Build the renderer, stage runtime deps, and run nw-builder (+ portable zip).
+      # CASEWRIGHT_VERSION drives both `vite build` (__APP_VERSION__, what the running
+      # app reports to the auto-updater) and the packaged manifest version.
+      - name: Package (nw-builder + portable zip)
+        env:
+          CASEWRIGHT_VERSION: ${{ steps.ver.outputs.version }}
+        run: pnpm --filter @casewright/desktop package:win
+
+      - name: Install Inno Setup
+        run: choco install innosetup --yes --no-progress
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & "$iscc" "/DMyAppVersion=${{ steps.ver.outputs.version }}" "apps/desktop/build-resources/casewright.iss"
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+
+      - name: Verify artifacts
+        shell: pwsh
+        run: |
+          $v = '${{ steps.ver.outputs.version }}'
+          $installer = "apps/desktop/build/Casewright-Setup-$v.exe"
+          $zip       = "apps/desktop/build/Casewright-$v-win-x64.zip"
+          foreach ($f in @($installer, $zip)) {
+            if (-not (Test-Path $f)) { throw "Missing expected artifact: $f" }
+            Write-Host ("{0}  ({1:N1} MB)" -f $f, ((Get-Item $f).Length / 1MB))
+          }
+
+      # Create or update the Release for this tag and attach the assets. When called
+      # from release.yml the tag already exists and `notes` carries the changelog;
+      # for a manual dispatch the tag is created here and notes are auto-generated.
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: Casewright ${{ steps.ver.outputs.tag }}
+          body: ${{ inputs.notes }}
+          generate_release_notes: ${{ inputs.notes == '' }}
+          prerelease: ${{ inputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: |
+            apps/desktop/build/Casewright-Setup-${{ steps.ver.outputs.version }}.exe
+            apps/desktop/build/Casewright-${{ steps.ver.outputs.version }}-win-x64.zip

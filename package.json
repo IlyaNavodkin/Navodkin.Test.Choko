@@ -1,0 +1,15 @@
+{
+  "name": "navodkin-testoritto",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Preparation workspace for a Git-backed React desktop test management app",
+  "packageManager": "pnpm@11.25.0",
+  "engines": { "node": ">=22.12.0", "pnpm": "11.x" },
+  "scripts": {
+    "spec": "openspec",
+    "spec:validate": "openspec validate --all --strict --no-interactive",
+    "check:ui": "pnpm --filter @codaa/ui typecheck",
+    "check": "pnpm spec:validate && pnpm check:ui"
+  },
+  "devDependencies": { "@fission-ai/openspec": "1.14.1" }
+}

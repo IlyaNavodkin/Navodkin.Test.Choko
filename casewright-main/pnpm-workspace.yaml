@@ -1,0 +1,18 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Allow these packages to run install scripts: the NW.js runtime download and the
+# esbuild / sharp native binaries. (pnpm 11 renamed this from package.json's
+# "pnpm.onlyBuiltDependencies" to this allowBuilds map.)
+allowBuilds:
+  nw: true
+  nw-builder: true
+  esbuild: true
+  sharp: true
+
+# pnpm 11 introduced a default ~24h "minimum release age" supply-chain delay. Because this repo
+# intentionally tracks the latest of everything (including same-day transitive releases), opt out
+# so installs and CI aren't blocked. Set to a number of minutes (e.g. 1440 for a 1-day delay) to
+# re-enable the safety window.
+minimumReleaseAge: 0

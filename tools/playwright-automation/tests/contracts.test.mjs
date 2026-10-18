@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ManifestSchema, ReportSchema, outcomeOf, parseImport, previewImport, LIMITS } from '../dist/index.mjs';
+import { ReportV2Schema } from '../dist/runner-contracts.mjs';
 import { manifest, report, key, attempt } from './fixtures.mjs';
 import { readFile } from 'node:fs/promises';
 
@@ -49,4 +50,13 @@ test('JUnit strict XML without DTD, custom entities, malformed or oversized inpu
   assert.equal(parsed.tests[0].identity, null);
   assert.equal(parsed.tests[1].identity.variantId, 'default');
   assert.equal(parsed.tests[1].attempts[0].status, 'failed');
+});
+
+test('version 2 runner fixtures stay valid for both sides of the boundary', async () => {
+  const report = ReportV2Schema.parse(JSON.parse(await readFile(new URL('../fixtures/report-v2.json', import.meta.url), 'utf8')));
+  assert.equal(report.schemaVersion, 2);
+  assert.equal(report.state, 'completed');
+  assert.equal(report.tests.length, 3);
+  assert.equal(new Set(report.tests.map(t => t.invocationId)).size, 3);
+  assert.match(await readFile(new URL('../fixtures/report-v2.junit.xml', import.meta.url), 'utf8'), /testoritto.invocationId/);
 });

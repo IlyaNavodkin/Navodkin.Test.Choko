@@ -1,15 +1,18 @@
 use super::{
-    Code, Error, ReportOverview, Result,
-    contracts::{
-        Catalog, Key, MAX_LOG, MAX_REPORT, Manifest, Operation, Outcome, Report, State, Status,
-        hash, id, relative, uuid,
-    },
+    Code, Error, Result,
+    contracts::{MAX_LOG, MAX_REPORT, Operation, Outcome, State, Status, hash, id, relative, uuid},
     store::{
-        Active, AutomationService, ExecutionSummary, Poll, atomic, bounded, directory, existing, io,
+        Active, AutomationService, ExecutionSummary, Poll, atomic, bounded, decode_required,
+        directory, existing, io,
+    },
+    v2::{
+        ArgumentValue, Discovery, InvocationInput, InvocationSnapshot, Manifest, Report,
+        create_invocation_snapshot,
     },
 };
 use serde::{Deserialize, Serialize};
 use std::{
+    collections::{BTreeMap, HashSet},
     fs,
     io::{Read, Write},
     path::{Path, PathBuf},
@@ -21,6 +24,14 @@ use std::{
     thread,
     time::{Duration, Instant},
 };
+/// Один запрошенный invocation: привязка и значения, переопределённые перед запуском.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct InvocationRequest {
+    pub binding_id: String,
+    #[serde(default)]
+    pub run_overrides: BTreeMap<String, ArgumentValue>,
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Start {
@@ -30,11 +41,123 @@ pub struct Start {
     pub operation: Operation,
     pub catalog_execution_id: Option<String>,
     pub catalog_revision: Option<String>,
-    pub selection: Vec<Key>,
+    pub invocations: Vec<InvocationRequest>,
     pub parent_execution_id: Option<String>,
+    /// Снимки, показанные пользователю перед запуском: расхождение источников блокирует старт.
+    #[serde(default)]
+    pub preview: Vec<InvocationSnapshot>,
+}
+/// Предпросмотр invocation до запуска: снимки значений и типизированные диагностики.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Preview {
+    pub snapshots: Vec<InvocationSnapshot>,
+    pub issues: Vec<PreviewIssue>,
+}
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PreviewIssue {
+    pub binding_id: String,
+    pub code: super::v2::IssueCode,
+    pub key: Option<String>,
+}
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SavedReport {
+    pub name: String,
+    pub relative_path: String,
+    pub size: u64,
+    pub sha256: String,
 }
 impl AutomationService {
-    #[allow(clippy::too_many_lines)] // Одна admission-транзакция: trust, selection и publication.
+    /// Собирает снимки invocation по приоритету аргументов, без запуска кода.
+    pub fn preview(
+        &self,
+        session: &str,
+        run: &str,
+        requests: &[InvocationRequest],
+    ) -> Result<Preview> {
+        let root = self.root(session)?;
+        if !relative(run) || requests.len() > super::v2::MAX_AUTOTESTS {
+            return Err(Error::new(Code::InvalidRequest));
+        }
+        let cases = self.run_cases(session, run)?;
+        let (settings, _) = self.settings(&root)?;
+        let created = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
+        let mut snapshots = Vec::new();
+        let mut issues = Vec::new();
+        for request in requests {
+            if !uuid(&request.binding_id) {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            let input = Self::invocation_input(&settings, &cases, request, &created)?;
+            match create_invocation_snapshot(&input) {
+                Ok(snapshot) => snapshots.push(snapshot),
+                Err(list) => {
+                    for issue in list {
+                        issues.push(PreviewIssue {
+                            binding_id: request.binding_id.clone(),
+                            code: issue.code,
+                            key: issue.key,
+                        });
+                    }
+                }
+            }
+        }
+        Ok(Preview { snapshots, issues })
+    }
+    pub(super) fn run_cases(&self, session: &str, run: &str) -> Result<Vec<super::store::RunCase>> {
+        let runs = self
+            .repositories
+            .catalog_runs(session)
+            .map_err(|_| Error::new(Code::InvalidRequest))?;
+        let entry = runs
+            .runs
+            .iter()
+            .find(|item| item.run_id == run)
+            .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+        Ok(entry
+            .cases
+            .iter()
+            .map(|case| super::store::RunCase {
+                case_id: case.case_id.clone(),
+                path: case.path.clone(),
+            })
+            .collect())
+    }
+    fn invocation_input(
+        settings: &super::store::Settings,
+        cases: &[super::store::RunCase],
+        request: &InvocationRequest,
+        created: &str,
+    ) -> Result<InvocationInput> {
+        let binding = settings
+            .catalog
+            .bindings
+            .iter()
+            .find(|item| item.id == request.binding_id)
+            .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+        let autotest = settings
+            .catalog
+            .autotests
+            .iter()
+            .find(|item| item.id == binding.autotest_id)
+            .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+        let case = cases
+            .iter()
+            .find(|item| item.case_id == binding.case_id)
+            .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+        Ok(InvocationInput {
+            invocation_id: uuid::Uuid::new_v4().to_string(),
+            created_at: created.to_owned(),
+            case_revision: super::store::digest(case.path.as_bytes()),
+            autotest: autotest.clone(),
+            binding: binding.clone(),
+            run_overrides: request.run_overrides.clone(),
+            environments: settings.environments.clone(),
+        })
+    }
+    #[allow(clippy::too_many_lines)] // Одна admission-транзакция: trust, invocation и publication.
     pub fn start(self: &Arc<Self>, session: &str, start: Start) -> Result<ExecutionSummary> {
         let root = self.root(session)?;
         if self.closing.lock().map_err(io)?.contains(session) {
@@ -49,45 +172,48 @@ impl AutomationService {
         }) {
             return Err(Error::new(Code::Busy));
         }
+        let unique: HashSet<&String> = start
+            .invocations
+            .iter()
+            .map(|request| &request.binding_id)
+            .collect();
         if !relative(&start.run_id)
             || !id(&start.profile_id)
             || !hash(&start.profile_revision)
-            || start.selection.len() > 10_000
-            || start.selection.iter().any(|k| !k.valid())
+            || start.invocations.len() > super::v2::MAX_AUTOTESTS
+            || unique.len() != start.invocations.len()
             || start
-                .selection
-                .iter()
-                .collect::<std::collections::HashSet<_>>()
-                .len()
-                != start.selection.len()
-            || start.parent_execution_id.as_ref().is_some_and(|s| !uuid(s))
+                .parent_execution_id
+                .as_ref()
+                .is_some_and(|parent| !uuid(parent))
         {
             return Err(Error::new(Code::InvalidRequest));
         }
         let (profile, node) = self.trusted(&root, &start.profile_id, &start.profile_revision)?;
-        // Membership comes from the current repository run catalog, never from a path supplied by the WebView.
-        let runs = self
-            .repositories
-            .catalog_runs(session)
-            .map_err(|_| Error::new(Code::InvalidRequest))?;
-        let run = runs
-            .runs
-            .iter()
-            .find(|r| r.run_id == start.run_id)
-            .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+        let cases = self.run_cases(session, &start.run_id)?;
         let (settings, _) = self.settings(&root)?;
-        if start.selection.iter().any(|k| {
-            !run.cases.iter().any(|c| c.case_id == k.case_id)
-                || !settings
-                    .bindings
-                    .iter()
-                    .any(|b| b.profile_id == profile.profile_id && b.key() == *k)
-                || !profile.projects.contains(&k.project)
-        }) {
-            return Err(Error::new(Code::InvalidRequest));
+        let created = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
+        let mut snapshots = Vec::new();
+        for request in &start.invocations {
+            let input = Self::invocation_input(&settings, &cases, request, &created)?;
+            if !profile.projects.contains(&input.autotest.selector.project) {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            if let Some(preview) = start
+                .preview
+                .iter()
+                .find(|snapshot| snapshot.binding.id == request.binding_id)
+            {
+                super::v2::validate_invocation_preview(preview, &input)
+                    .map_err(|_| Error::new(Code::StaleProfile))?;
+            }
+            let snapshot =
+                create_invocation_snapshot(&input).map_err(|_| Error::new(Code::InvalidRequest))?;
+            snapshots.push(snapshot);
         }
+        let mut catalog_revision = None;
         if start.operation == Operation::Run {
-            if start.selection.is_empty() {
+            if snapshots.is_empty() {
                 return Err(Error::new(Code::InvalidRequest));
             }
             let previous = start
@@ -95,24 +221,28 @@ impl AutomationService {
                 .as_deref()
                 .ok_or_else(|| Error::new(Code::StaleProfile))?;
             let dir = self.execution_dir(&root, &start.run_id, previous, false)?;
+            let discovery: Discovery =
+                decode_required(&bounded(&dir.join("catalog.json"), MAX_REPORT)?)
+                    .map_err(|_| Error::new(Code::StaleProfile))?;
             let m: Manifest =
-                serde_json::from_slice(&bounded(&dir.join("manifest.json"), MAX_REPORT)?)
-                    .map_err(io)?;
-            let catalog: Catalog =
-                serde_json::from_slice(&bounded(&dir.join("catalog.json"), MAX_REPORT)?)
-                    .map_err(io)?;
-            catalog.validate(&m)?;
+                decode_required(&bounded(&dir.join("manifest.json"), MAX_REPORT)?).map_err(io)?;
+            discovery.validate(&m)?;
             if m.profile_id != profile.profile_id
                 || m.profile_revision != start.profile_revision
-                || Some(&catalog.catalog_revision) != start.catalog_revision.as_ref()
-                || start
-                    .selection
-                    .iter()
-                    .any(|k| !catalog.tests.iter().any(|t| t.key() == *k))
+                || Some(&discovery.catalog_revision) != start.catalog_revision.as_ref()
+                || snapshots.iter().any(|snapshot| {
+                    let selector = &snapshot.autotest.selector;
+                    !discovery.tests.iter().any(|test| {
+                        test.automation_id == selector.automation_id
+                            && test.project == selector.project
+                            && test.variant_id == selector.variant_id
+                    })
+                })
             {
                 return Err(Error::new(Code::StaleProfile));
             }
-        } else if !start.selection.is_empty()
+            catalog_revision = Some(discovery.catalog_revision);
+        } else if !start.invocations.is_empty()
             || start.catalog_revision.is_some()
             || start.catalog_execution_id.is_some()
             || start.parent_execution_id.is_some()
@@ -122,18 +252,20 @@ impl AutomationService {
         if let Some(parent) = &start.parent_execution_id {
             let dir = self.execution_dir(&root, &start.run_id, parent, false)?;
             let m: Manifest =
-                serde_json::from_slice(&bounded(&dir.join("manifest.json"), MAX_REPORT)?)
-                    .map_err(io)?;
+                decode_required(&bounded(&dir.join("manifest.json"), MAX_REPORT)?).map_err(io)?;
             let report: Report =
-                serde_json::from_slice(&bounded(&dir.join("report.json"), MAX_REPORT)?)
-                    .map_err(io)?;
-            report.validate(Some(&m))?;
+                decode_required(&bounded(&dir.join("report.json"), MAX_REPORT)?).map_err(io)?;
+            report.validate(&m)?;
             if report.profile_id != profile.profile_id
-                || start.selection.iter().any(|k| {
-                    !report.tests.iter().any(|t| {
-                        t.key() == *k
-                            && t.outcome == Outcome::Unexpected
-                            && t.attempts
+                || snapshots.iter().any(|snapshot| {
+                    let selector = &snapshot.autotest.selector;
+                    !report.tests.iter().any(|test| {
+                        test.automation_id == selector.automation_id
+                            && test.project == selector.project
+                            && test.variant_id == selector.variant_id
+                            && test.outcome == Outcome::Unexpected
+                            && test
+                                .attempts
                                 .iter()
                                 .any(|a| matches!(a.status, Status::Failed | Status::TimedOut))
                     })
@@ -153,7 +285,6 @@ impl AutomationService {
             return Err(Error::new(Code::Busy));
         }
         let execution_id = uuid::Uuid::new_v4().to_string();
-        let created_at = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true);
         let summary = ExecutionSummary {
             execution_id: execution_id.clone(),
             run_id: start.run_id.clone(),
@@ -161,7 +292,7 @@ impl AutomationService {
             operation: start.operation,
             state: State::Running,
             reason: None,
-            created_at: created_at.clone(),
+            created_at: created.clone(),
         };
         let output = self.output_dir(&execution_id)?;
         let source = self
@@ -169,20 +300,22 @@ impl AutomationService {
             .automation_source(session)
             .map_err(|_| Error::new(Code::Io))?;
         let manifest = Manifest {
-            schema_version: 1,
+            schema_version: 2,
             run_id: start.run_id,
             execution_id: execution_id.clone(),
             parent_execution_id: start.parent_execution_id,
             profile_id: profile.profile_id.clone(),
             profile_revision: start.profile_revision,
-            catalog_revision: start.catalog_revision,
-            created_at,
+            catalog_revision,
+            created_at: created,
             source,
-            selection: start.selection,
+            invocations: snapshots,
             operation: start.operation,
             profile,
             output_root: output.to_string_lossy().into_owned(),
+            source_kind: super::v2::SourceKind::Run,
         };
+        manifest.validate()?;
         atomic(&output, "manifest.json", &manifest)?;
         let persistent = self.execution_dir(&root, &manifest.run_id, &execution_id, true)?;
         atomic(&persistent, "manifest.json", &manifest)?;
@@ -254,21 +387,17 @@ impl AutomationService {
                         if !success {
                             return Err(Error::new(Code::InvalidReport));
                         }
-                        let value: Catalog = serde_json::from_slice(&bounded(
-                            &output.join("catalog.json"),
-                            MAX_REPORT,
-                        )?)
-                        .map_err(io)?;
+                        let value: Discovery =
+                            decode_required(&bounded(&output.join("catalog.json"), MAX_REPORT)?)
+                                .map_err(io)?;
                         value.validate(manifest)?;
                         catalog = Some(value);
                         Ok(State::Completed)
                     } else {
-                        let mut value: Report = serde_json::from_slice(&bounded(
-                            &output.join("report.json"),
-                            MAX_REPORT,
-                        )?)
-                        .map_err(io)?;
-                        value.validate(Some(manifest))?;
+                        let mut value: Report =
+                            decode_required(&bounded(&output.join("report.json"), MAX_REPORT)?)
+                                .map_err(io)?;
+                        value.validate(manifest)?;
                         if value.state == State::Completed && !success {
                             return Err(Error::new(Code::InvalidReport));
                         }
@@ -308,6 +437,16 @@ impl AutomationService {
                 if let Some(catalog) = &catalog {
                     atomic(&persistent, "catalog.json", catalog)?;
                 }
+                // JUnit-экспорт bridge хранится рядом с отчётом, чтобы попасть в папку прогона.
+                let junit = output.join("junit.xml");
+                if junit.exists() && !persistent.join("junit.xml").exists() {
+                    crate::services::repository::atomic::create(
+                        &persistent.join("junit.xml"),
+                        &bounded(&junit, MAX_REPORT)?,
+                        None,
+                    )
+                    .map_err(io)?;
+                }
                 atomic(&persistent, "status.json", &summary)
             })();
             lease.complete(result.is_ok());
@@ -342,18 +481,56 @@ impl AutomationService {
             }
         }
     }
+    /// Копирует отчёты в папку прогона: без перезаписи, без Git staging и без правки ручных файлов.
+    pub fn save_reports(
+        &self,
+        session: &str,
+        run: &str,
+        execution: &str,
+    ) -> Result<Vec<SavedReport>> {
+        let root = self.root(session)?;
+        let cases = self.run_cases(session, run)?;
+        let _ = cases;
+        let source = self.execution_dir(&root, run, execution, false)?;
+        let folder = directory(&root, &format!("{run}/automation/{execution}"))?;
+        let mut saved = Vec::new();
+        for name in ["report.json", "junit.xml"] {
+            let from = source.join(name);
+            if !from.exists() {
+                continue;
+            }
+            let bytes = bounded(&from, MAX_REPORT)?;
+            let digest = super::store::digest(&bytes);
+            let destination = folder.join(name);
+            if destination.exists() {
+                if super::store::digest(&bounded(&destination, MAX_REPORT)?) != digest {
+                    return Err(Error::new(Code::StaleResource));
+                }
+            } else {
+                crate::services::repository::atomic::create(&destination, &bytes, None)
+                    .map_err(io)?;
+            }
+            saved.push(SavedReport {
+                name: name.to_owned(),
+                relative_path: format!("{run}/automation/{execution}/{name}"),
+                size: u64::try_from(bytes.len()).unwrap_or(u64::MAX),
+                sha256: digest,
+            });
+        }
+        Ok(saved)
+    }
     #[allow(clippy::too_many_lines)] // Полная валидация и bounded paging читаются как один контракт.
     pub fn poll(&self, session: &str, run: &str, execution: &str, cursor: usize) -> Result<Poll> {
         let root = self.root(session)?;
         let persistent = self.execution_dir(&root, run, execution, false)?;
-        let m: Manifest =
-            serde_json::from_slice(&bounded(&persistent.join("manifest.json"), MAX_REPORT)?)
-                .map_err(io)?;
+        let m: Manifest = decode_required(&bounded(&persistent.join("manifest.json"), MAX_REPORT)?)
+            .map_err(io)?;
+        m.validate()?;
         if m.execution_id != execution || m.run_id != run {
             return Err(Error::new(Code::InvalidReport));
         }
         let mut summary: ExecutionSummary =
-            serde_json::from_slice(&bounded(&persistent.join("status.json"), 8192)?).map_err(io)?;
+            decode_required(&bounded(&persistent.join("status.json"), 8192)?).map_err(io)?;
         let active = self.active.lock().map_err(io)?;
         if let Some(a) = active.get(execution)
             && a.session != session
@@ -377,12 +554,13 @@ impl AutomationService {
             cursor,
             next_cursor: None,
             tests: vec![],
+            invocations: vec![],
             catalog: None,
             report: None,
         };
         if persistent.join("catalog.json").exists() {
-            let mut c: Catalog =
-                serde_json::from_slice(&bounded(&persistent.join("catalog.json"), MAX_REPORT)?)
+            let mut c: Discovery =
+                decode_required(&bounded(&persistent.join("catalog.json"), MAX_REPORT)?)
                     .map_err(io)?;
             c.validate(&m)?;
             if cursor > c.tests.len() {
@@ -403,10 +581,9 @@ impl AutomationService {
             page.catalog = Some(c);
         }
         if persistent.join("report.json").exists() {
-            let r: Report =
-                serde_json::from_slice(&bounded(&persistent.join("report.json"), MAX_REPORT)?)
-                    .map_err(io)?;
-            r.validate(Some(&m))?;
+            let r: Report = decode_required(&bounded(&persistent.join("report.json"), MAX_REPORT)?)
+                .map_err(io)?;
+            r.validate(&m)?;
             if cursor > r.tests.len() {
                 return Err(Error::new(Code::InvalidRequest));
             }
@@ -447,22 +624,19 @@ impl AutomationService {
                     break;
                 }
                 budget += size;
+                // Снимок аргументов публикуется вместе со строкой результата того же invocation.
+                if let Some(snapshot) = m
+                    .invocations
+                    .iter()
+                    .find(|invocation| invocation.invocation_id == test.invocation_id)
+                {
+                    page.invocations.push(snapshot.clone());
+                }
                 page.tests.push(test);
             }
             let next = cursor + page.tests.len();
             page.next_cursor = (next < r.tests.len()).then_some(next);
-            let mut overview = ReportOverview {
-                state: r.state,
-                started_at: r.started_at,
-                finished_at: r.finished_at,
-                source: r.source,
-                reason: r.reason,
-                logs: r.logs,
-                runner_errors: r.runner_errors,
-                attachments: r.attachments,
-                test_count: r.tests.len(),
-                details_truncated: false,
-            };
+            let mut overview = super::v2::Overview::new(&r);
             let before = serde_json::to_vec(&overview).map_err(io)?.len();
             clip(&mut overview.logs.stdout, 8192);
             clip(&mut overview.logs.stderr, 8192);

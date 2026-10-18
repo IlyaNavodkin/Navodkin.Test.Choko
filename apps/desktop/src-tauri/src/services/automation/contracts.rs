@@ -91,25 +91,6 @@ impl Profile {
 }
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Binding {
-    pub case_id: String,
-    pub automation_id: String,
-    pub project: String,
-    pub variant_id: String,
-    pub profile_id: String,
-}
-impl Binding {
-    pub fn key(&self) -> Key {
-        Key {
-            case_id: self.case_id.clone(),
-            automation_id: self.automation_id.clone(),
-            project: self.project.clone(),
-            variant_id: self.variant_id.clone(),
-        }
-    }
-}
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Source {
     pub commit: Option<String>,
     pub branch: Option<String>,
@@ -239,58 +220,6 @@ impl CatalogTest {
         }
     }
 }
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Catalog {
-    pub schema_version: u8,
-    pub execution_id: String,
-    pub profile_id: String,
-    pub profile_revision: String,
-    pub catalog_revision: String,
-    pub tests: Vec<CatalogTest>,
-    pub dependencies: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Manifest {
-    pub schema_version: u8,
-    pub run_id: String,
-    pub execution_id: String,
-    pub parent_execution_id: Option<String>,
-    pub profile_id: String,
-    pub profile_revision: String,
-    pub catalog_revision: Option<String>,
-    pub created_at: String,
-    pub source: Source,
-    pub selection: Vec<Key>,
-    pub operation: Operation,
-    pub profile: Profile,
-    pub output_root: String,
-}
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct Report {
-    pub schema_version: u8,
-    pub run_id: String,
-    pub execution_id: String,
-    pub parent_execution_id: Option<String>,
-    pub profile_id: String,
-    pub profile_revision: String,
-    pub catalog_revision: Option<String>,
-    pub created_at: String,
-    pub source: Source,
-    pub selection: Vec<Key>,
-    pub state: State,
-    pub reason: Option<String>,
-    pub started_at: String,
-    pub finished_at: String,
-    pub complete: bool,
-    pub tests: Vec<TestRecord>,
-    pub runner_errors: Vec<ErrorRecord>,
-    pub logs: Logs,
-    pub attachments: Vec<Attachment>,
-}
 fn errors(v: &[ErrorRecord]) -> bool {
     v.len() <= 100
         && v.iter().all(|e| {
@@ -329,8 +258,32 @@ pub fn outcome(expected: Expected, attempts: &[Attempt]) -> Outcome {
         Outcome::Expected
     }
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct Report {
+    pub schema_version: u8,
+    pub run_id: String,
+    pub execution_id: String,
+    pub parent_execution_id: Option<String>,
+    pub profile_id: String,
+    pub profile_revision: String,
+    pub catalog_revision: Option<String>,
+    pub created_at: String,
+    pub source: Source,
+    pub selection: Vec<Key>,
+    pub state: State,
+    pub reason: Option<String>,
+    pub started_at: String,
+    pub finished_at: String,
+    pub complete: bool,
+    pub tests: Vec<TestRecord>,
+    pub runner_errors: Vec<ErrorRecord>,
+    pub logs: Logs,
+    pub attachments: Vec<Attachment>,
+}
 impl Report {
-    pub fn validate(&self, manifest: Option<&Manifest>) -> Result<()> {
+    /// Проверка формы и лимитов version 1 для нативного импорта; корреляцию сверяет вызывающий код.
+    pub fn validate(&self) -> Result<()> {
         check(
             self.schema_version == 1
                 && relative(&self.run_id)
@@ -415,47 +368,6 @@ impl Report {
                             .iter()
                             .all(|t| !t.attempts.is_empty() && t.outcome != Outcome::Interrupted))),
         )?;
-        if let Some(m) = manifest {
-            check(
-                self.schema_version == m.schema_version
-                    && self.run_id == m.run_id
-                    && self.execution_id == m.execution_id
-                    && self.parent_execution_id == m.parent_execution_id
-                    && self.profile_id == m.profile_id
-                    && self.profile_revision == m.profile_revision
-                    && self.catalog_revision == m.catalog_revision
-                    && self.created_at == m.created_at
-                    && self.source == m.source
-                    && self.selection == m.selection,
-            )?;
-        }
         Ok(())
-    }
-}
-impl Catalog {
-    pub fn validate(&self, m: &Manifest) -> Result<()> {
-        check(
-            self.schema_version == 1
-                && self.execution_id == m.execution_id
-                && self.profile_id == m.profile_id
-                && self.profile_revision == m.profile_revision
-                && hash(&self.catalog_revision)
-                && self.tests.len() <= 10_000
-                && self.dependencies.len() <= 100
-                && self.dependencies.iter().all(|s| id(s))
-                && self
-                    .tests
-                    .iter()
-                    .map(CatalogTest::key)
-                    .collect::<HashSet<_>>()
-                    .len()
-                    == self.tests.len()
-                && self.tests.iter().all(|t| {
-                    t.key().valid()
-                        && units(&t.title) <= 4096
-                        && units(&t.file) <= 1024
-                        && m.profile.projects.contains(&t.project)
-                }),
-        )
     }
 }

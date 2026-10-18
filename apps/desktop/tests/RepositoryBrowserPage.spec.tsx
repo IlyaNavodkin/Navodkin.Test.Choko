@@ -96,7 +96,7 @@ describe('repository browser read-only flows', () => {
     await screen.findByText('Dashboard is shown.');
     expect(mocks.api.readCase).toHaveBeenCalledWith(session, caseId);
 
-    fireEvent.click(screen.getByRole('tab', { name: 'Прогоны' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Прогоны' }));
     const runButton = await screen.findByRole('button', { name: /Release check/ });
     fireEvent.click(runButton);
     await screen.findByText('Release smoke run.');
@@ -156,7 +156,7 @@ describe('repository browser read-only flows', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Открыть репозиторий' }));
     expect(await screen.findAllByText(/Автоматическая инициализация не выполняется/)).toHaveLength(2);
     expect(mocks.api.catalogWorkspace).not.toHaveBeenCalled();
-    expect(screen.queryByRole('tab')).toBeNull();
+    expect(screen.queryByRole('navigation')).toBeNull();
   });
   it('initializes only after explicit confirmation and cancellation never invokes IPC', async () => {
     mocks.api.open.mockResolvedValueOnce({ ...opened(session), needsInitialization: true, workspaces: [] });
@@ -302,7 +302,7 @@ describe('repository browser read-only flows', () => {
     mocks.api.gitDiff.mockResolvedValue({ path: 'case [one].md', staged: '+staged', workingTree: '+working', untrackedContent: null, binary: false, unmerged: false, filtersDisabled: false });
     renderPage(); fireEvent.click(screen.getByRole('button', { name: 'Открыть репозиторий' }));
     await screen.findByRole('heading', { name: 'Fixture repo' }); expect(mocks.api.gitStatus).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('tab', { name: 'Git' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Git' }));
     fireEvent.click(await screen.findByRole('button', { name: 'case [one].md' }));
     await screen.findByText('+staged'); await screen.findByText('+working');
     expect(mocks.api.gitDiff).toHaveBeenCalledWith(session, fileId);
@@ -319,7 +319,7 @@ describe('repository browser read-only flows', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Открыть репозиторий' }));
     await screen.findByRole('heading', { name: 'Fixture repo' });
-    fireEvent.click(screen.getByRole('tab', { name: 'Прогоны' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Прогоны' }));
     fireEvent.click(await screen.findByRole('button', { name: /Release check/ }));
     fireEvent.click(await screen.findByRole('button', { name: 'Редактировать прогон' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Заметки' }), { target: { value: 'Execution notes' } });
@@ -344,7 +344,7 @@ describe('repository browser read-only flows', () => {
     renderPage();
     fireEvent.click(screen.getByRole('button', { name: 'Открыть репозиторий' }));
     await screen.findByRole('heading', { name: 'Fixture repo' });
-    fireEvent.click(screen.getByRole('tab', { name: 'Прогоны' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Прогоны' }));
     fireEvent.click(await screen.findByRole('button', { name: /T-1 · Login works/ }));
     fireEvent.click(await screen.findByRole('button', { name: 'Записать результат' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Заметки' }), { target: { value: 'Saved execution' } });
@@ -789,7 +789,7 @@ describe('repository browser read-only flows', () => {
     fireEvent.click(screen.getByRole('treeitem', { name: /T-1 · Login works/ }));
     await screen.findByText('Sign in safely.');
     expect(screen.queryByRole('button', { name: 'Редактировать кейс' })).toBeNull();
-    fireEvent.click(screen.getByRole('tab', { name: 'Git' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Git' }));
     await screen.findByRole('heading', { name: 'Git' });
     expect(await screen.findByRole('button', { name: 'Создать commit…' })).toHaveProperty('disabled', true);
     expect(screen.getByRole('button', { name: 'Получить изменения…' })).toHaveProperty('disabled', true);

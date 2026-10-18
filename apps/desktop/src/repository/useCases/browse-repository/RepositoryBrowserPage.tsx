@@ -1,4 +1,4 @@
-import { Alert, Badge, Button, EmptyState, FileTree, Input, LoadingState, Markdown, Modal, Select, Tab, Tabs } from '@codaa/ui';
+import { Alert, Badge, Button, EmptyState, FileTree, Icon, IconNames, Input, LoadingState, Markdown, Modal, PageBrand, PageTopbar, PageTopbarActions, Select } from '@codaa/ui';
 import type { FileTreeNode } from '@codaa/ui';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
@@ -56,8 +56,17 @@ export function RepositoryBrowserPage() {
     if (saved) await closeGuard.confirmExit();
   };
   const diagnostics = useRuntimeDiagnostics({});
-  const [tab, setTabState] = useState<'workspace' | 'runs' | 'git' | 'automation'>('workspace');
-  const changeTab = (value: 'workspace' | 'runs' | 'git' | 'automation') => { if (!gitBusy && !editorBlocked && !creationPending) { setTabState(value); browser.select(null); } };
+  const [tab, setTabState] = useState<'workspace' | 'runs' | 'git' | 'automation' | 'glossary'>('workspace');
+  const changeTab = (value: 'workspace' | 'runs' | 'git' | 'automation' | 'glossary') => { if (!gitBusy && !editorBlocked && !creationPending) { setTabState(value); browser.select(null); } };
+  const [gitFileCount, setGitFileCount] = useState<number | null>(null);
+  useEffect(() => { setGitFileCount(null); }, [browser.repository?.sessionId]);
+  const sections = [
+    { value: 'workspace', label: t('repository.cases'), icon: IconNames.fileText },
+    { value: 'runs', label: t('repository.runs'), icon: IconNames.play },
+    { value: 'automation', label: t('automation.title'), icon: IconNames.play },
+    { value: 'git', label: t('gitView.title'), icon: IconNames.gitBranch },
+    { value: 'glossary', label: t('repository.glossary'), icon: IconNames.bookOpen },
+  ] as const;
 
   const entries = browser.workspaceCatalog?.entries ?? [];
   const selectedCase = browser.selection?.kind === 'case' ? entries.find((entry) => entry.kind === 'case' && entry.metadata.resourceId === browser.selection?.resourceId) : undefined;
@@ -86,13 +95,18 @@ export function RepositoryBrowserPage() {
 
   return (
     <main className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.brand}><span aria-hidden="true" className={styles.mark}>T</span><div><h1>{t('app.name')}</h1><p>{t('repository.title')}</p></div></div>
-        <div className={styles.actions}>
-          <Button variant="primary" onClick={browser.open} loading={browser.isOpening} disabled={!browser.isNativeRuntime || browser.isBusy || creationPending}>{t('repository.open')}</Button>
+      <PageTopbar className={styles.topbar}>
+        <PageBrand mark="T" title={t('app.name')} eyebrow={t('repository.title')} />
+        {browser.repository && !browser.repository.needsInitialization ? <nav className={styles.nav} aria-label={t('repository.title')}>
+          {sections.map((section) => <button key={section.value} type="button" aria-current={tab === section.value ? 'page' : undefined} onClick={() => changeTab(section.value)} disabled={gitBusy || editorBlocked || creationPending}>
+            <Icon name={section.icon} size="sm" />{section.label}{section.value === 'git' && (gitFileCount ?? 0) > 0 ? <span className={styles.count}>{gitFileCount}</span> : null}
+          </button>)}
+        </nav> : null}
+        <PageTopbarActions className={styles.topbarActions}>
+          {browser.repository ? <Button variant="primary" onClick={browser.open} loading={browser.isOpening} disabled={!browser.isNativeRuntime || browser.isBusy || creationPending}>{t('repository.open')}</Button> : null}
           {browser.repository ? <Button onClick={browser.close} loading={browser.isClosing} disabled={browser.isBusy || creationPending}>{t('repository.close')}</Button> : null}
-        </div>
-      </header>
+        </PageTopbarActions>
+      </PageTopbar>
 
       {!browser.isNativeRuntime ? <Alert variant="warning"><strong>{t('repository.browserOnly')}</strong><p>{t('repository.chooseNative')}</p></Alert> : null}
       {editorBlocked ? <Alert variant="warning">{t(closeGuard.closeAttempted ? 'editor.closeBlocked' : 'editor.navigationBlocked')}</Alert> : null}
@@ -106,7 +120,7 @@ export function RepositoryBrowserPage() {
       </Alert> : null}
       {browser.errorCode ? <Alert variant="danger" className={styles.error}><strong>{t(browser.errorSource === 'close' ? 'repository.closeError' : browser.errorSource === 'recent' ? 'repository.openRecentError' : browser.errorSource === 'initialize' ? 'repository.initializeError' : 'repository.openError')}</strong><p>{t(`repository.errors.${browser.errorCode}`)}</p><Button size="sm" disabled={busy} onClick={browser.retryActionError}>{browser.errorSource === 'close' ? t('repository.close') : t('app.retry')}</Button></Alert> : null}
 
-      {browser.isNativeRuntime ? <section className={styles.recents} aria-labelledby="recent-repositories-heading">
+      {browser.isNativeRuntime && browser.repository ? <section className={styles.recents} aria-labelledby="recent-repositories-heading">
         <div className={styles.recentsHeader}><h2 id="recent-repositories-heading">{t('repository.recentTitle')}</h2><Button size="sm" onClick={browser.retryRecents} disabled={browser.isRecentsLoading || browser.isBusy}>{t('repository.refresh')}</Button></div>
         {browser.isRecentsLoading ? <LoadingState title={t('repository.loadingRecents')} /> : null}
         {browser.recentErrorCode ? <Alert variant="danger"><strong>{t('repository.recentError')}</strong><p>{t(`repository.errors.${browser.recentErrorCode}`)}</p><Button size="sm" onClick={browser.retryRecents}>{t('app.retry')}</Button></Alert> : null}
@@ -119,17 +133,31 @@ export function RepositoryBrowserPage() {
       </section> : null}
 
       {!browser.repository ? (
-        <section className={styles.empty}><EmptyState title={t('repository.noRepository')} description={t('repository.noRepositoryDescription')} /></section>
+        <section className={styles.start}>
+          <div className={styles.startHeading}>
+            <p className={styles.eyebrow}>{t('repository.workspace')}</p>
+            <h1>{t('repository.startTitle')}</h1>
+            <p>{t('repository.noRepositoryDescription')}</p>
+            <Button variant="primary" className={styles.openRepoButton} onClick={browser.open} loading={browser.isOpening} disabled={!browser.isNativeRuntime || browser.isBusy || creationPending} leadingIcon={<Icon name={IconNames.folderOpen} size="sm" />}>{t('repository.open')}</Button>
+            <span className={styles.compatibility}>{t('repository.compatibleRepos')}</span>
+          </div>
+          {browser.isNativeRuntime ? <section className={styles.recents} aria-labelledby="recent-repositories-heading">
+            <h2 id="recent-repositories-heading">{t('repository.recentTitle')}</h2>
+            {browser.isRecentsLoading ? <LoadingState title={t('repository.loadingRecents')} /> : null}
+            {browser.recentErrorCode ? <Alert variant="danger"><strong>{t('repository.recentError')}</strong><p>{t(`repository.errors.${browser.recentErrorCode}`)}</p><Button size="sm" onClick={browser.retryRecents}>{t('app.retry')}</Button></Alert> : null}
+            {!browser.isRecentsLoading && !browser.recentErrorCode && browser.recentRepositories?.length ? <div>{browser.recentRepositories.map((recent) => <button className={styles.recent} key={recent.recentId} disabled={busy} onClick={() => browser.openRecent(recent.recentId)}>
+              <Icon name={IconNames.folder} size="sm" /><span><strong>{recent.displayName}</strong><small>{formatRecentDate(recent.lastOpenedAtMs, i18n.language, t('repository.unknownDate'))}</small></span><span className={styles.recentMeta}>Git</span><Icon name={IconNames.chevronRight} size="sm" />
+            </button>)}</div> : null}
+            {!browser.isRecentsLoading && !browser.recentErrorCode && browser.recentRepositories?.length === 0 ? <EmptyState title={t('repository.recentEmpty')} /> : null}
+          </section> : null}
+        </section>
       ) : (
         <>
           <div className={styles.repoBar}><Button size="sm" disabled={busy || creationMode !== null || suiteCreationOpen || suiteOperationMode !== null || operationMode !== null || runCreationOpen || initializationOpen} onClick={browser.externalChanges.retry}>{t('repository.refreshAll')}</Button><div><h2>{browser.repository.displayName}</h2><span>{browser.repository.workspaces.length} {t('repository.workspace').toLocaleLowerCase()}</span></div><Badge variant={browser.repository.needsInitialization ? 'warning' : 'success'}>{browser.repository.needsInitialization ? t('repository.needsInitialization') : 'Git'}</Badge></div>
           {browser.repository.needsInitialization ? <Alert variant="info"><p>{t('repository.needsInitialization')}</p><Button onClick={() => setInitializationOpen(true)} disabled={busy}>{t('repository.initialize')}</Button></Alert> : null}
           <WarningList items={browser.repository.warnings} t={t} />
           {!browser.repository.needsInitialization ? <>
-            <Tabs value={tab} onValueChange={(value) => changeTab(value as 'workspace' | 'runs' | 'git' | 'automation')} className={styles.tabs}>
-              <Tab value="workspace">{t('repository.cases')}</Tab><Tab value="runs">{t('repository.runs')}</Tab><Tab value="git">{t('gitView.title')}</Tab><Tab value="automation">{t('automation.title')}</Tab>
-            </Tabs>
-            {tab === 'automation' ? <AutomationPanel key={browser.repository.sessionId} sessionId={browser.repository.sessionId} runs={browser.runsCatalog} isRunsLoading={browser.isRunsLoading} runsErrorCode={browser.runsErrorCode} onRefreshRuns={browser.refreshRuns} blocked={writeBlocked || editorBlocked || creationPending || browser.isOpening || browser.isClosing} /> : tab === 'git' ? <GitInspection key={browser.repository.sessionId} sessionId={browser.repository.sessionId} blocked={writeBlocked || editorBlocked || creationPending || browser.isOpening || browser.isClosing} onBusyChange={setGitBusy} onPendingChange={setGitPending} onApplied={browser.applyGitResult} /> : <section className={styles.browser} aria-label={t('repository.title')}>
+            {tab === 'automation' ? <AutomationPanel key={browser.repository.sessionId} sessionId={browser.repository.sessionId} runs={browser.runsCatalog} isRunsLoading={browser.isRunsLoading} runsErrorCode={browser.runsErrorCode} onRefreshRuns={browser.refreshRuns} blocked={writeBlocked || editorBlocked || creationPending || browser.isOpening || browser.isClosing} /> : tab === 'git' ? <GitInspection key={browser.repository.sessionId} sessionId={browser.repository.sessionId} blocked={writeBlocked || editorBlocked || creationPending || browser.isOpening || browser.isClosing} onBusyChange={setGitBusy} onPendingChange={setGitPending} onFileCountChange={setGitFileCount} onApplied={browser.applyGitResult} /> : tab === 'glossary' ? <section aria-label={t('repository.glossary')}><EmptyState title={t('repository.glossary')} description={t('repository.glossarySoon')} /></section> : <section className={styles.browser} aria-label={t('repository.title')}>
               <aside className={styles.sidebar}>
                 {tab === 'workspace' ? <>
                   <label className={styles.workspaceLabel} htmlFor="workspace-select">{t('repository.workspace')}</label>

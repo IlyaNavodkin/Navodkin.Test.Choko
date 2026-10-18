@@ -1,12 +1,12 @@
 import { Alert, Badge, Button, EmptyState, Input, LoadingState, Select } from '@codaa/ui';
-import type { Catalog, StableKey, TestRecord } from '@testoritto/playwright-automation';
+import type { DiscoveryV2, InvocationTest, StableKey } from '@testoritto/playwright-automation';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import type { RunsCatalog } from '../../../repository/api/contracts';
 import { AutomationApiError, automationApi, type AutomationApi } from '../../api/automationApi';
 import type { AutomationPoll, AutomationView, ExecutionSummary } from '../../api/contracts';
-import { applicableTests, keyOf, mergeBindings, mergeCatalog, selectionFrom } from './automationPlan';
+import { applicableTests, autotestFor, bindingFor, boundKeys, keyOf, mergeCatalog, runnableInvocations } from './automationPlan';
 import styles from './AutomationPanel.module.css';
 
 type AutomationPanelProps = {
@@ -33,13 +33,13 @@ type Draft = {
 
 type Discovery = {
   execution: ExecutionSummary;
-  catalog: Catalog;
-  applicable: Catalog['tests'];
+  catalog: DiscoveryV2;
+  applicable: DiscoveryV2['tests'];
 };
 
 type RunResult = {
   execution: ExecutionSummary;
-  tests: TestRecord[];
+  tests: InvocationTest[];
   report: AutomationPoll['report'];
 };
 
@@ -168,7 +168,7 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
   }, [runs, runId]);
 
   const profileView = view?.profiles.find((item) => item.profile.profileId === draft.profileId) ?? null;
-  const boundKeys = new Set((view?.bindings ?? []).filter((binding) => binding.profileId === draft.profileId).map(keyOf));
+  const bound = boundKeys(view?.bindings ?? [], view?.autotests ?? []);
   const runOptions = (runs?.runs ?? []).map((run) => ({ value: run.runId, label: `${run.name} · ${run.testDate}` }));
 
   function update<K extends keyof Draft>(field: K, value: Draft[K]) {
@@ -217,10 +217,10 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
     }
   }
 
-  async function pollUntilDone(summary: ExecutionSummary, token: number): Promise<{ execution: ExecutionSummary; tests: TestRecord[]; catalog: Catalog | null; report: AutomationPoll['report'] }> {
+  async function pollUntilDone(summary: ExecutionSummary, token: number): Promise<{ execution: ExecutionSummary; tests: InvocationTest[]; catalog: DiscoveryV2 | null; report: AutomationPoll['report'] }> {
     let cursor = 0;
-    let tests: TestRecord[] = [];
-    let catalog: Catalog | null = null;
+    let tests: InvocationTest[] = [];
+    let catalog: DiscoveryV2 | null = null;
     let report: AutomationPoll['report'] = null;
     for (let attempt = 0; attempt < 1200; attempt += 1) {
       if (token !== pollToken.current) throw new PollCancelled();
@@ -262,7 +262,7 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
         operation: 'discover',
         catalogExecutionId: null,
         catalogRevision: null,
-        selection: [],
+        invocations: [],
         parentExecutionId: null,
       });
       setActive(summary);
@@ -271,11 +271,21 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
       if (!done.catalog) throw new Error(t('automation.noCatalog'));
       const run = runs?.runs.find((item) => item.runId === runId);
       const applicable = applicableTests(done.catalog, run?.cases.map((item) => item.caseId) ?? []);
-      const missing = applicable.filter((test) => !boundKeys.has(keyOf(test)));
+      const missing = applicable.filter((test) => !bound.has(keyOf(test)));
       if (missing.length) {
-        const next = await api.saveBindings(sessionId, view.revision, mergeBindings(view.bindings, missing, profileView.profile.profileId));
-        if (token !== pollToken.current) return;
-        setView(next);
+        let current = view;
+        for (const test of missing) {
+          const key = { caseId: test.caseId, automationId: test.automationId, project: test.project, variantId: test.variantId };
+          let autotest = current.autotests.find((item) => item.selector.automationId === key.automationId && item.selector.project === key.project && item.selector.variantId === key.variantId);
+          if (!autotest) {
+            autotest = autotestFor(test, profileView.profile.profileId, crypto.randomUUID(), `rev-${Date.now()}`);
+            current = await api.saveAutotest(sessionId, current.revision, autotest.revision, autotest);
+            if (token !== pollToken.current) return;
+          }
+          current = await api.saveBinding(sessionId, current.revision, `rev-${Date.now()}`, bindingFor(key, autotest.id, crypto.randomUUID(), `rev-${Date.now()}`));
+          if (token !== pollToken.current) return;
+        }
+        setView(current);
       }
       setDiscovery({ execution: done.execution, catalog: done.catalog, applicable });
       setSelected(new Set(applicable.map(keyOf)));
@@ -289,7 +299,7 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
 
   async function runSelected() {
     if (!discovery || !profileView) return;
-    const runnable = discovery.catalog.tests.filter((test) => selected.has(keyOf(test)) && discovery.applicable.some((item) => keyOf(item) === keyOf(test)));
+    const runnable = runnableInvocations(discovery.catalog, discovery.applicable, selected, view?.bindings ?? [], view?.autotests ?? []);
     if (!runnable.length) {
       setError(t('automation.selectOne'));
       return;
@@ -301,6 +311,14 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
     setCancelling(false);
     const token = ++pollToken.current;
     try {
+      const invocations = runnable.map((item) => ({ bindingId: item.bindingId }));
+      // Показанный пользователю снимок фиксируется до старта: расхождение источников блокирует запуск.
+      const preview = await api.previewInvocations(sessionId, runId, invocations);
+      if (token !== pollToken.current) return;
+      if (preview.issues.length) {
+        setError(t('automation.errors.invalidRequest'));
+        return;
+      }
       const summary = await api.start(sessionId, {
         profileId: profileView.profile.profileId,
         profileRevision: profileView.revision,
@@ -308,8 +326,9 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
         operation: 'run',
         catalogExecutionId: discovery.execution.executionId,
         catalogRevision: discovery.catalog.catalogRevision,
-        selection: selectionFrom(runnable),
+        invocations,
         parentExecutionId: null,
+        preview: preview.snapshots,
       });
       setActive(summary);
       const done = await pollUntilDone(summary, token);
@@ -401,7 +420,7 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
       <ul className={styles.testList}>
         {discovery.catalog.tests.map((test) => {
           const key = keyOf(test);
-          const runnable = boundKeys.has(key) && discovery.applicable.some((item) => keyOf(item) === key);
+          const runnable = bound.has(key) && discovery.applicable.some((item) => keyOf(item) === key);
           return <li key={key} className={styles.testItem}>
             <label>
               <input type="checkbox" checked={selected.has(key)} disabled={!runnable || busy || blocked} onChange={() => toggle(test)} />
@@ -422,7 +441,7 @@ export function AutomationPanel({ sessionId, runs, isRunsLoading, runsErrorCode,
       <p className={styles.hint}>{t('automation.testCount', { count: result.tests.length })}</p>
       {result.report?.reason ? <Alert variant="danger">{result.report.reason}</Alert> : null}
       {result.tests.length ? <ul className={styles.resultList}>
-        {result.tests.map((test) => <li key={keyOf(test)} className={styles.resultItem}>
+        {result.tests.map((test) => <li key={test.invocationId} className={styles.resultItem}>
           <div className={styles.statusRow}><Badge variant={OUTCOME_VARIANT[test.outcome]}>{t(`automation.outcomes.${test.outcome}`)}</Badge><strong>{test.title}</strong><small>{test.caseId} · {test.automationId} · {test.project}/{test.variantId}</small></div>
           {test.attempts.map((attempt) => <details key={`${attempt.repeatEachIndex}:${attempt.retry}`} className={styles.attempt}>
             <summary>{t('automation.attempt', { retry: attempt.retry + 1 })} · {attempt.status} · {Math.round(attempt.durationMs)} ms</summary>

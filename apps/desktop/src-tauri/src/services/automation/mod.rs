@@ -1,10 +1,13 @@
 //! Локальное исполнение после явного доверия; открытие не запускает код.
 pub mod contracts;
+mod import;
 mod runner;
 mod store;
 #[cfg(test)]
 mod tests;
-pub use runner::Start;
+pub mod v2;
+pub use import::Preview as ImportPreview;
+pub use runner::{InvocationRequest, Preview, SavedReport, Start};
 use serde::{Deserialize, Serialize};
 pub use store::*;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]

@@ -4,15 +4,15 @@ export const LIMITS = Object.freeze({ reportBytes: 16 * 1024 * 1024, tests: 10_0
 export const IdSchema = z.string().min(1).max(256).regex(/^[^\x00-\x1f\x7f]+$/u);
 export const HashSchema = z.string().regex(/^[a-f0-9]{64}$/);
 export const RelativePathSchema = z.string().min(1).max(1024).refine(p => !/[\x00-\x1f\x7f\\:]/u.test(p) && !p.startsWith('/') && p.split('/').every(v => v !== '..' && v !== '.' && v !== ''), 'Expected safe relative path');
-const DateSchema = z.string().datetime();
+export const DateSchema = z.string().datetime();
 export const KeySchema = z.object({ caseId: IdSchema, automationId: IdSchema, project: IdSchema, variantId: IdSchema }).strict();
 export type StableKey = z.infer<typeof KeySchema>;
 export const stableKey = (key: StableKey): string => JSON.stringify([key.caseId, key.automationId, key.project, key.variantId]);
 export const ProfileSchema = z.object({ schemaVersion: z.literal(1), profileId: IdSchema, label: z.string().min(1).max(200), cwd: z.union([z.literal('.'), RelativePathSchema]), config: RelativePathSchema, projects: z.array(IdSchema).min(1).max(100).refine(v => new Set(v).size === v.length), timeoutMs: z.number().int().min(1).max(LIMITS.runtimeMs), retries: z.number().int().min(0).max(10), workers: z.number().int().min(1).max(32) }).strict();
 export type AutomationProfile = z.infer<typeof ProfileSchema>;
 export const BindingSchema = KeySchema.extend({ profileId: IdSchema }).strict();
-const SourceSchema = z.object({ commit: z.string().regex(/^[a-f0-9]{40,64}$/).nullable(), branch: z.string().max(1024).nullable(), dirty: z.boolean() }).strict();
-const correlation = { schemaVersion: z.literal(1), runId: RelativePathSchema, executionId: z.string().uuid(), parentExecutionId: z.string().uuid().nullable(), profileId: IdSchema, profileRevision: HashSchema, catalogRevision: HashSchema.nullable(), createdAt: DateSchema, source: SourceSchema, selection: z.array(KeySchema).max(LIMITS.tests) };
+export const SourceSchema = z.object({ commit: z.string().regex(/^[a-f0-9]{40,64}$/).nullable(), branch: z.string().max(1024).nullable(), dirty: z.boolean() }).strict();
+export const correlation = { schemaVersion: z.literal(1), runId: RelativePathSchema, executionId: z.string().uuid(), parentExecutionId: z.string().uuid().nullable(), profileId: IdSchema, profileRevision: HashSchema, catalogRevision: HashSchema.nullable(), createdAt: DateSchema, source: SourceSchema, selection: z.array(KeySchema).max(LIMITS.tests) };
 const uniqueSelection = (v: { selection: StableKey[] }) => new Set(v.selection.map(stableKey)).size === v.selection.length;
 export const ManifestSchema = z.object({ ...correlation, operation: z.enum(['discover', 'run']), profile: ProfileSchema, outputRoot: z.string().min(1).max(4096) }).strict().superRefine((v, ctx) => {
   if (!uniqueSelection(v) || v.profileId !== v.profile.profileId || v.parentExecutionId === v.executionId || v.selection.some(k => !v.profile.projects.includes(k.project)) || (v.operation === 'run' && (!v.catalogRevision || !v.selection.length)) || (v.operation === 'discover' && v.selection.length !== 0)) ctx.addIssue({ code: 'custom', message: 'Invalid selection/correlation' });
@@ -59,3 +59,4 @@ export function parseReport(input: unknown, manifest?: Manifest): AutomationRepo
   if (manifest) for (const field of Object.keys(correlation) as (keyof typeof correlation)[]) if (JSON.stringify(report[field]) !== JSON.stringify(manifest[field])) throw new Error(`INVALID_REPORT: correlation ${field}`);
   return report;
 }
+

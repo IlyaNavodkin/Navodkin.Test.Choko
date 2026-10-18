@@ -2,7 +2,9 @@ import { createHash, randomUUID } from 'node:crypto';
 import { open, readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { LIMITS, ManifestSchema } from './contracts';
+import { ManifestV2Schema } from './runner-contracts';
 import type { AutomationReport, Manifest } from './contracts';
+import type { ManifestV2 } from './runner-contracts';
 export async function readBounded(file: string, max = LIMITS.reportBytes): Promise<string> {
   const handle = await open(file, 'r');
   try {
@@ -15,6 +17,8 @@ export async function readBounded(file: string, max = LIMITS.reportBytes): Promi
   } finally { await handle.close(); }
 }
 export async function readManifest(file: string): Promise<Manifest> { return ManifestSchema.parse(JSON.parse(await readBounded(file))); }
+/** Version 2 manifest: invocation-снимки вместо selection. */
+export async function readManifestV2(file: string): Promise<ManifestV2> { return ManifestV2Schema.parse(JSON.parse(await readBounded(file))); }
 export async function descendant(root: string, file: string): Promise<string> {
   const canonical = await realpath(file), relative = path.relative(await realpath(root), canonical);
   if (relative.startsWith(`..${path.sep}`) || relative === '..' || path.isAbsolute(relative)) throw new Error('PATH_DENIED');
@@ -23,6 +27,12 @@ export async function descendant(root: string, file: string): Promise<string> {
 export async function atomicJson(root: string, name: string, value: unknown): Promise<void> {
   const text = JSON.stringify(value);
   if (Buffer.byteLength(text) > LIMITS.reportBytes) throw new Error('LIMIT_EXCEEDED: report');
+  const temporary = path.join(root, `${name}.${randomUUID()}.tmp`);
+  await writeFile(temporary, text, { flag: 'wx', mode: 0o600 });
+  await rename(temporary, path.join(root, name));
+}
+export async function atomicText(root: string, name: string, text: string): Promise<void> {
+  if (Buffer.byteLength(text) > LIMITS.reportBytes) throw new Error('LIMIT_EXCEEDED: text');
   const temporary = path.join(root, `${name}.${randomUUID()}.tmp`);
   await writeFile(temporary, text, { flag: 'wx', mode: 0o600 });
   await rename(temporary, path.join(root, name));

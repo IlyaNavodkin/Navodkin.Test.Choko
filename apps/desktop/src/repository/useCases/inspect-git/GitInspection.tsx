@@ -6,7 +6,7 @@ import { useSyncGit } from './useSyncGit';
 import { useCommitGit } from './useCommitGit';
 import { useInspectGit } from './useInspectGit';
 import styles from './GitInspection.module.css';
-export function GitInspection({ sessionId, blocked, onBusyChange, onPendingChange, onApplied }: { onApplied: (result: GitSyncResult) => Promise<void>; sessionId: string; blocked: boolean; onBusyChange: (busy: boolean) => void; onPendingChange: (pending: boolean) => void }) {
+export function GitInspection({ sessionId, blocked, onBusyChange, onPendingChange, onApplied, onFileCountChange }: { onApplied: (result: GitSyncResult) => Promise<void>; sessionId: string; blocked: boolean; onBusyChange: (busy: boolean) => void; onPendingChange: (pending: boolean) => void; onFileCountChange?: (count: number | null) => void }) {
   const { t } = useTranslation();
   const git = useInspectGit({ sessionId });
   const [search, setSearch] = useState('');
@@ -16,6 +16,7 @@ export function GitInspection({ sessionId, blocked, onBusyChange, onPendingChang
   const sync = useSyncGit({ sessionId, status, blocked: blocked || commitBusy || git.isLoading, onApplied, refresh: git.refresh });
   useEffect(() => { onBusyChange(commitBusy || sync.busy); return () => onBusyChange(false); }, [commitBusy, sync.busy, onBusyChange]);
   useEffect(() => { onPendingChange(commitPending || sync.pending); return () => onPendingChange(false); }, [commitPending, sync.pending, onPendingChange]);
+  useEffect(() => { onFileCountChange?.(status ? status.files.length : null); return () => onFileCountChange?.(null); }, [status, onFileCountChange]);
   const commit = useCommitGit({ sessionId, status, blocked: blocked || sync.busy || Boolean(status?.syncBlocked), invalidMessage: t('gitCommit.invalid'), onBusyChange: setCommitBusy, onPendingChange: setCommitPending, refresh: git.refresh });
   const staleDiff = git.diffErrorCode === 'INVALID_RESOURCE' || git.diffErrorCode === 'STALE_RESOURCE';
   const normalized = search.normalize('NFKC').trim().toLocaleLowerCase();

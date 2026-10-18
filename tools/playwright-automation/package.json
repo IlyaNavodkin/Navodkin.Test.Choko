@@ -4,18 +4,36 @@
   "private": true,
   "type": "module",
   "sideEffects": false,
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.mjs" },
-    "./reporter": { "types": "./dist/reporter.d.ts", "node": "./dist/reporter.mjs" },
-    "./bridge": { "types": "./dist/bridge.d.ts", "node": "./dist/bridge.mjs" }
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    },
+    "./reporter": {
+      "types": "./dist/reporter.d.ts",
+      "node": "./dist/reporter.mjs"
+    },
+    "./bridge": {
+      "types": "./dist/bridge.d.ts",
+      "node": "./dist/bridge.mjs"
+    },
+    "./invocation": {
+      "types": "./dist/invocation.d.ts",
+      "node": "./dist/invocation.mjs"
+    }
   },
   "scripts": {
     "build": "node build.mjs && tsc --emitDeclarationOnly",
     "typecheck": "tsc --noEmit",
     "test": "pnpm build && node --test --test-concurrency=1 tests/*.test.mjs"
   },
-  "dependencies": { "saxes": "6.0.0", "zod": "3.25.76" },
+  "dependencies": {
+    "saxes": "6.0.0",
+    "zod": "3.25.76"
+  },
   "devDependencies": {
     "@playwright/test": "1.64.1",
     "@types/node": "22.20.5",

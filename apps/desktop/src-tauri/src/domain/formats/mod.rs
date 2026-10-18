@@ -1,6 +1,7 @@
 mod case;
 mod config;
 mod folder_note;
+mod glossary;
 mod order;
 mod run;
 mod yaml;
@@ -10,6 +11,11 @@ pub use case::{
 };
 pub use config::{ConfigDocument, ConfigModel};
 pub use folder_note::{FolderNoteDocument, FolderNoteFront, MarkdownBody};
+pub use glossary::{
+    GlossaryDocument, GlossaryFront, GlossaryKind, GlossaryValue, MAX_GLOSSARY_ALIASES,
+    MAX_GLOSSARY_BYTES, MAX_GLOSSARY_DESCRIPTION, MAX_GLOSSARY_TITLE, MAX_GLOSSARY_VALUE_BYTES,
+    MAX_GLOSSARY_VALUES,
+};
 pub use order::OrderDocument;
 pub use run::{
     RunApproval, RunCaseDocument, RunCaseModel, RunCheckState, RunChecklistItem,

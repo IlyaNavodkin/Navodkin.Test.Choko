@@ -35,13 +35,25 @@
     "allow-list-recent-repositories",
     "allow-open-recent-repository",
     "allow-remember-workspace",
+    "allow-read-glossary",
+    "allow-save-glossary-entry",
+    "allow-archive-glossary-entry",
     "allow-read-automation",
     "allow-save-automation-profile",
-    "allow-save-automation-bindings",
     "allow-set-automation-trust",
     "allow-start-automation",
     "allow-discover-automation",
     "allow-poll-automation",
-    "allow-cancel-automation"
+    "allow-cancel-automation",
+    "allow-save-automation-autotest",
+    "allow-archive-automation-autotest",
+    "allow-delete-automation-autotest",
+    "allow-save-automation-binding",
+    "allow-remove-automation-binding",
+    "allow-save-automation-environments",
+    "allow-preview-automation-invocations",
+    "allow-save-automation-reports",
+    "allow-preview-automation-import",
+    "allow-apply-automation-import"
   ]
 }

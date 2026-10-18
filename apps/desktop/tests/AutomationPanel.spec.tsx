@@ -18,25 +18,33 @@ const runs = {
   warnings: [],
 };
 const summary = { executionId, runId: 'run-dir', profileId: 'local', operation: 'discover' as const, state: 'completed' as const, reason: null, createdAt };
-const catalog = { schemaVersion: 1 as const, executionId, profileId: 'local', profileRevision, catalogRevision, tests: [{ ...key, title: 'Login flow', file: 'case.spec.ts', expectedStatus: 'passed' as const }], dependencies: [] };
-const record = { ...key, title: 'Login flow', file: 'case.spec.ts', expectedStatus: 'passed' as const, outcome: 'expected' as const, attempts: [{ retry: 0, repeatEachIndex: 0, status: 'passed' as const, startedAt: createdAt, durationMs: 12, errors: [], stdout: '', stderr: '', attachments: [] }] };
+const catalog = { schemaVersion: 2 as const, executionId, profileId: 'local', profileRevision, catalogRevision, tests: [{ ...key, title: 'Login flow', file: 'case.spec.ts', expectedStatus: 'passed' as const }], dependencies: [] };
+const autotest = { schemaVersion: 2 as const, id: '11111111-1111-4111-8111-000000000001', title: 'Login flow', description: 'case.spec.ts', archived: false, revision: 'rev-1', profileId: 'local', selector: { automationId: key.automationId, project: key.project, variantId: key.variantId }, argumentDefinitions: [], defaults: {} };
+const binding = { schemaVersion: 2 as const, id: '22222222-2222-4222-8222-000000000001', caseId: key.caseId, autotestId: autotest.id, revision: 'rev-1', enabled: true, argumentOverrides: {} };
+const snapshot = { schemaVersion: 2 as const, invocationId: 'c0000000-0000-4000-8000-000000000001', createdAt, caseRevision: 'case-rev-1', autotest, binding, runOverrides: {}, environments: [], resolvedArguments: {}, sources: [] };
+const record = { ...key, invocationId: snapshot.invocationId, title: 'Login flow', file: 'case.spec.ts', expectedStatus: 'passed' as const, outcome: 'expected' as const, attempts: [{ retry: 0, repeatEachIndex: 0, status: 'passed' as const, startedAt: createdAt, durationMs: 12, errors: [], stdout: '', stderr: '', attachments: [] }] };
 const report = { state: 'completed' as const, startedAt: createdAt, finishedAt: createdAt, source: { commit: null, branch: 'main', dirty: false }, reason: null, logs: { stdout: '', stderr: '', truncated: false }, runnerErrors: [], attachments: [], testCount: 1, detailsTruncated: false };
-const view = (bindings: unknown[] = []) => ({ revision: settingsRevision, profiles: [{ profile, revision: profileRevision, trusted: true, nodePath: '/usr/bin/node' }], bindings, history: [] });
+const view = (autotests: unknown[] = [], bindings: unknown[] = []) => ({ revision: settingsRevision, profiles: [{ profile, revision: profileRevision, trusted: true, nodePath: '/usr/bin/node' }], autotests, bindings, environments: [], history: [] });
 
 function fakeApi() {
   let mode: 'discover' | 'run' = 'discover';
+  // Каталог панели хранит те же id, что она отправила: привязка ссылается на её автотест.
+  let savedAutotests: unknown[] = [];
+  let savedBindings: unknown[] = [];
   return createAutomationApi({
     invoke: async (command, raw) => {
       const request = (raw as { request: Record<string, unknown> }).request;
       switch (command) {
         case 'read_automation': return view();
-        case 'save_automation_bindings': return view(request.bindings as unknown[]);
+        case 'save_automation_autotest': savedAutotests = [request.autotest as unknown]; return view(savedAutotests, savedBindings);
+        case 'save_automation_binding': savedBindings = [request.binding as unknown]; return view(savedAutotests, savedBindings);
+        case 'preview_automation_invocations': return { snapshots: [snapshot], issues: [] };
         case 'discover_automation': mode = 'discover'; return { ...summary, operation: 'discover' as const, state: 'running' as const };
         case 'start_automation': mode = 'run'; return { ...summary, operation: 'run' as const, state: 'running' as const };
         case 'poll_automation': {
           const cursor = request.cursor as number;
-          if (mode === 'run') return { execution: { ...summary, operation: 'run' }, cursor, nextCursor: null, tests: [record], catalog: null, report, detailsTruncated: false };
-          return { execution: summary, cursor, nextCursor: null, tests: [], catalog, report: null, detailsTruncated: false };
+          if (mode === 'run') return { execution: { ...summary, operation: 'run' }, cursor, nextCursor: null, tests: [record], invocations: [snapshot], catalog: null, report, detailsTruncated: false };
+          return { execution: summary, cursor, nextCursor: null, tests: [], invocations: [], catalog, report: null, detailsTruncated: false };
         }
         case 'cancel_automation': return null;
         default: throw new Error(`Unexpected command ${command}`);

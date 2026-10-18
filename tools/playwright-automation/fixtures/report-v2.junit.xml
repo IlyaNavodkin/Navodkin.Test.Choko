@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="testoritto" tests="3">
+  <testsuite name="local" tests="3">
+    <testcase classname="unit" name="unit › case.spec.mjs › payment" file="case.spec.mjs" time="0.005">
+      <properties><property name="testoritto.project" value="unit"/><property name="testoritto.caseId" value="C-A1"/><property name="testoritto.automationId" value="A1"/><property name="testoritto.variantId" value="default"/><property name="testoritto.invocationId" value="c0000000-0000-4000-8000-000000000001"/></properties>
+      
+    </testcase>
+    <testcase classname="unit" name="unit › case.spec.mjs › payment" file="case.spec.mjs" time="0.005">
+      <properties><property name="testoritto.project" value="unit"/><property name="testoritto.caseId" value="C-A1"/><property name="testoritto.automationId" value="A1"/><property name="testoritto.variantId" value="default"/><property name="testoritto.invocationId" value="c0000000-0000-4000-8000-000000000002"/></properties>
+      
+    </testcase>
+    <testcase classname="unit" name="unit › case.spec.mjs › refund" file="case.spec.mjs" time="0.002">
+      <properties><property name="testoritto.project" value="unit"/><property name="testoritto.caseId" value="C-A2"/><property name="testoritto.automationId" value="A2"/><property name="testoritto.variantId" value="default"/><property name="testoritto.invocationId" value="c0000000-0000-4000-8000-000000000003"/></properties>
+      
+    </testcase>
+  </testsuite>
+</testsuites>

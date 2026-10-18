@@ -1866,6 +1866,24 @@ pub(super) struct ApplySuiteRequest {
     session_id: String,
     confirmation: String,
 }
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct SaveGlossaryEntryRequest {
+    protocol_version: u16,
+    session_id: String,
+    entry_id: Option<String>,
+    expected_revision: String,
+    edit: crate::services::repository::GlossaryEdit,
+}
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(super) struct ArchiveGlossaryEntryRequest {
+    protocol_version: u16,
+    session_id: String,
+    entry_id: String,
+    expected_revision: String,
+    archived: bool,
+}
 #[tauri::command]
 #[allow(clippy::needless_pass_by_value)]
 pub(super) async fn prepare_suite_operation(
@@ -1911,6 +1929,91 @@ pub(super) async fn apply_suite_operation(
     run_mutation(ticket, move || {
         service
             .apply_suite_operation(&request.session_id, &request.confirmation)
+            .map_err(|error| map_repository_error(&error))
+    })
+    .await
+}
+#[tauri::command]
+#[allow(clippy::needless_pass_by_value)]
+pub(super) async fn read_glossary(
+    window: WebviewWindow,
+    state: State<'_, RepositoryCommandState>,
+    request: SessionRequest,
+) -> Result<crate::services::repository::GlossaryCatalogDto, IpcError> {
+    validate_caller(&window, tauri::is_dev())?;
+    validate_session(&request)?;
+    let service = Arc::clone(&state.service);
+    run_blocking(move || {
+        service
+            .read_glossary(&request.session_id)
+            .map_err(|error| map_repository_error(&error))
+    })
+    .await
+}
+#[tauri::command]
+#[allow(clippy::needless_pass_by_value)]
+pub(super) async fn save_glossary_entry(
+    window: WebviewWindow,
+    state: State<'_, RepositoryCommandState>,
+    request: SaveGlossaryEntryRequest,
+) -> Result<crate::services::repository::GlossaryCatalogDto, IpcError> {
+    validate_caller(&window, tauri::is_dev())?;
+    validate_protocol(request.protocol_version)?;
+    validate_uuid(&request.session_id)?;
+    if let Some(entry_id) = &request.entry_id {
+        validate_uuid(entry_id)?;
+    }
+    if request.expected_revision.len() != 64
+        || !request
+            .expected_revision
+            .bytes()
+            .all(|value| value.is_ascii_digit() || (b'a'..=b'f').contains(&value))
+    {
+        return Err(IpcError::invalid_request());
+    }
+    let service = Arc::clone(&state.service);
+    let ticket = state.mutations.admit(&request.session_id, false)?;
+    run_mutation(ticket, move || {
+        service
+            .save_glossary_entry(
+                &request.session_id,
+                request.entry_id.as_deref(),
+                &request.expected_revision,
+                request.edit,
+            )
+            .map_err(|error| map_repository_error(&error))
+    })
+    .await
+}
+#[tauri::command]
+#[allow(clippy::needless_pass_by_value)]
+pub(super) async fn archive_glossary_entry(
+    window: WebviewWindow,
+    state: State<'_, RepositoryCommandState>,
+    request: ArchiveGlossaryEntryRequest,
+) -> Result<crate::services::repository::GlossaryCatalogDto, IpcError> {
+    validate_caller(&window, tauri::is_dev())?;
+    validate_protocol(request.protocol_version)?;
+    validate_uuid(&request.session_id)?;
+    validate_uuid(&request.entry_id)?;
+    if request.expected_revision.len() != 64
+        || !request
+            .expected_revision
+            .bytes()
+            .all(|value| value.is_ascii_digit() || (b'a'..=b'f').contains(&value))
+    {
+        return Err(IpcError::invalid_request());
+    }
+    let service = Arc::clone(&state.service);
+    let ticket = state.mutations.admit(&request.session_id, false)?;
+    run_mutation(ticket, move || {
+        service
+            .archive_glossary_entry(
+                &request.session_id,
+                &request.entry_id,
+                &request.expected_revision,
+                request.archived,
+            )
             .map_err(|error| map_repository_error(&error))
     })
     .await

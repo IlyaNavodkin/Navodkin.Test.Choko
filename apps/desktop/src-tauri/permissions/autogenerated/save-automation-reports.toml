@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-automation-reports"
+description = "Enables the save_automation_reports command without any pre-configured scope."
+commands.allow = ["save_automation_reports"]
+
+[[permission]]
+identifier = "deny-save-automation-reports"
+description = "Denies the save_automation_reports command without any pre-configured scope."
+commands.deny = ["save_automation_reports"]

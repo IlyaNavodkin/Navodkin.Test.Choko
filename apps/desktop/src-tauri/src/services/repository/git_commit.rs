@@ -137,6 +137,11 @@ fn product_path(
     if path == ".casewright/config.yaml" {
         return Ok(true);
     }
+    if path.starts_with(".testoritto/glossary/") {
+        return Ok(Path::new(path)
+            .extension()
+            .is_some_and(|extension| extension == "md"));
+    }
     if path.starts_with(".casewright/runs/") {
         return Ok(Path::new(path)
             .extension()

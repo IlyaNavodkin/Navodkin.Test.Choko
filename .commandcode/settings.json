@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(ls -lh apps/desktop/src-tauri/target/release/testoritto-desktop.exe \"apps/desktop/src-tauri/target/release/bundle/nsis/Testoritto_0.1.0_x64-setup.exe\" 2>&1; echo ---; ls -d .cache/acceptance-user-* 2>&1 | head -20)",
+      "powershell",
+      "Shell(openspec:*)",
+      "Shell(node --version)",
+      "Shell(pnpm:*)",
+      "Shell(cargo:*)",
+      "Shell(rustc:*)",
+      "Shell(node -v)",
+      "Shell(node node_modules/typescript/bin/tsc --noEmit)",
+      "Shell(node build.mjs)",
+      "Shell(node node_modules/vitest/vitest.mjs run 2 >& 1)",
+      "Shell(tsc:*)",
+      "Shell(node --test --test-concurrency=1 tests/*.test.mjs 2 >& 1)",
+      "Shell(node node_modules/vitest/vitest.mjs run --reporter=basic 2 >& 1)",
+      "Shell(grep:*)",
+      "Shell(node node_modules/vitest/vitest.mjs run tests/automation-api.spec.ts tests/repositoryApi.spec.ts tests/runtimeDiagnosticsApi.spec.ts 2 >& 1)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

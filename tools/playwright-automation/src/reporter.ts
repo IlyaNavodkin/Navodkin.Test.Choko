@@ -3,32 +3,49 @@ import path from 'node:path';
 import { appendFileSync, existsSync } from 'node:fs';
 import { mkdir, realpath, stat, copyFile, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
-import { CatalogSchema, ExpectedStatusSchema, LIMITS, ReportSchema, outcomeOf, stableKey } from './contracts';
+import { CatalogSchema, ExpectedStatusSchema, LIMITS, ManifestSchema, ReportSchema, outcomeOf, stableKey } from './contracts';
+import { DiscoveryV2Schema, ManifestV2Schema } from './runner-contracts';
 import type { AutomationReport, Catalog, Manifest, TestRecord } from './contracts';
+import type { ManifestV2 } from './runner-contracts';
 import { identityFromAnnotations } from './imports';
-import { atomicJson, baseReport, consumeLog, descendant, digest, errorRecord, fileDigest, readManifest } from './node-common';
+import { atomicJson, baseReport, consumeLog, descendant, digest, errorRecord, fileDigest, readBounded } from './node-common';
 
+type InvocationRecord = TestRecord & { invocationId?: string };
+type RunnerManifest = Manifest | ManifestV2;
 export default class TestorittoReporter implements Reporter {
-  private manifest!: Manifest;
+  private manifest!: RunnerManifest;
   private report!: AutomationReport;
   private catalog?: Catalog;
-  private records = new Map<string, TestRecord>();
+  private records = new Map<string, InvocationRecord>();
   private fatal: string | null = null;
   private budget = { remaining: LIMITS.logBytes };
   private eventBytes = 0;
   private artifactBytes = 0;
   private sourceRoot = '';
+  private v2 = false;
+  private invocationId: string | null = null;
+  private selection: Manifest['selection'] = [];
   private attemptLogs = new WeakMap<TestResult, { stdout: string; stderr: string }>();
   printsToStdio(): boolean { return true; }
   private event(type: string, data: object = {}) {
-    const line = JSON.stringify({ schemaVersion: 1, executionId: this.manifest.executionId, type, ...data }) + '\n';
+    const line = JSON.stringify({ schemaVersion: this.v2 ? 2 : 1, executionId: this.manifest.executionId, type, ...data }) + '\n';
     this.eventBytes += Buffer.byteLength(line);
     if (this.eventBytes <= LIMITS.reportBytes) appendFileSync(path.join(this.manifest.outputRoot, 'events.ndjson'), line, { mode: 0o600 });
     else this.report.logs.truncated = true;
   }
   async preprocess({ config, suite, testRun }: { config: FullConfig; suite: Suite; testRun: TestRun }): Promise<void> {
-    this.manifest = await readManifest(process.env.TESTORITTO_MANIFEST!);
-    this.report = baseReport(this.manifest);
+    const raw: unknown = JSON.parse(await readBounded(process.env.TESTORITTO_MANIFEST!));
+    this.v2 = Boolean(raw && typeof raw === 'object' && (raw as { schemaVersion?: unknown }).schemaVersion === 2);
+    this.manifest = this.v2 ? ManifestV2Schema.parse(raw) : ManifestSchema.parse(raw);
+    this.report = baseReport(this.manifest as Manifest);
+    this.invocationId = process.env.TESTORITTO_INVOCATION_ID ?? null;
+    // Version 2 запускает один invocation на процесс: отбор приходит из окружения, а не из selection.
+    if (this.v2 && this.manifest.operation === 'run') {
+      const single = process.env.TESTORITTO_SELECTION;
+      if (!single) throw new Error('MISSING_SELECTION');
+      this.selection = [JSON.parse(single) as Manifest['selection'][number]];
+      if (!this.invocationId) throw new Error('MISSING_INVOCATION_ID');
+    } else this.selection = (this.manifest as Manifest).selection;
     const tests = suite.allTests();
     try {
       if (!testRun || typeof testRun.exclude !== 'function') throw new Error('UNSUPPORTED_VERSION: preprocess required');
@@ -57,7 +74,7 @@ export default class TestorittoReporter implements Reporter {
       this.catalog = CatalogSchema.parse({ schemaVersion: 1, executionId: this.manifest.executionId, profileId: this.manifest.profileId, profileRevision: this.manifest.profileRevision, catalogRevision, tests: catalogTests, dependencies: [] });
       if (this.manifest.operation === 'run') {
         if (catalogRevision !== this.manifest.catalogRevision) throw new Error('STALE_CATALOG');
-        const selected = new Set(this.manifest.selection.map(stableKey));
+        const selected = new Set(this.selection.map(stableKey));
         if ([...selected].some(k => !seen.has(k))) throw new Error('MISSING_SELECTION');
         for (const t of tests) if (!selected.has(stableKey(identityFromAnnotations(t.annotations, t.parent.project()!.name, true)!))) testRun.exclude(t);
       }
@@ -94,6 +111,7 @@ export default class TestorittoReporter implements Reporter {
     if (!record) { record = { ...key, title: test.titlePath().slice(1).join(' › '), file: path.relative(this.sourceRoot, test.location.file).split(path.sep).join('/'), expectedStatus: ExpectedStatusSchema.parse(test.expectedStatus), outcome: 'interrupted', attempts: [] }; this.records.set(id, record); }
     if (record.attempts.length >= LIMITS.attempts) { this.fatal = 'LIMIT_EXCEEDED: attempts'; return; }
     record.expectedStatus = ExpectedStatusSchema.parse(test.expectedStatus);
+    if (this.v2 && this.invocationId) record.invocationId = this.invocationId;
     const attachments: string[] = [];
     for (const a of result.attachments) {
       if (this.report.attachments.length >= LIMITS.attachments) { this.report.logs.truncated = true; break; }
@@ -121,13 +139,24 @@ export default class TestorittoReporter implements Reporter {
   async onEnd(result: FullResult): Promise<void> {
     if (!this.manifest) return;
     this.report.finishedAt = new Date().toISOString();
-    this.report.tests = [...this.records.values()];
+    this.report.tests = [...this.records.values()] as AutomationReport['tests'];
     this.report.state = this.fatal || this.report.runnerErrors.length ? 'runner_error' : result.status === 'interrupted' ? 'interrupted' : result.status === 'timedout' ? 'timed_out' : 'completed';
     this.report.reason = this.fatal;
     if (this.manifest.operation === 'discover') {
       if (this.fatal || !this.catalog || result.status !== 'passed') return;
-      await atomicJson(this.manifest.outputRoot, 'catalog.json', this.catalog);
-    } else await atomicJson(this.manifest.outputRoot, 'report.json', ReportSchema.parse(this.report));
-    this.event('complete', { state: this.report.state });
+      await atomicJson(this.manifest.outputRoot, 'catalog.json', this.v2 ? DiscoveryV2Schema.parse({ ...this.catalog, schemaVersion: 2 }) : this.catalog);
+      return;
+    }
+    // Version 2: каждая invocation пишет свой фрагмент, финальный отчёт собирает bridge.
+    if (this.v2) {
+      const { schemaVersion: _version, ...correlation } = this.report;
+      await atomicJson(path.join(this.manifest.outputRoot, 'fragments'), `${this.invocationId}.json`, {
+        invocationId: this.invocationId, state: this.report.state, reason: this.report.reason,
+        startedAt: this.report.startedAt, finishedAt: this.report.finishedAt,
+        tests: this.report.tests, runnerErrors: this.report.runnerErrors, logs: this.report.logs, attachments: this.report.attachments,
+      });
+      return;
+    }
+    await atomicJson(this.manifest.outputRoot, 'report.json', ReportSchema.parse(this.report));
   }
 }

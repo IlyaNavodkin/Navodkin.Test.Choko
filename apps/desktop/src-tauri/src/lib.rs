@@ -21,7 +21,16 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             automation_commands::read_automation,
             automation_commands::save_automation_profile,
-            automation_commands::save_automation_bindings,
+            automation_commands::save_automation_autotest,
+            automation_commands::archive_automation_autotest,
+            automation_commands::delete_automation_autotest,
+            automation_commands::save_automation_binding,
+            automation_commands::remove_automation_binding,
+            automation_commands::save_automation_environments,
+            automation_commands::preview_automation_invocations,
+            automation_commands::save_automation_reports,
+            automation_commands::preview_automation_import,
+            automation_commands::apply_automation_import,
             automation_commands::set_automation_trust,
             automation_commands::start_automation,
             automation_commands::discover_automation,
@@ -52,7 +61,10 @@ pub fn run() {
             repository_commands::read_run,
             repository_commands::list_recent_repositories,
             repository_commands::open_recent_repository,
-            repository_commands::remember_workspace
+            repository_commands::remember_workspace,
+            repository_commands::read_glossary,
+            repository_commands::save_glossary_entry,
+            repository_commands::archive_glossary_entry
         ])
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {

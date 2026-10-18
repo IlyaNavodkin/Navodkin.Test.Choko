@@ -26,6 +26,8 @@ pub use suite_operations::{SuiteAction, SuiteApplyResult, SuiteOperation, SuiteP
 mod edit;
 mod edit_run;
 mod edit_run_details;
+mod glossary;
+pub use glossary::{GlossaryCatalogDto, GlossaryEdit, GlossaryEntryDto};
 pub mod watcher;
 pub use edit_run::RunCaseEdit;
 pub use edit_run_details::RunDetailsEdit;

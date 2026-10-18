@@ -324,7 +324,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await page.goto('/');
     await expect(page.getByText('Предпросмотр в браузере не имеет доступа к репозиторию.')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Открыть репозиторий' })).toBeDisabled();
-    await expect(page.getByText('Репозиторий не открыт')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Ваши тесты. В вашем репозитории.' })).toBeVisible();
   });
 
   test('opens nested case and folder, reads run metadata/checklist, and stays responsive', async ({ page }) => {
@@ -343,7 +343,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await expect(page.getByText('Подтвердить транзакцию')).toBeVisible();
     await captureEvidence(page, 'case-reader.png');
 
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     await expect(page.getByRole('heading', { name: 'Регрессия оплаты' })).toBeVisible();
     await expect(page.getByText('2026-10-14', { exact: true })).toBeVisible();
@@ -501,7 +501,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
     await expect(page.getByText(/Автоматическая инициализация не выполняется/).first()).toBeVisible();
-    await expect(page.getByRole('tab')).toHaveCount(0);
+    await expect(page.getByRole('navigation')).toHaveCount(0);
     const calls = await getCalls(page);
     expect(calls.filter((call) => call.command === 'pick_repository')).toHaveLength(1);
     expect(calls.some((call) => call.command === 'remember_workspace')).toBe(false);
@@ -708,7 +708,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const syncToken = '550e8400-e29b-41d4-a716-446655440040';
     const status: GitStatus = { syncToken, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: 'origin/main', ahead: 1, behind: 0, filtersDisabled: false, files: [] };
     await installMock(page, { gitStatus: status, queues: { git_sync: [{ __reject: { code: 'GIT_PUSH_REJECTED', message: 'secret stderr' } }, { __deferred: 'push' }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click();
     const push = page.getByRole('button', { name: 'Отправить изменения…', exact: true });
     await push.click(); const dialog = page.getByRole('dialog', { name: 'Подтвердите действие Git' }); await expect(dialog).toContainText('main → origin/main');
     await dialog.getByRole('button', { name: 'Отмена', exact: true }).click(); expect((await getCalls(page)).filter((call) => call.command === 'git_sync')).toHaveLength(0);
@@ -724,7 +724,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const status: GitStatus = { syncToken, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: 'origin/main', ahead: 0, behind: 1, filtersDisabled: false, files: [] };
     const conflicted: GitStatus = { ...status, syncToken: null, abortToken, syncBlocked: true, files: [{ fileId: caseResourceA, path: 'case.md', originalPath: null, committable: false, index: 'U', worktree: 'U', unmerged: true, submodule: false }] };
     await installMock(page, { gitStatus: status, queues: { git_status: [status, conflicted, status], git_sync: [{ outcome: 'conflict', abortToken, unmergedPaths: ['case.md'], repository: null, reloadRequired: false }, { outcome: 'aborted', abortToken: null, unmergedPaths: [], repository: defaultOpen(), reloadRequired: false }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click();
     const before = (await getCalls(page)).filter((call) => call.command === 'catalog_workspace').length;
     await page.getByRole('button', { name: 'Получить изменения…', exact: true }).click(); const dialog = page.getByRole('dialog', { name: 'Подтвердите действие Git' }); await dialog.getByRole('button', { name: 'Подтвердить', exact: true }).click();
     await expect(page.getByText(/^Pull создал конфликт/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Отправить изменения…', exact: true })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Создать commit…', exact: true })).toBeDisabled();
@@ -740,10 +740,10 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const status: GitStatus = { syncToken, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: 'origin/main', ahead: 0, behind: 1, filtersDisabled: false, files: [] };
     const repository = { ...defaultOpen(), workspaces: [{ path: 'area', name: 'Remote area', displayIdPrefix: 'AREA', description: '' }] };
     await installMock(page, { gitStatus: status, queues: { git_sync: [{ outcome: 'pulled', abortToken: null, unmergedPaths: [], repository, reloadRequired: false }], git_status: [status, { ...status, head: 'b'.repeat(40), behind: 0 }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click();
     await page.getByRole('button', { name: 'Получить изменения…', exact: true }).click(); await page.getByRole('dialog', { name: 'Подтвердите действие Git' }).getByRole('button', { name: 'Подтвердить', exact: true }).click();
     await expect(page.getByText('Pull выполнен. Данные репозитория обновлены.')).toBeVisible();
-    await page.getByRole('tab', { name: 'Кейсы', exact: true }).click(); await expect(page.getByRole('combobox', { name: 'Рабочая область', exact: true })).toHaveText('Remote area');
+    await page.getByRole('button', { name: 'Кейсы', exact: true }).click(); await expect(page.getByRole('combobox', { name: 'Рабочая область', exact: true })).toHaveText('Remote area');
     await expect.poll(async () => (await getCalls(page)).filter((call) => call.command === 'catalog_workspace').map((call) => (call.args.request as { workspacePath: string }).workspacePath)).toContain('area');
   });
 
@@ -751,7 +751,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const abortToken = '550e8400-e29b-41d4-a716-446655440041';
     const status: GitStatus = { syncToken: null, abortToken, syncBlocked: true, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: 'origin/main', ahead: 1, behind: 1, filtersDisabled: false, files: [{ fileId: caseResourceA, path: 'case.md', originalPath: null, committable: false, index: 'U', worktree: 'U', unmerged: true, submodule: false }] };
     await installMock(page, { gitStatus: status, queues: { git_sync: [{ __reject: { code: 'GIT_ABORT_FAILED', message: 'secret stderr' } }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click(); await page.getByRole('button', { name: 'Отменить слияние…', exact: true }).click(); await page.getByRole('dialog', { name: 'Подтвердите действие Git' }).getByRole('button', { name: 'Подтвердить', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click(); await page.getByRole('button', { name: 'Отменить слияние…', exact: true }).click(); await page.getByRole('dialog', { name: 'Подтвердите действие Git' }).getByRole('button', { name: 'Подтвердить', exact: true }).click();
     await expect(page.getByText(/^Безопасная отмена невозможна/)).toBeVisible(); await expect(page.getByRole('button', { name: 'Отменить слияние…', exact: true })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Отправить изменения…', exact: true })).toBeDisabled(); await expect(page.getByText('secret stderr')).toHaveCount(0); await expect(page.getByRole('button', { name: 'case.md', exact: true })).toBeVisible();
     await captureEvidence(page, 'git-sync-abort-failed.png');
   });
@@ -760,7 +760,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const fileId = '550e8400-e29b-41d4-a716-446655440030'; const foreignId = '550e8400-e29b-41d4-a716-446655440031';
     const status: GitStatus = { syncToken: null, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: null, ahead: null, behind: null, filtersDisabled: false, files: [{ fileId, committable: true, path: 'case.md', originalPath: null, index: 'M', worktree: 'M', unmerged: false, submodule: false }, { fileId: foreignId, committable: false, path: 'foreign.txt', originalPath: null, index: 'M', worktree: '.', unmerged: false, submodule: false }] };
     await installMock(page, { gitStatus: status, queues: { git_commit: [{ __reject: { code: 'GIT_IDENTITY_MISSING', message: 'secret stderr' } }, { __deferred: 'commit' }], git_status: [status, { ...status, head: 'b'.repeat(40), files: [] }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click();
     await expect(page.getByRole('checkbox', { name: 'Включить в commit foreign.txt' })).toBeDisabled();
     await page.getByRole('checkbox', { name: 'Включить в commit case.md' }).press('Space'); await page.getByLabel('Сообщение commit', { exact: true }).fill('Сохранённый кейс');
     await expect(page.getByRole('button', { name: 'Закрыть', exact: true })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Обновить Git' })).toBeDisabled();
@@ -779,7 +779,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const fileId = '550e8400-e29b-41d4-a716-446655440030';
     const status: GitStatus = { syncToken: null, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: null, ahead: null, behind: null, filtersDisabled: false, files: [{ fileId, committable: true, path: 'case.md', originalPath: null, index: 'M', worktree: '.', unmerged: false, submodule: false }] };
     await installMock(page, { gitStatus: status, queues: { git_commit: [{ head: 'b'.repeat(40), indexPublished: false, recoveryIndex: 'testoritto-index-550e8400-e29b-41d4-a716-446655440000' }] } });
-    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('tab', { name: 'Git', exact: true }).click(); await page.getByRole('checkbox', { name: 'Включить в commit case.md' }).press('Space'); await page.getByLabel('Сообщение commit', { exact: true }).fill('saved'); await page.getByRole('button', { name: 'Создать commit…', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Создать commit', exact: true }).click();
+    await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click(); await page.getByRole('button', { name: 'Git', exact: true }).click(); await page.getByRole('checkbox', { name: 'Включить в commit case.md' }).press('Space'); await page.getByLabel('Сообщение commit', { exact: true }).fill('saved'); await page.getByRole('button', { name: 'Создать commit…', exact: true }).click(); await page.getByRole('dialog').getByRole('button', { name: 'Создать commit', exact: true }).click();
     await expect(page.getByText(/Commit создан, но индекс не опубликован/)).toBeVisible(); await expect(page.getByText('b'.repeat(40), { exact: true })).toBeVisible(); await expect(page.getByRole('button', { name: 'Создать commit…', exact: true })).toBeDisabled(); await expect(page.getByRole('button', { name: 'Обновить Git' })).toBeDisabled(); expect((await getCalls(page)).filter((call) => call.command === 'git_commit')).toHaveLength(1); await captureEvidence(page, 'git-commit-recovery.png');
   });
 
@@ -791,7 +791,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, { gitStatus: status, gitDiffs: { [fileId]: diff }, queues: { git_status: [{ __reject: { code: 'GIT_UNAVAILABLE', message: 'secret stderr D:/private' } }] } });
     await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
     expect((await getCalls(page)).some((call) => call.command === 'git_status')).toBe(false);
-    await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.getByRole('button', { name: 'Git', exact: true }).click();
     await expect(page.getByText('Системный Git не найден. Установите Git и проверьте PATH.')).toBeVisible();
     await page.getByRole('button', { name: 'Обновить Git' }).click();
     await expect(page.getByText('origin/main', { exact: true })).toBeVisible();
@@ -812,7 +812,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const conflicted: GitStatus = { ...clean, branch: null, head: 'b'.repeat(40), unborn: false, detached: true, filtersDisabled: true, files: [{ fileId: '550e8400-e29b-41d4-a716-446655440031', committable: false, path: 'conflict.md', originalPath: null, index: 'U', worktree: 'U', unmerged: true, submodule: false }] };
     await installMock(page, { queues: { git_status: [clean, conflicted] } });
     await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Git', exact: true }).click();
+    await page.getByRole('button', { name: 'Git', exact: true }).click();
     await expect(page.getByText(/В ветке пока нет коммитов/)).toBeVisible();
     await expect(page.getByText('Upstream не настроен')).toBeVisible();
     await expect(page.getByText('Нет локальных изменений')).toBeVisible();
@@ -829,7 +829,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     const status: GitStatus = { syncToken: null, abortToken: null, syncBlocked: false, branch: 'main', head: 'a'.repeat(40), unborn: false, detached: false, upstream: null, ahead: null, behind: null, filtersDisabled: false, files: [{ fileId, committable: true, path, originalPath: null, index: '?', worktree: '?', unmerged: false, submodule: false }] };
     await installMock(page, { gitStatus: status, gitDiffs: { [fileId]: { path, staged: null, workingTree: null, untrackedContent: 'new content', binary: false, unmerged: false, filtersDisabled: false } }, queues: { git_status: [status, { ...status, files: [] }], git_diff: [{ __reject: { code: 'GIT_OUTPUT_TOO_LARGE', message: 'private stderr' } }] } });
     await page.goto('/'); await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Git', exact: true }).click(); await page.getByRole('button', { name: path, exact: true }).click();
+    await page.getByRole('button', { name: 'Git', exact: true }).click(); await page.getByRole('button', { name: path, exact: true }).click();
     await expect(page.getByText(/Git-вывод слишком велик/)).toBeVisible();
     await page.getByRole('button', { name: 'Повторить', exact: true }).click();
     await expect(page.getByText('new content', { exact: true })).toBeVisible();
@@ -846,7 +846,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, seed);
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     const grid = page.getByRole('region', { name: 'Результаты прогона' });
     await expect(grid.getByRole('row')).toHaveCount(26);
@@ -867,7 +867,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, { ...workflowFixtures(), queues: { save_run_case: [{ __reject: { code: 'SAVE_FAILED', message: 'private path' } }] } });
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     await page.getByRole('button', { name: 'Начать / продолжить выполнение' }).click();
     await expect(page.getByText('Кейс 1 из 3', { exact: true })).toBeVisible();
@@ -918,7 +918,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, seed);
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     await page.getByRole('button', { name: 'Начать / продолжить выполнение' }).click();
     await expect(page.getByText('Полного снимка исходника нет. Используются сохранённые тексты пунктов этого прогона.')).toBeVisible();
@@ -933,7 +933,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, { queues: { save_run_details: [{ __reject: { code: 'SAVE_FAILED', message: 'private path' } }] } });
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     await page.getByRole('button', { name: 'Редактировать прогон' }).click();
     await page.getByRole('textbox', { name: 'Итоги' }).fill('Итоги проверки');
@@ -971,7 +971,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page);
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /Регрессия оплаты/ }).click();
     await page.getByRole('button', { name: 'Редактировать прогон' }).click();
     await page.getByRole('textbox', { name: 'Заметки' }).fill('Мои заметки');
@@ -990,7 +990,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page, { queues: { save_run_case: [{ __reject: { code: 'SAVE_FAILED', message: 'private disk path' } }] } });
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /PAY-7 · Платёж проходит/ }).click();
     await page.getByRole('button', { name: 'Записать результат' }).click();
     await page.getByRole('combobox', { name: 'Результат', exact: true }).click();
@@ -1029,7 +1029,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     await installMock(page);
     await page.goto('/');
     await page.getByRole('button', { name: 'Открыть репозиторий' }).click();
-    await page.getByRole('tab', { name: 'Прогоны' }).click();
+    await page.getByRole('button', { name: 'Прогоны' }).click();
     await page.getByRole('button', { name: /PAY-7 · Платёж проходит/ }).click();
     await page.getByRole('button', { name: 'Записать результат' }).click();
     await page.getByRole('textbox', { name: 'Тестировщик' }).fill('Мой черновик');
@@ -1170,7 +1170,7 @@ test.describe('read-only repository browser in headless Chromium', () => {
     mock?.emitChange({ sessionId, epoch: 1, kind: 'content', errorCode: null });
   }, { document: validCase, sessionId: sessionA });
   await expect(page.getByRole('heading', { name: 'PAY-7 · Версия native watcher' })).toBeVisible();
-  await page.getByRole('tab', { name: 'Git', exact: true }).click();
+  await page.getByRole('button', { name: 'Git', exact: true }).click();
   await page.getByRole('textbox', { name: 'Сообщение commit' }).fill('Не терять сообщение');
   const count = (await getCalls(page)).filter((call) => call.command === 'refresh_repository').length;
   await page.evaluate((sessionId) => (window as TestWindow).__TESTORITTO_MOCK__?.emitChange({ sessionId, epoch: 2, kind: 'git', errorCode: null }), sessionA);

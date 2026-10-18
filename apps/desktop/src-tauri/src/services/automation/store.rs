@@ -1,7 +1,9 @@
 use super::{
     Code, Error, Result,
-    contracts::{
-        Binding, Catalog, MAX_REPORT, Operation, Profile, State, TestRecord, id, relative, uuid,
+    contracts::{MAX_REPORT, Operation, Profile, State, hash, id, relative, uuid},
+    v2::{
+        Autotest, CaseAutotestBinding, Catalog, EnvironmentEntry, InvocationSnapshot,
+        InvocationTest,
     },
 };
 use crate::{mutation_queue::MutationQueues, services::repository::RepositoryService};
@@ -26,6 +28,27 @@ pub(super) fn digest(bytes: &[u8]) -> String {
 }
 pub(super) fn bounded(path: &Path, limit: usize) -> Result<Vec<u8>> {
     crate::services::repository::atomic::read_automation(path, limit).map_err(io)
+}
+/// Читает portable-файл, если он есть; отсутствие файла — пустое значение.
+pub(super) fn optional(path: &Path) -> Result<Vec<u8>> {
+    if path.exists() {
+        bounded(path, MAX_REPORT)
+    } else {
+        Ok(Vec::new())
+    }
+}
+/// Обязательный файл: пустое содержимое — ошибка контракта, а не значение по умолчанию.
+pub(super) fn decode_required<T: serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
+    if bytes.is_empty() {
+        return Err(Error::new(Code::InvalidReport));
+    }
+    serde_json::from_slice(bytes).map_err(|_| Error::new(Code::InvalidReport))
+}
+pub(super) fn decode<T: Default + serde::de::DeserializeOwned>(bytes: &[u8]) -> Result<T> {
+    if bytes.is_empty() {
+        return Ok(T::default());
+    }
+    serde_json::from_slice(bytes).map_err(|_| Error::new(Code::InvalidReport))
 }
 pub(super) fn existing(root: &Path, rel: &str) -> Result<PathBuf> {
     if !relative(rel) {
@@ -93,11 +116,33 @@ pub(super) fn atomic<T: Serialize>(root: &Path, name: &str, value: &T) -> Result
     }
     Ok(())
 }
+/// Уже применённые импорты: повторное применение того же источника запрещено.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ImportsFile {
+    schema_version: u8,
+    imports: Vec<String>,
+}
+/// Portable-настройки репозитория: профили, каталог автотестов и окружения.
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct ProfilesFile {
+    pub schema_version: u8,
+    pub profiles: Vec<Profile>,
+}
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct EnvironmentsFile {
+    schema_version: u8,
+    environments: Vec<EnvironmentEntry>,
+}
+#[derive(Debug, Clone, Default)]
 pub struct Settings {
     pub profiles: Vec<Profile>,
-    pub bindings: Vec<Binding>,
+    pub catalog: Catalog,
+    pub environments: Vec<EnvironmentEntry>,
+    /// Хеши уже применённых импортов: повторный импорт того же источника не применяется.
+    pub imports: Vec<String>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
@@ -118,7 +163,9 @@ pub struct ProfileView {
 pub struct AutomationView {
     pub revision: String,
     pub profiles: Vec<ProfileView>,
-    pub bindings: Vec<Binding>,
+    pub autotests: Vec<Autotest>,
+    pub bindings: Vec<CaseAutotestBinding>,
+    pub environments: Vec<EnvironmentEntry>,
     pub history: Vec<ExecutionSummary>,
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -139,24 +186,19 @@ pub struct Poll {
     pub execution: ExecutionSummary,
     pub cursor: usize,
     pub next_cursor: Option<usize>,
-    pub tests: Vec<TestRecord>,
-    pub catalog: Option<Catalog>,
+    pub tests: Vec<InvocationTest>,
+    pub invocations: Vec<InvocationSnapshot>,
+    pub catalog: Option<super::v2::Discovery>,
     pub report: Option<ReportOverview>,
 }
 
-#[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct ReportOverview {
-    pub state: State,
-    pub started_at: String,
-    pub finished_at: String,
-    pub source: super::contracts::Source,
-    pub reason: Option<String>,
-    pub logs: super::contracts::Logs,
-    pub runner_errors: Vec<super::contracts::ErrorRecord>,
-    pub attachments: Vec<super::contracts::Attachment>,
-    pub test_count: usize,
-    pub details_truncated: bool,
+/// Сводка отчёта совпадает с version 2 контрактом автоматизации.
+pub use super::v2::Overview as ReportOverview;
+/// Кейс прогона: идентичность и путь snapshot-документа.
+#[derive(Debug, Clone)]
+pub struct RunCase {
+    pub case_id: String,
+    pub path: String,
 }
 pub(super) struct Active {
     pub session: String,
@@ -209,19 +251,87 @@ impl AutomationService {
             Ok(None)
         }
     }
-    pub(super) fn settings(&self, root: &Path) -> Result<(Settings, String)> {
+    /// Revision покрывает все три portable-файла: профили, каталог и окружения.
+    fn portable(&self, root: &Path) -> Result<(Settings, String)> {
         let Some(folder) = self.metadata(root, false)? else {
             return Ok((Settings::default(), digest(b"")));
         };
-        let path = folder.join("profiles.json");
-        if !path.exists() {
-            return Ok((Settings::default(), digest(b"")));
-        }
-        let bytes = bounded(&path, MAX_REPORT)?;
-        let settings: Settings =
-            serde_json::from_slice(&bytes).map_err(|_| Error::new(Code::InvalidReport))?;
+        let profiles_bytes = optional(&folder.join("profiles.json"))?;
+        let catalog_bytes = optional(&folder.join("catalog.json"))?;
+        let environments_bytes = optional(&folder.join("environments.json"))?;
+        let imports_bytes = optional(&folder.join("imports.json"))?;
+        let profiles: ProfilesFile = decode(&profiles_bytes)?;
+        let catalog: Catalog = decode(&catalog_bytes)?;
+        let environments: EnvironmentsFile = decode(&environments_bytes)?;
+        let imports: ImportsFile = decode(&imports_bytes)?;
+        let settings = Settings {
+            profiles: profiles.profiles,
+            catalog,
+            environments: environments.environments,
+            imports: imports.imports,
+        };
         validate_settings(&settings)?;
-        Ok((settings, digest(&bytes)))
+        let mut hash = Sha256::new();
+        for bytes in [
+            &profiles_bytes,
+            &catalog_bytes,
+            &environments_bytes,
+            &imports_bytes,
+        ] {
+            hash.update(u64::try_from(bytes.len()).unwrap_or(u64::MAX).to_be_bytes());
+            hash.update(bytes);
+        }
+        Ok((settings, format!("{:x}", hash.finalize())))
+    }
+    pub(super) fn settings(&self, root: &Path) -> Result<(Settings, String)> {
+        self.portable(root)
+    }
+    fn write_portable(&self, root: &Path, settings: &Settings) -> Result<()> {
+        validate_settings(settings).map_err(|_| Error::new(Code::InvalidRequest))?;
+        let folder = self
+            .metadata(root, true)?
+            .ok_or_else(|| Error::new(Code::Io))?;
+        atomic(
+            &folder,
+            "profiles.json",
+            &ProfilesFile {
+                schema_version: 2,
+                profiles: settings.profiles.clone(),
+            },
+        )?;
+        atomic(&folder, "catalog.json", &settings.catalog)?;
+        atomic(
+            &folder,
+            "environments.json",
+            &EnvironmentsFile {
+                schema_version: 2,
+                environments: settings.environments.clone(),
+            },
+        )?;
+        atomic(
+            &folder,
+            "imports.json",
+            &ImportsFile {
+                schema_version: 2,
+                imports: settings.imports.clone(),
+            },
+        )
+    }
+    /// Одна транзакция: проверка revision, изменение и публикация portable-файлов.
+    pub(super) fn mutate(
+        &self,
+        session: &str,
+        expected: &str,
+        change: impl FnOnce(&mut Settings) -> Result<()>,
+    ) -> Result<AutomationView> {
+        let root = self.root(session)?;
+        let (mut settings, revision) = self.portable(&root)?;
+        if expected != revision {
+            return Err(Error::new(Code::StaleResource));
+        }
+        change(&mut settings)?;
+        self.write_portable(&root, &settings)?;
+        self.read(session)
     }
     fn local_dir(&self, root: &Path, create: bool) -> Result<Option<PathBuf>> {
         let rel = format!("automation/{}", digest(root.to_string_lossy().as_bytes()));
@@ -300,7 +410,7 @@ impl AutomationService {
     }
     pub fn read(&self, session: &str) -> Result<AutomationView> {
         let root = self.root(session)?;
-        let (settings, revision) = self.settings(&root)?;
+        let (settings, revision) = self.portable(&root)?;
         let profiles = settings
             .profiles
             .into_iter()
@@ -325,7 +435,9 @@ impl AutomationService {
         Ok(AutomationView {
             revision,
             profiles,
-            bindings: settings.bindings,
+            autotests: settings.catalog.autotests,
+            bindings: settings.catalog.bindings,
+            environments: settings.environments,
             history: self.history(&root)?,
         })
     }
@@ -338,20 +450,11 @@ impl AutomationService {
     ) -> Result<AutomationView> {
         profile.validate()?;
         let root = self.root(session)?;
-        let (mut settings, revision) = self.settings(&root)?;
-        if expected != revision {
-            return Err(Error::new(Code::StaleResource));
-        }
         let node = fs::canonicalize(node)
             .map_err(|_| Error::new(Code::AutomationUnavailable))?
             .to_string_lossy()
             .into_owned();
         Self::fingerprint(&root, profile, &node)?;
-        settings
-            .profiles
-            .retain(|p| p.profile_id != profile.profile_id);
-        settings.profiles.push(profile.clone());
-        validate_settings(&settings)?;
         let local = self
             .local_dir(&root, true)?
             .ok_or_else(|| Error::new(Code::Io))?;
@@ -360,36 +463,156 @@ impl AutomationService {
             &format!("{}.json", digest(profile.profile_id.as_bytes())),
             &Local { node, grant: None },
         )?;
-        atomic(
-            &self
-                .metadata(&root, true)?
-                .ok_or_else(|| Error::new(Code::Io))?,
-            "profiles.json",
-            &settings,
-        )?;
-        self.read(session)
+        self.mutate(session, expected, |settings| {
+            settings
+                .profiles
+                .retain(|item| item.profile_id != profile.profile_id);
+            settings.profiles.push(profile.clone());
+            Ok(())
+        })
     }
-    pub fn save_bindings(
+    /// Создаёт или обновляет автотест; revision контента назначает хранилище.
+    pub fn save_autotest(
         &self,
         session: &str,
         expected: &str,
-        bindings: Vec<Binding>,
+        autotest: &Autotest,
+        revision: &str,
     ) -> Result<AutomationView> {
-        let root = self.root(session)?;
-        let (mut settings, revision) = self.settings(&root)?;
-        if expected != revision {
-            return Err(Error::new(Code::StaleResource));
+        autotest.validate()?;
+        self.mutate(session, expected, |settings| {
+            let mut next = autotest.clone();
+            revision.clone_into(&mut next.revision);
+            next.validate()?;
+            if let Some(existing) = settings
+                .catalog
+                .autotests
+                .iter_mut()
+                .find(|item| item.id == next.id)
+            {
+                *existing = next;
+            } else {
+                settings.catalog.autotests.push(next);
+            }
+            Ok(())
+        })
+    }
+    pub fn archive_autotest(
+        &self,
+        session: &str,
+        expected: &str,
+        id: &str,
+        archived: bool,
+        revision: &str,
+    ) -> Result<AutomationView> {
+        if !uuid(id) || revision.is_empty() || revision.len() > super::v2::MAX_REVISION {
+            return Err(Error::new(Code::InvalidRequest));
         }
-        settings.bindings = bindings;
-        validate_settings(&settings)?;
-        atomic(
-            &self
-                .metadata(&root, true)?
-                .ok_or_else(|| Error::new(Code::Io))?,
-            "profiles.json",
-            &settings,
-        )?;
-        self.read(session)
+        self.mutate(session, expected, |settings| {
+            let test = settings
+                .catalog
+                .autotests
+                .iter_mut()
+                .find(|item| item.id == id)
+                .ok_or_else(|| Error::new(Code::InvalidRequest))?;
+            test.archived = archived;
+            revision.clone_into(&mut test.revision);
+            Ok(())
+        })
+    }
+    /// Удаляет автотест вместе с его привязками: висячих ссылок не остаётся.
+    pub fn delete_autotest(
+        &self,
+        session: &str,
+        expected: &str,
+        id: &str,
+    ) -> Result<AutomationView> {
+        if !uuid(id) {
+            return Err(Error::new(Code::InvalidRequest));
+        }
+        self.mutate(session, expected, |settings| {
+            let before = settings.catalog.autotests.len();
+            settings.catalog.autotests.retain(|item| item.id != id);
+            if before == settings.catalog.autotests.len() {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            settings
+                .catalog
+                .bindings
+                .retain(|binding| binding.autotest_id != id);
+            Ok(())
+        })
+    }
+    pub fn save_binding(
+        &self,
+        session: &str,
+        expected: &str,
+        binding: &CaseAutotestBinding,
+        revision: &str,
+    ) -> Result<AutomationView> {
+        binding.validate()?;
+        self.mutate(session, expected, |settings| {
+            let mut next = binding.clone();
+            revision.clone_into(&mut next.revision);
+            next.validate()?;
+            if !settings
+                .catalog
+                .autotests
+                .iter()
+                .any(|test| test.id == next.autotest_id)
+            {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            if settings
+                .catalog
+                .bindings
+                .iter()
+                .any(|item| item.id != next.id && item.canonical() == next.canonical())
+            {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            if let Some(existing) = settings
+                .catalog
+                .bindings
+                .iter_mut()
+                .find(|item| item.id == next.id)
+            {
+                *existing = next;
+            } else {
+                settings.catalog.bindings.push(next);
+            }
+            Ok(())
+        })
+    }
+    pub fn remove_binding(
+        &self,
+        session: &str,
+        expected: &str,
+        id: &str,
+    ) -> Result<AutomationView> {
+        if !uuid(id) {
+            return Err(Error::new(Code::InvalidRequest));
+        }
+        self.mutate(session, expected, |settings| {
+            let before = settings.catalog.bindings.len();
+            settings.catalog.bindings.retain(|item| item.id != id);
+            if before == settings.catalog.bindings.len() {
+                return Err(Error::new(Code::InvalidRequest));
+            }
+            Ok(())
+        })
+    }
+    /// Пока native-слой справочника не реализован, окружения живут в metadata автоматизации.
+    pub fn save_environments(
+        &self,
+        session: &str,
+        expected: &str,
+        environments: Vec<EnvironmentEntry>,
+    ) -> Result<AutomationView> {
+        self.mutate(session, expected, |settings| {
+            settings.environments = environments;
+            Ok(())
+        })
     }
     pub fn trust(
         &self,
@@ -585,7 +808,11 @@ impl AutomationService {
     }
 }
 fn validate_settings(s: &Settings) -> Result<()> {
-    if s.profiles.len() > 100 || s.bindings.len() > 10_000 {
+    if s.profiles.len() > 100
+        || s.environments.len() > super::v2::MAX_ENVIRONMENTS
+        || s.imports.len() > 1000
+        || s.imports.iter().any(|value| !hash(value))
+    {
         return Err(Error::new(Code::InvalidRequest));
     }
     let mut profiles = std::collections::HashSet::new();
@@ -595,12 +822,11 @@ fn validate_settings(s: &Settings) -> Result<()> {
             return Err(Error::new(Code::InvalidRequest));
         }
     }
-    let mut bindings = std::collections::HashSet::new();
-    for b in &s.bindings {
-        if !b.key().valid()
-            || !profiles.contains(&b.profile_id)
-            || !bindings.insert((&b.profile_id, b.key()))
-        {
+    s.catalog.validate()?;
+    let mut environments = std::collections::HashSet::new();
+    for entry in &s.environments {
+        entry.validate()?;
+        if !environments.insert(&entry.id) {
             return Err(Error::new(Code::InvalidRequest));
         }
     }

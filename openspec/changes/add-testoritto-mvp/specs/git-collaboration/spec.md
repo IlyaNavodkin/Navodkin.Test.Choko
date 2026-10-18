@@ -35,16 +35,20 @@ WHEN Git операция затрагивает working tree, система SH
 - **WHEN** пользователь запускает commit при незавершённом сохранении
 - **THEN** операция ждёт successful flush либо прекращается с ошибкой, не создавая commit устаревшего содержимого
 
-### Requirement: Conflicts preserve local work
-WHEN pull или повторное применение сохранённых изменений вызывает конфликт, система SHALL показывать unmerged paths, сохранять конфликтное состояние и требовать явного решения пользователя вместо автоматического reset/clean/force push.
+### Requirement: Report conflicts and offer safe abort
+WHEN pull или другая поддерживаемая Git операция вызывает конфликт, система SHALL сообщить об ошибке, показать unmerged paths и предоставить явный безопасный abort. Система SHALL NOT предоставлять UI разрешения конфликта или автоматические reset/clean/force push.
 
 #### Scenario: Conflicting edits in two clones
 - **WHEN** A и B изменяют одно поле и pull создаёт конфликт
-- **THEN** система показывает файлы и доступные действия, не выбирая ours/theirs самостоятельно
+- **THEN** система сообщает о конфликте, показывает unmerged paths и предлагает безопасно отменить текущую операцию; приложение не разрешает конфликт и не запускает destructive Git-команды
 
-#### Scenario: Resume after external resolution
-- **WHEN** пользователь разрешил и сохранил конфликт внешним инструментом
-- **THEN** повторная проверка показывает фактический Git status и продолжение доступно только после завершения unmerged state
+#### Scenario: Abort fails
+- **WHEN** Git не может безопасно отменить конфликтующую операцию
+- **THEN** система блокирует дальнейшие Git действия в этом flow, показывает ошибку abort и состояние unmerged paths, не обещая автоматическое восстановление
+
+#### Scenario: Abort preserves work
+- **WHEN** пользователь подтверждает abort конфликтующей операции
+- **THEN** система использует безопасную команду отмены без reset/clean/force; существующие локальные изменения не удаляются приложением
 
 ### Requirement: Diagnose missing Git configuration
 Система SHALL показывать actionable ошибку при отсутствующем Git, remote/upstream, identity или неподходящем branch state, не исправляя ситуацию разрушительными командами.

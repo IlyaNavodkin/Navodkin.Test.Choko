@@ -1,0 +1,13 @@
+import type { DemoId } from './inventory';
+// Документированные defaults каждого consumer. Сброс восстанавливает их remount-ом.
+export const scenarioDefaults = {
+  buttons:{variant:'primary',size:'md',disabled:false,loading:false,icon:true,count:0},
+  'button-group':{compact:true,disabled:false},'control-buttons':{variant:'neutral',appearance:'solid',shape:'square',active:false},'icon-buttons':{variant:'default',activeVariant:'accent',active:false},'section-button':{variant:'accent',compact:true,rightDisabled:false},'split-button':{primary:true,align:'start',loading:false},
+  inputs:{value:'',size:'md',type:'text',readOnly:false},textarea:{value:'',rows:4,maxLength:240},'search-input':{value:'',debounceMs:300},checkbox:{checked:false},toggle:{checked:false},slider:{value:40,min:0,max:100,step:1},'color-picker':{value:'--app-accent-bg'},select:{value:'',open:false,loading:false},'field-validation':{name:'',submitted:false},
+  breadcrumbs:{levels:3,maxItems:3},tabs:{value:'cases'},segmented:{value:'cases',size:'sm'},'pagination-indicator':{totalPageCount:7,currentPage:1},
+  table:{rows:24,pageSize:5,selectedKeys:[],dense:false,sticky:true},'filter-chips':{selected:null,tone:'brand',count:2},'file-tree':{expanded:['cases','nested','runs'],selected:null},'reorder-list':{count:5},
+  alert:{variant:'info'},badge:{variant:'neutral'},'dot-chip':{size:'md',color:'--app-accent-bg'},'status-pill':{tone:'neutral',pulse:false},'empty-state':{direction:'column'},'loading-state':{loading:true,size:'md'},skeleton:{width:180,height:20,count:3},spinner:{size:'md',loading:true},progress:{value:0.5},
+  menu:{controlled:true,open:false,align:'start',width:246},popover:{open:false,placement:'bottom',align:'start',offset:8},modal:{open:false,fullScreen:false},confirm:{open:false,loading:false,failure:false},toast:{variant:'info',duration:1500},'blocking-overlay':{duration:1500},'drop-overlay':{show:false,pointerEvents:'none'},
+  accordion:{open:false},'accent-rail':{as:'button',variant:'brand'},divider:{orientation:'horizontal'},'floating-toolbar':{collapsed:true},'group-label':{actions:true},'resize-handle':{axis:'horizontal',size:200,min:100,max:340},'split-pane':{orientation:'horizontal',defaultSize:200,min:100,max:340},'page-shell':{variant:'chrome',width:'lg',segment:'list'},
+  background:{kind:'none',density:1,speed:1,opacity:0.6},avatar:{fixture:'initial',size:'lg',online:true},waveform:{interactive:true,recording:false},icons:{size:'md',strokeWidth:2},markdown:{fixture:'rich'},'sound-player':{track:0,volume:0.3,playing:false},upload:{files:[],accept:'.md,.txt',multiple:true,maxSize:65536},
+} satisfies Record<DemoId, Record<string, unknown>>;

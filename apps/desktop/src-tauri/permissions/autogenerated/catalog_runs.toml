@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-catalog-runs"
+description = "Enables the catalog_runs command without any pre-configured scope."
+commands.allow = ["catalog_runs"]
+
+[[permission]]
+identifier = "deny-catalog-runs"
+description = "Denies the catalog_runs command without any pre-configured scope."
+commands.deny = ["catalog_runs"]

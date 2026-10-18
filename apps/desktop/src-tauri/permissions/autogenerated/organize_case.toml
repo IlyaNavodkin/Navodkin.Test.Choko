@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-organize-case"
+description = "Enables the organize_case command without any pre-configured scope."
+commands.allow = ["organize_case"]
+
+[[permission]]
+identifier = "deny-organize-case"
+description = "Denies the organize_case command without any pre-configured scope."
+commands.deny = ["organize_case"]

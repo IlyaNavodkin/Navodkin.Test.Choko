@@ -1,0 +1,139 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  padding: 16px;
+  overflow: auto;
+}
+
+.heading,
+.statusRow,
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.heading {
+  justify-content: space-between;
+}
+
+.heading h2,
+.heading h3,
+.card h3 {
+  margin: 0;
+  color: var(--app-fg);
+}
+
+.heading p,
+.hint {
+  margin: 2px 0 0;
+  color: var(--app-text-secondary);
+  font-size: var(--app-text-sm, 13px);
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-surface);
+  min-width: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  color: var(--app-text-secondary);
+  font-size: var(--app-text-sm, 13px);
+}
+
+.testList,
+.resultList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.testItem,
+.resultItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface);
+  min-width: 0;
+}
+
+.testItem label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.testItem span,
+.resultItem small {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.testItem small,
+.resultItem small {
+  color: var(--app-text-secondary);
+  font-family: var(--app-font-mono);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.resultItem {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.attempt {
+  padding: 8px 0 0;
+}
+
+.attempt summary {
+  cursor: pointer;
+  color: var(--app-text-secondary);
+  font-size: var(--app-text-sm, 13px);
+}
+
+.attempt pre,
+.card pre {
+  margin: 6px 0;
+  padding: 8px;
+  overflow: auto;
+  max-height: 240px;
+  border-radius: var(--app-radius-sm);
+  background: var(--app-surface-hover);
+  color: var(--app-fg);
+  font-family: var(--app-font-mono);
+  font-size: 12px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

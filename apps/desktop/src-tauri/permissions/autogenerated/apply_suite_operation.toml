@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-apply-suite-operation"
+description = "Enables the apply_suite_operation command without any pre-configured scope."
+commands.allow = ["apply_suite_operation"]
+
+[[permission]]
+identifier = "deny-apply-suite-operation"
+description = "Denies the apply_suite_operation command without any pre-configured scope."
+commands.deny = ["apply_suite_operation"]

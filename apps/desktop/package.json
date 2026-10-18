@@ -1,0 +1,53 @@
+{
+  "name": "@testoritto/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 1420 --strictPort",
+    "build": "pnpm typecheck && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "browser:test": "node ./scripts/playwright-runner.mjs test --config=playwright.config.ts",
+    "browser:install": "node ./scripts/playwright-runner.mjs install chromium",
+    "browser:typecheck": "tsc --project tsconfig.browser.json",
+    "preview": "vite preview --host 127.0.0.1 --port 4174 --strictPort",
+    "tauri": "tauri",
+    "tauri:dev": "pnpm --filter @testoritto/playwright-automation build && tauri dev",
+    "tauri:build": "pnpm --filter @testoritto/playwright-automation build && tauri build"
+  },
+  "dependencies": {
+    "@codaa/ui": "workspace:*",
+    "@tanstack/react-query": "5.104.2",
+    "@tauri-apps/api": "2.12.3",
+    "@tiptap/core": "3.32.0",
+    "@tiptap/extension-table": "3.32.0",
+    "@tiptap/extension-task-item": "3.32.0",
+    "@tiptap/extension-task-list": "3.32.0",
+    "@tiptap/markdown": "3.32.0",
+    "@tiptap/pm": "3.32.0",
+    "@tiptap/react": "3.32.0",
+    "@tiptap/starter-kit": "3.32.0",
+    "i18next": "26.4.4",
+    "pdfmake": "0.3.11",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-i18next": "17.0.16",
+    "zod": "3.25.76",
+    "@testoritto/playwright-automation": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@tauri-apps/cli": "2.12.2",
+    "@testing-library/react": "16.3.0",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "22.20.5",
+    "@types/pdfmake": "0.3.3",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "jsdom": "26.1.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vitest": "4.1.11"
+  }
+}

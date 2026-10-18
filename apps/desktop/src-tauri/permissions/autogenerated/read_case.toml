@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-read-case"
+description = "Enables the read_case command without any pre-configured scope."
+commands.allow = ["read_case"]
+
+[[permission]]
+identifier = "deny-read-case"
+description = "Denies the read_case command without any pre-configured scope."
+commands.deny = ["read_case"]

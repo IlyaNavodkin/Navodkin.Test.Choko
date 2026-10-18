@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-poll-automation"
+description = "Enables the poll_automation command without any pre-configured scope."
+commands.allow = ["poll_automation"]
+
+[[permission]]
+identifier = "deny-poll-automation"
+description = "Denies the poll_automation command without any pre-configured scope."
+commands.deny = ["poll_automation"]

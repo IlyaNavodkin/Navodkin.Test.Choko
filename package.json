@@ -6,10 +6,30 @@
   "packageManager": "pnpm@11.25.0",
   "engines": { "node": ">=22.12.0", "pnpm": "11.x" },
   "scripts": {
+    "automation:build": "pnpm --filter @testoritto/playwright-automation build",
+    "automation:typecheck": "pnpm --filter @testoritto/playwright-automation typecheck",
+    "automation:test": "pnpm --filter @testoritto/playwright-automation test",
+    "ui:dev": "pnpm --filter @testoritto/ui-playground dev",
+    "ui:typecheck": "pnpm --filter @testoritto/ui-playground typecheck",
+    "ui:test": "pnpm --filter @testoritto/ui-playground test",
+    "ui:coverage": "pnpm --filter @testoritto/ui-playground coverage",
+    "ui:build": "pnpm --filter @testoritto/ui-playground build",
+    "ui:preview": "pnpm --filter @testoritto/ui-playground preview",
     "spec": "openspec",
     "spec:validate": "openspec validate --all --strict --no-interactive",
     "check:ui": "pnpm --filter @codaa/ui typecheck",
-    "check": "pnpm spec:validate && pnpm check:ui"
+    "check": "pnpm spec:validate && pnpm check:ui",
+    "desktop:dev": "pnpm --filter @testoritto/desktop tauri:dev",
+    "desktop:build": "pnpm --filter @testoritto/desktop tauri:build",
+    "desktop:frontend:build": "pnpm --filter @testoritto/desktop build",
+    "desktop:frontend:typecheck": "pnpm --filter @testoritto/desktop typecheck",
+    "desktop:frontend:test": "pnpm --filter @testoritto/desktop test",
+    "desktop:browser:test": "pnpm --filter @testoritto/desktop browser:test",
+    "desktop:browser:install": "pnpm --filter @testoritto/desktop browser:install",
+    "desktop:browser:typecheck": "pnpm --filter @testoritto/desktop browser:typecheck",
+    "desktop:rust:fmt": "cargo +1.98.1 fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check",
+    "desktop:rust:clippy": "cargo +1.98.1 clippy --locked --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings",
+    "desktop:rust:test": "cargo +1.98.1 test --locked --manifest-path apps/desktop/src-tauri/Cargo.toml"
   },
   "devDependencies": { "@fission-ai/openspec": "1.14.1" }
 }

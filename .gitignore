@@ -2,6 +2,9 @@ node_modules/
 .pnpm-store/
 .cache/
 dist/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/schemas/
+apps/desktop/test-results/
 out/
 release/
 coverage/

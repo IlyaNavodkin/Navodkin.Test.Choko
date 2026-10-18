@@ -1,0 +1,31 @@
+{
+  "name": "@testoritto/ui-playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "coverage": "node --experimental-strip-types scripts/check-coverage.ts",
+    "build": "pnpm typecheck && pnpm coverage && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@codaa/ui": "workspace:*",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/node": "^22.0.0",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "jsdom": "^26.1.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.4",
+    "vitest": "^4.0.0"
+  }
+}

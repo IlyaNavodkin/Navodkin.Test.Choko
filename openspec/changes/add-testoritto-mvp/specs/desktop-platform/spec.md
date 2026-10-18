@@ -14,7 +14,7 @@
 - **THEN** открытие repo, edit/save и Git workflow доступны
 
 ### Requirement: Windows and macOS desktop delivery
-Система SHALL предоставлять устанавливаемые desktop artifacts для согласованных Windows/macOS targets и поддерживать запуск, выбор repo и основной edit/save/Git workflow на каждой платформе.
+Система SHALL предоставлять устанавливаемые desktop artifacts для Windows x64 и macOS arm64 и поддерживать запуск, выбор repo и основной edit/save/Git workflow на каждом target. Минимальные версии ОС определяются отдельно до release.
 
 #### Scenario: Windows installation
 - **WHEN** Windows x64 artifact установлен на согласованной версии ОС

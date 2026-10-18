@@ -1,6 +1,6 @@
 # ADR-0001: Tauri 2 + React для Testoritto
 
-Статус: **основа выбрана пользователем**. Дата: 2026-10-13. Детали MVP остаются для обсуждения.
+Статус: **основа и targets первой поставки выбраны пользователем**. Дата: 2026-10-13. Остальные детали MVP остаются для обсуждения; пользователь разрешил начать независимый каркас.
 
 ## Context
 
@@ -9,6 +9,8 @@
 ## Decision
 
 **Tauri 2 + React 19 + TypeScript strict + Vite**, нативная часть — **Rust**. Packaging — Tauri CLI/bundler. Rust-сервис запускает системный Git CLI с credentials ОС. Данные — совместимые Markdown/YAML файлы.
+
+Targets первой поставки: Windows x64 и macOS arm64. Минимальные версии ОС пока не определены.
 
 | Часть | Решение | Назначение |
 | --- | --- | --- |
@@ -39,10 +41,11 @@ Node.js нужен для frontend build/dev tools; в приложении не
 - Rust переписывает Node-dependent fs/Git/window services и format parsers. Upstream fixtures/тестовые ожидания служат контрактом совместимости; browser-safe TS helpers можно переносить отдельно.
 - Frontend обращается к Rust через typed invoke facade и команды. DTO типизированы с обеих сторон, payload/results проверяются runtime; TypeScript generic invoke не заменяет проверку.
 - Custom commands явно ограничиваются AppManifest/permissions и capabilities для конкретного окна. Repo session, canonical paths и допустимые аргументы проверяются в handlers.
-- На Windows используется WebView2, на macOS — WKWebView; нужны native UI/smoke проверки обеих платформ.
-- Build tools: Node/pnpm, Rust, Microsoft C++ Build Tools/WebView2 на Windows, Xcode tooling на macOS. Конкретные версии и OS baseline фиксируются при создании application package.
+- На Windows используется WebView2, на macOS — WKWebView; нужны native UI/smoke проверки Windows x64 и macOS arm64.
+- Build tools: Node/pnpm, Rust, Microsoft C++ Build Tools/WebView2 на Windows, Xcode tooling на macOS. Минимальные версии ОС остаются открытыми до release подготовки.
+- При Git conflict приложение показывает ошибку и unmerged paths и может предложить безопасный abort текущей операции. UI разрешения конфликта и отдельный UI внешнего редактора не входят в scope; неудачный abort блокирует продолжение и требует диагностики, без обещания безусловного восстановления.
 - Native E2E: WebdriverIO Tauri service с embedded driver для обеих ОС; его test-only plugins не включаются в release. Прямой tauri-driver сам по себе не обеспечивает macOS E2E.
-- Tauri build/bundle, signing и notarization заменяют прежний план desktop packaging. Application code/toolchains в текущем шаге не устанавливались.
+- Tauri build/bundle, signing и notarization заменяют прежний план desktop packaging. Минимальный `apps/desktop` package создан; Windows x64 Rust checks и production `tauri build --no-bundle` прошли после установки MSVC C++ workload в существующую VS18. Обычный desktop-процесс подтвердил native window и IPC runtime diagnostics; macOS arm64 build/run и installers остаются непроверенными. Подробности: [Windows foundation evidence](../../apps/desktop/evidence/windows-foundation.md).
 
 ## Primary sources
 

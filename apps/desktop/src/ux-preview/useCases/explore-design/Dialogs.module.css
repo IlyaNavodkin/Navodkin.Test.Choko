@@ -1,0 +1,52 @@
+:global(body):has(.form) :global([role='dialog']) { font: 16px/1.5 var(--app-font-family); border-color: var(--app-border-strong); border-radius: 10px; background: linear-gradient(125deg,var(--app-bg3),var(--app-bg)); }
+:global(body):has(.form) :global([role='dialog']) > div { padding: 22px 26px; }
+:global(body):has(.form) :global([role='dialog']) > div:first-child { padding-bottom: 18px; }
+:global(body):has(.form) :global([role='dialog']) > div:first-child h2 { font-size: 24px; font-weight: 650; }
+:global(body):has(.form) :global([role='dialog']) > div:last-child { padding-top: 18px; padding-bottom: 18px; gap: 12px; }
+:global(body):has(.form) :global([role='dialog']) button { font-family: var(--app-font-family); font-size: 16px; min-height: 44px; padding-inline: 18px; }
+:global(body):has(.form) :global([role='dialog']) > div:first-child button { min-height: 30px; padding: 4px; }
+.dialogHeading { display: flex; align-items: center; gap: 16px; line-height: 1.3; }
+.dialogHeading > svg { width: 30px; height: 30px; flex-shrink: 0; color: var(--app-accent-readable); }
+.dialogHeading[data-tone='danger'] > svg { color: var(--app-danger); }
+.dialogHeading[data-tone='warning'] > svg { color: var(--app-warning); }
+.form { display: flex; flex-direction: column; gap: 20px; color: var(--app-fg); font-family: var(--app-font-family); font-size: 16px; line-height: 1.6; min-width: 0; }
+.form h3, .form p { margin: 0; }
+.form h3 { font-size: 17px; font-weight: 600; }
+.form label { display: flex; flex-direction: column; gap: 9px; min-width: 0; font-size: 15px; }
+.form input:not([type='checkbox']), .form textarea { width: 100%; font: 16px/1.5 var(--app-font-family); }
+.form input:not([type='checkbox']) { min-height: 46px; }
+.form button[role='combobox'] { min-width: 0; min-height: 46px; font-size: 16px; }
+.form > p { color: var(--app-fg3); }
+.paths { margin: 0; padding: 0; list-style: none; border: 1px solid var(--app-border-strong); border-radius: 6px; overflow: hidden; }
+.paths li { display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: color-mix(in srgb,var(--app-bg3) 70%,var(--app-bg)); border-bottom: 1px solid var(--app-border); font-size: 14px; }
+.paths li > svg { width: 23px; height: 23px; flex-shrink: 0; color: var(--app-fg3); }
+.paths li:last-child { border-bottom: 0; }
+.paths code { font: 14px/1.6 var(--app-font-mono); overflow-wrap: anywhere; min-width: 0; }
+.dialogNotice { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 6px; border: 1px solid var(--app-border-strong); color: var(--app-fg3); background: color-mix(in srgb,var(--app-accent) 6%,var(--app-bg2)); font-size: 15px; }
+.dialogNotice > svg { width: 22px; height: 22px; flex-shrink: 0; margin-top: 1px; color: var(--app-accent-readable); }
+.dialogNotice[data-tone='danger'] { border-color: color-mix(in srgb,var(--app-danger) 45%,transparent); color: var(--app-danger-soft); background: color-mix(in srgb,var(--app-danger) 9%,var(--app-bg2)); }
+.dialogNotice[data-tone='danger'] > svg { color: var(--app-danger); }
+.dialogNotice[data-tone='warning'] { border-color: color-mix(in srgb,var(--app-warning) 45%,transparent); color: var(--app-warning-soft); background: color-mix(in srgb,var(--app-warning) 9%,var(--app-bg2)); }
+.dialogNotice[data-tone='warning'] > svg { color: var(--app-warning); }
+.twoColumns { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.caseList { max-height: 240px; overflow-y: auto; border: 1px solid var(--app-border); border-radius: 6px; }
+.caseList > div { padding: 10px 14px; border-bottom: 1px solid var(--app-border); display: flex; gap: 10px; align-items: center; font-size: 16px; }
+.caseList > div:last-child { border-bottom: 0; }
+.caseList > div > label { display: flex; flex-direction: row; flex: 1; font-size: 16px; }
+.caseList > div > button { flex-shrink: 0; }
+.groups { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 24px; }
+.groups section { display: flex; flex-direction: column; gap: 10px; }
+.groups button { text-align: left; justify-content: flex-start; white-space: normal; height: auto; font-size: 15px !important; min-height: 40px !important; }
+.stateBanner { display: flex; gap: 16px; align-items: center; padding: 16px 24px; background: color-mix(in srgb,var(--app-accent) 9%,var(--app-bg2)); border-bottom: 1px solid var(--app-border-strong); font: 16px/1.5 var(--app-font-family); flex-shrink: 0; min-width: 0; }
+.stateBanner > svg { color: var(--app-accent-readable); width: 26px; height: 26px; flex-shrink: 0; }
+.stateBanner > div:first-of-type { flex: 1; min-width: 0; }
+.stateBanner p { margin: 4px 0 0; font-size: 15px; color: var(--app-fg3); }
+.stateBanner code { overflow-wrap: anywhere; font-size: 14px; }
+.stateBanner[data-tone='warning'] { background: color-mix(in srgb,var(--app-warning) 10%,var(--app-bg2)); border-color: color-mix(in srgb,var(--app-warning) 35%,transparent); }
+.stateBanner[data-tone='warning'] > svg { color: var(--app-warning); }
+.stateBanner[data-tone='danger'] { background: color-mix(in srgb,var(--app-danger) 10%,var(--app-bg2)); border-color: color-mix(in srgb,var(--app-danger) 35%,transparent); }
+.stateBanner[data-tone='danger'] > svg { color: var(--app-danger); }
+.bannerActions { display: flex; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+.bannerActions button { min-height: 40px; font-size: 15px; }
+@media (max-width: 1000px) { .stateBanner { align-items: flex-start; flex-wrap: wrap; gap: 12px; } .bannerActions { margin-left: 38px; } }
+@media (max-width: 800px) { .groups { grid-template-columns: 1fr; } }

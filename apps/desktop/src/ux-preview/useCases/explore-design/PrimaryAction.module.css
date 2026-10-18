@@ -1,0 +1,10 @@
+.primaryAction.primaryAction {
+  background-color: var(--app-accent-bg);
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--app-accent-hover-bg) 92%, var(--app-fg) 8%), color-mix(in srgb, var(--app-accent-bg) 84%, var(--app-bg) 16%));
+  border-color: color-mix(in srgb, var(--app-accent-hover-bg) 80%, var(--app-border-strong));
+  box-shadow: inset 0 1px color-mix(in srgb, var(--app-fg) 22%, transparent), 0 1px 2px color-mix(in srgb, var(--app-bg) 60%, transparent);
+}
+.primaryAction.primaryAction:not(:disabled):hover {
+  background-image: linear-gradient(180deg, color-mix(in srgb, var(--app-accent-active-bg) 92%, var(--app-fg) 8%), var(--app-accent-bg));
+}
+.primaryAction.primaryAction:disabled { opacity: .45; }

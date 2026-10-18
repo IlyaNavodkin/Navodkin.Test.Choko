@@ -52,3 +52,19 @@ repo/
 - Не выполнять `repo-migration.ts` автоматически. Известные upstream тесты переносить, но они не заменяют новые end-to-end preservation tests.
 
 `.testoritto/` сейчас не создаётся: имя продукта и совместимый data format независимы. Этот выбор для новых repos предлагается подтвердить до первого writer.
+
+## Сохранение существующего кейса
+
+`save_case` не принимает id или путь. Его expected revision — hash точных исходных bytes; stale revision отклоняется. Неизменённые поля не вызывают setters, а unknown YAML/Markdown и исходный LF/CRLF сохраняются source-backed writer. Правка известного Markdown убирает только внешние пустые строки/пробелы согласно семантике parser; indentation внутри Setup body сохраняется. Missing/invalid ID остаётся read-only. Новые config создаются только явной инициализацией отсутствующего `.casewright` и объявляют `.` первой областью. Существующий metadata каталог не мигрируется.
+
+## Case operations
+
+New cases используют UUID stable ID/filename и автоматически назначенный displayId. Duplicate сохраняет unknown source YAML/Markdown/CRLF и nested Steps, получает новые ID/displayId; исходник не меняется. Move сохраняет все bytes и ID, не заменяет существующий target. Confirmed delete касается единственного указанного case file. Runs snapshots не изменяются. `.order` и folder notes сохраняются побайтно; absent order keys пропускаются, новые children добавляются после явно ordered — по `casewright-main/apps/desktop/src/services/repo-load.ts`.
+
+## New snapshot runs
+
+Новые runs используют стандартные Markdown details/sidecars и `.order`, сохраняют stable case_id и checklist texts. Дополнительный `.source` хранит полный исходный Markdown побайтно; `source_snapshot`/`source_sha256` metadata добавляют ссылку/integrity check. Casewright loader не включает `.source` в rows. Existing runs остаются без миграции; unknown metadata/date/approvals не переписываются при чтении. Сторонний writer может удалить добавочные references; source files при этом не удаляются автоматически. API/проверки: [run creation](../apps/desktop/evidence/run-creation.md).
+
+## Run execution update
+
+Реализованы явное сохранение результатов, per-item отметок и пояснений, tester/time/date override и Notes sidecar, а также open/closed, Summary/Notes самого прогона с сохранением approvals/date/unknown metadata. Запись использует optimistic SHA256 и atomic replacement. Черновик удерживается при ошибке/внешнем изменении. Проверки и ограничения: [Run execution](../apps/desktop/evidence/run-execution.md). Native UI и macOS не объявлены проверенными.

@@ -1,6 +1,6 @@
 # Testoritto — проект технического задания
 
-Версия 0.2, 2026-10-13. Статус: **для обсуждения**. Подтверждённые ограничения перечислены отдельно от предложенного MVP.
+Версия 0.3, 2026-10-13. Статус: основа и targets подтверждены; остальной MVP scope частично **для обсуждения**. Пользователь разрешил начать независимый Tauri-каркас; реализация не завершена.
 
 ## 1. Назначение
 
@@ -16,6 +16,8 @@ Testoritto — десктопный редактор ручных тест-ке�
 4. Совместимость с существующими репозиториями Casewright.
 5. UI Kit из `ui/`; палитра из Citadelic.
 6. Работа по OpenSpec с предоставленным frontend skill.
+
+Первая поставка ориентирована на Windows x64 и macOS arm64. Минимальные версии ОС остаются открытыми.
 
 Основа Tauri 2 выбрана пользователем. Файловые операции, Git и OS integration выполняются Rust backend через ограниченный Tauri IPC. Формат Casewright сохраняется; Node.js используется для frontend tooling, Node-sidecar не планируется.
 
@@ -44,7 +46,7 @@ Testoritto — десктопный редактор ручных тест-ке�
 - Создать прогон из выбранных кейсов/наборов и показать порядок выполнения.
 - Сохранять snapshot текста и stable case id, чтобы последующие изменения исходных кейсов не меняли старый прогон.
 - Результаты: not_run / in_progress / pass / fail / blocked / skipped; tester, executed_at, notes, item check states и fail notes.
-- Summary, Notes, open/closed и существующие approvals сохраняются. Управление approvals, variables и полный HTML reporting — вопросы scope; сохранение их данных обязательно независимо от UI.
+- Summary, Notes, open/closed и существующие approvals сохраняются. Управление approvals и variables — вопросы scope; сохранение их данных обязательно независимо от UI.
 - Хранилище текущего Casewright: `.casewright/runs/<run>/_run.md` + `NNN-<id>.md` и optional `.order`, **не CSV**.
 
 ### 3.4 Git workflow
@@ -54,7 +56,7 @@ Testoritto — десктопный редактор ручных тест-ке�
 - Pull/push текущей настроенной ветки через системный credential helper/SSH. Поддержка remote определяется Git, без обязательной GitHub API интеграции.
 - До Git-операции завершить pending disk writes; сериализовать изменения одного repo.
 - Ошибки auth, offline, missing remote/upstream и push rejected сохраняют локальные изменения и дают понятный следующий шаг.
-- Конфликт не разрешается выбором ours/theirs автоматически. Рекомендуемый MVP: список файлов, внешний редактор, повторная проверка, явный abort. Встроенный structured merge обсуждается отдельно.
+- При конфликте приложение сообщает об ошибке и показывает unmerged paths; единственное действие приложения — явный безопасный abort текущей операции. Разрешение конфликтов внутри приложения и отдельный UI для внешнего редактора не поддерживаются. Если Git не может безопасно выполнить abort, приложение блокирует продолжение и показывает диагностику; безусловное восстановление состояния не обещается. Автоматические reset/clean/force запрещены.
 - Detached HEAD, rebase/merge in progress и non-fast-forward не должны приводить к автоматическому reset/clean/force push.
 
 ### 3.5 UI и ОС
@@ -83,7 +85,7 @@ Testoritto — десктопный редактор ручных тест-ке�
 | Изменить title и сохранить | Меняется соответствующий файл; id, неизвестные fields/sections сохранены |
 | Перенести кейс | Данные старого прогона и ссылки по stable id остаются корректными |
 | Два клона одного temp remote | Изменение в A после commit/push доступно B после pull |
-| Конфликт A/B | Приложение показывает unmerged paths; локальная работа не теряется |
+| Конфликт A/B | Приложение показывает ошибку и unmerged paths, предлагает безопасный abort; при отказе abort блокирует продолжение и показывает диагностику |
 | Отказ авторизации/сети/диска | Понятная ошибка; нет ложного saved/pushed state |
 | Внешнее редактирование | Чистый файл обновляется; dirty draft не затирается молча |
 | Startup без Git | Доступна диагностика и инструкция установки; нет падения |
@@ -92,10 +94,17 @@ Testoritto — десктопный редактор ручных тест-ке�
 
 Скорость на large repo измерить на фиксированной машине и fixture до установки численных SLA. Предложенная нагрузка: 5 000 cases и 100 runs; это не результат замера.
 
-## 6. Вне рекомендуемого MVP
+## 6. За пределами обязательного MVP и открытый scope
 
-Собственный backend и RBAC, realtime collaboration, automated test execution, AI generation, integrations Jira/ADO API, встроенные аккаунты GitHub, marketing site, полноценный branch/PR manager, auto-update из private GitHub, structured merge engine. Данные существующих расширений сохраняются даже при отсутствии их UI.
+Собственный backend и RBAC, realtime collaboration, AI generation, integrations Jira/ADO API, встроенные аккаунты GitHub, marketing site, полноценный branch/PR manager, auto-update из private GitHub и conflict resolution UI. Clone/branches/stash UI и UI для variables/approvals остаются открытым scope; не считать их обязательной частью MVP до отдельного решения. Данные существующих расширений сохраняются даже при отсутствии их UI.
+
+Отдельный согласованный scope 2026-10-16: локальная интеграция Node.js автотестов через Playwright reporter, stable case IDs и automation IDs с project/parameter variants, доверенные профили, явный выбор/запуск/повтор упавших/остановка, смешанные ручные и автоматические прогоны, attempts/retry/flaky, logs/errors/attachments и импорт JSON/JUnit с preview и идемпотентным применением. Реализация разрешена и отслеживается в [add-playwright-automation](../openspec/changes/add-playwright-automation/proposal.md). Внешний установленный Node запускается Rust-сервисом только для доверенного профиля; Node в WebView/sidecar не добавляется. Доверие хранится в app-data вне Git; open/import не исполняет код. Automation sidecar сохраняет совместимость Casewright, ручные результаты меняются только после reviewed explicit apply и revision check. CI orchestration, контейнерная sandbox и редактор кода отложены. Native приёмка Windows x64/macOS arm64 остаётся непроверенной до отдельного выполнения; это согласование не расширяет остальной draft MVP.
 
 ## 7. Статус и вопросы
 
-Новый application package ещё не создан. В репозитории готова инфраструктура спецификаций, UI workspace и reference source. Перечень решений для согласования — [DISCUSSION.md](DISCUSSION.md); реализация — по [OpenSpec tasks](../openspec/changes/add-testoritto-mvp/tasks.md).
+Уточнение automation scope 2026-10-17: самостоятельный каталог «Автотесты», несколько автотестов на кейс, переиспользуемые bindings и typed arguments с overrides в прогоне. В справочнике добавляется «Окружение» для несекретных prod/stage values; invocation фиксирует разрешённые значения и source revisions. Generated reports показываются как безопасные данные/вложения и могут явно сохраняться в namespaced папку результата прогона без автоматического stage/commit. Новые contracts/UI/native задачи открыты; проверенный v1 bridge не подтверждает этот новый scope.
+
+Создан минимальный application package `apps/desktop` с React/Tauri каркасом и runtime-diagnostics сценарием. Frontend checks и browser preview проверены; Windows x64 Rust checks, production native build и запуск окна с IPC diagnostics подтверждены. macOS arm64, installers и остальные продуктовые сценарии не проверены. Пользователь разрешил независимый старт каркаса, но оставшийся MVP scope согласован не полностью. Открытые решения перечислены в [DISCUSSION.md](DISCUSSION.md); реализация и проверки отслеживаются в [OpenSpec tasks](../openspec/changes/add-testoritto-mvp/tasks.md). Evidence: [Windows foundation](../apps/desktop/evidence/windows-foundation.md).
+
+
+Отдельное решение 2026-10-16: предпросмотр отчётов прогона и недели, экспорт PDF/JSON согласованы пользователем и отслеживаются в `openspec/changes/add-run-reports/`. Browser-срез реализован и проверен; подключение реальных repository snapshots, native IPC/save и desktop-приёмка остаются открытыми. Это решение не расширяет scope variables/approvals.

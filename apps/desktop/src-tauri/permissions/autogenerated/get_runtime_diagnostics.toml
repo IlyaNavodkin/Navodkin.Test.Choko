@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-get-runtime-diagnostics"
+description = "Enables the get_runtime_diagnostics command without any pre-configured scope."
+commands.allow = ["get_runtime_diagnostics"]
+
+[[permission]]
+identifier = "deny-get-runtime-diagnostics"
+description = "Denies the get_runtime_diagnostics command without any pre-configured scope."
+commands.deny = ["get_runtime_diagnostics"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-prepare-suite-operation"
+description = "Enables the prepare_suite_operation command without any pre-configured scope."
+commands.allow = ["prepare_suite_operation"]
+
+[[permission]]
+identifier = "deny-prepare-suite-operation"
+description = "Denies the prepare_suite_operation command without any pre-configured scope."
+commands.deny = ["prepare_suite_operation"]

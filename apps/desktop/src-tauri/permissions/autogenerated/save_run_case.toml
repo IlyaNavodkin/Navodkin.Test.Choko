@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-run-case"
+description = "Enables the save_run_case command without any pre-configured scope."
+commands.allow = ["save_run_case"]
+
+[[permission]]
+identifier = "deny-save-run-case"
+description = "Denies the save_run_case command without any pre-configured scope."
+commands.deny = ["save_run_case"]

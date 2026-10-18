@@ -1,0 +1,15 @@
+.overview { display: grid; gap: var(--app-space-7); padding-bottom: var(--app-space-7); margin-bottom: var(--app-space-7); border-bottom: 1px solid var(--app-border); min-width: 0; }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--app-space-4); margin-bottom: var(--app-space-6); }
+.toolbar h3 { margin: 0; margin-right: auto; }
+.counts { display: flex; flex-wrap: wrap; gap: var(--app-space-4) var(--app-space-7); color: var(--app-fg3); font-size: var(--app-text-sm); }
+.filters { display: grid; grid-template-columns: minmax(0, 1fr) minmax(10rem, .6fr); gap: var(--app-space-4); }
+.table { min-width: 0; overflow-x: auto; }
+.guide { display: grid; gap: var(--app-space-7); }
+.item { display: grid; gap: var(--app-space-6); padding: var(--app-space-7); border: 1px solid var(--app-border-strong); border-radius: var(--app-radius-md); }
+.item h3, .item p { margin: 0; overflow-wrap: anywhere; }
+.muted { margin: 0; color: var(--app-fg4); }
+@media (max-width: 760px) { .filters { grid-template-columns: minmax(0, 1fr); } }
+
+.markup { color: var(--app-fg); font-family: var(--app-font-family); font-size: var(--app-text-base); padding: 0; }
+.markup :global(code), .markup :global(pre) { font-family: var(--app-font-mono); }
+.caseLink { white-space: normal; text-align: left; overflow-wrap: anywhere; }

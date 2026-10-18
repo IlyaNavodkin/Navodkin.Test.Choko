@@ -1,0 +1,108 @@
+.page {
+  width: min(100% - 2rem, 54rem);
+  margin: 0 auto;
+  padding: clamp(1.5rem, 6vh, 4rem) 0 3rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--app-space-5);
+  padding-bottom: var(--app-space-7);
+  border-bottom: 1px solid var(--app-border);
+}
+
+.brandMark {
+  display: grid;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  border: 1px solid var(--app-border-strong);
+  border-radius: var(--app-radius-lg);
+  color: var(--app-accent-fg);
+  background: var(--app-accent-bg);
+  font-family: var(--app-font-display);
+  font-size: var(--app-text-lg);
+  font-weight: 700;
+}
+
+.brandCopy {
+  flex: 1;
+  min-width: 0;
+}
+
+.brandCopy h1,
+.sectionHeading h2 {
+  margin: 0;
+  color: var(--app-fg);
+  font-family: var(--app-font-display);
+  font-size: var(--app-text-lg);
+  font-weight: 650;
+}
+
+.brandCopy p,
+.sectionHeading p {
+  margin: var(--app-space-1) 0 0;
+  color: var(--app-fg4);
+  font-size: var(--app-text-sm);
+}
+
+.workspace {
+  padding: var(--app-space-7) 0;
+}
+
+.diagnostics {
+  display: grid;
+  gap: var(--app-space-5);
+  padding: var(--app-space-7);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-lg);
+  background: var(--app-bg2);
+}
+
+.sectionHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--app-space-5);
+}
+
+.unsupported {
+  border-color: var(--app-border);
+}
+
+.errorDescription {
+  margin: var(--app-space-2) 0 0;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--app-space-4);
+  margin: 0;
+}
+
+.details div {
+  min-width: 0;
+  padding: var(--app-space-5);
+  border: 1px solid var(--app-border);
+  border-radius: var(--app-radius-md);
+  background: var(--app-bg3);
+}
+
+.details dt {
+  color: var(--app-fg4);
+  font-size: var(--app-text-xs);
+}
+
+.details dd {
+  margin: var(--app-space-2) 0 0;
+  color: var(--app-fg);
+  font-family: var(--app-font-mono);
+  font-size: var(--app-text-sm);
+}
+
+@media (max-width: 38rem) {
+  .details { grid-template-columns: 1fr; }
+  .sectionHeading { align-items: flex-start; flex-direction: column; }
+}

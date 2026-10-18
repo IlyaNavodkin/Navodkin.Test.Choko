@@ -1,9 +1,0 @@
-.editor { margin-bottom: 1.25rem; }
-.toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-bottom: .75rem; }
-.form, .fields, .field, .rowBlock { display: grid; gap: .6rem; }
-.fields { border: 0; padding: 0; margin: 0; gap: 1.1rem; min-width: 0; }
-.field > span:first-child { font-weight: 600; }
-.fieldError { color: var(--app-danger); font-size: var(--app-text-sm); }
-.row { display: flex; align-items: center; gap: .5rem; }
-.row > :first-child { min-width: 0; flex: 1; }
-.rowBlock { padding: .65rem; border: 1px solid var(--app-border); border-radius: var(--app-radius-sm); }

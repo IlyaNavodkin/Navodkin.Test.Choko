@@ -1,7 +1,0 @@
-.editor { display: grid; gap: var(--app-space-4); }
-.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--app-space-2); }
-.fields { border: 0; padding: 0; margin: 0; display: grid; gap: var(--app-space-4); min-width: 0; }
-.field { display: grid; gap: var(--app-space-2); }
-.checklist { display: grid; gap: var(--app-space-3); }
-.item { display: grid; gap: var(--app-space-2); padding: var(--app-space-3); border: 1px solid var(--app-border); border-radius: var(--app-radius-md); }
-.error { color: var(--app-danger); }

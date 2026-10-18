@@ -1,1 +1,0 @@
-.toasts > :global([aria-live="polite"]) { top: auto; left: auto; bottom: 16px; right: 16px; transform: none; }

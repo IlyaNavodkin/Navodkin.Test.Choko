@@ -1,6 +1,0 @@
-.app {
-  min-height: 100vh;
-  color: var(--app-fg);
-  background: var(--app-bg);
-}
-.toasts > :global([aria-live="polite"]) { top: auto; left: auto; bottom: 16px; right: 16px; transform: none; }

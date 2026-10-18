@@ -1,7 +1,0 @@
-.form { border: 0; margin: 0; padding: 0; display: grid; gap: var(--app-space-3); }
-.form p { margin: 0; }
-.actions { display: flex; flex-wrap: wrap; gap: var(--app-space-3); }
-.cases { display: grid; gap: var(--app-space-4); }
-.case { display: flex; align-items: flex-start; gap: var(--app-space-3); }
-.case span { display: grid; min-width: 0; overflow-wrap: anywhere; }
-.case small { color: var(--app-fg3); }

@@ -6,6 +6,7 @@ import { serializeOrder } from '@/services/format/order';
 import { flushPersist, schedulePersist } from '@/services/persist';
 import {
   deletePath,
+  folderNoteRel,
   loadRepo,
   openRepo as openRepoSvc,
   orderFileRel,
@@ -16,7 +17,8 @@ import {
 } from '@/services/repo';
 import { watchRepo, type RepoWatcher } from '@/services/watch';
 import type { Case, Change, Workspace } from '@/types';
-import { baseName, buildSuiteIndex, findSuiteNode } from './tree-helpers';
+import { rebaseCaseLinks, rewriteGlossaryHrefs } from '@/utils/glossary-link';
+import { baseName, buildSuiteIndex, clone, findSuiteNode } from './tree-helpers';
 import { createCaseHistory } from './history';
 import type { AppState, StoreGet, StoreSet } from './app-store';
 
@@ -82,6 +84,7 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
       const loaded = await loadRepo(repoPath, workspaces);
       set({ tree: loaded.tree, cases: loaded.cases, runs: loaded.runs, warnings: loaded.warnings });
       seedPaths(loaded.paths);
+      void get().loadRefs();
     } catch {
       /* keep optimistic state if even the reload fails */
     }
@@ -165,6 +168,7 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
       };
     });
     seedPaths(loaded.paths);
+    void get().loadRefs();
     void get().refreshStatus();
     get().toast('Reloaded — external changes detected');
   };
@@ -306,6 +310,45 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
         : { changes: [...s.changes, change] };
     });
 
+  /**
+   * Re-anchor reference-book links for every case whose file moved, and persist the ones that
+   * changed. `pathsBefore` is the case→path map from *before* the tree was mutated, because a
+   * link is relative to the file that holds it: a case dragged to another suite (or inside a
+   * renamed folder) would otherwise keep pointing at the wrong depth.
+   */
+  const rebaseMovedCaseLinks = (pathsBefore: Map<string, string>) => {
+    if (!get().repoPath) return;
+    const rebased = new Map<string, Case>();
+    for (const c of get().cases) {
+      const before = pathsBefore.get(c.id);
+      const after = casePath(c);
+      if (!before || before === after) continue;
+      const next = rebaseCaseLinks(c, after);
+      if (next !== c) rebased.set(c.id, next);
+    }
+    if (!rebased.size) return;
+    set((s) => ({ cases: s.cases.map((c) => rebased.get(c.id) ?? c) }));
+    for (const [id, c] of rebased) {
+      upsertChange({ kind: 'case', refId: id, path: casePath(c), status: 'M', label: c.title });
+      schedulePersist('case:' + id, () => writeCaseNow(id));
+    }
+  };
+
+  /** The same for a suite's own folder note, whose body is markdown too (call after it moved). */
+  const rebaseSuiteNoteLinks = (suiteId: string, newRel: string) => {
+    const before = findSuiteNode(get().tree, suiteId)?.description ?? '';
+    if (!before) return;
+    const next = rewriteGlossaryHrefs(before, folderNoteRel(newRel));
+    if (next === before) return;
+    set((s) => {
+      const tree = clone(s.tree);
+      const n = findSuiteNode(tree, suiteId);
+      if (n) n.description = next;
+      return { tree };
+    });
+    void writeSuiteNote(suiteId);
+  };
+
   // Undo/redo controller — created here so the case-write helpers it composes
   // (casePath / upsertChange / writeCaseNow) are all defined by now.
   const history = createCaseHistory({ get, set, casePath, upsertChange, writeCaseNow });
@@ -330,6 +373,8 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
     writeWorkspaceNote,
     writeSuiteNote,
     upsertChange,
+    rebaseMovedCaseLinks,
+    rebaseSuiteNoteLinks,
     history,
   };
 }

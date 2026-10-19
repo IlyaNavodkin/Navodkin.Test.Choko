@@ -1,14 +1,17 @@
 import { isNwjs } from '@/lib/nwjs';
+import { isEmptyRunSnapshot } from '@/schemas/run-snapshot';
 import { runCaseFileName, runFileStem } from '@/services/format/filename';
 import { serializeOrder } from '@/services/format/order';
 import { serializeRunCase, serializeRunDetails, type RunCaseFile, type RunCaseItem } from '@/services/format/run';
+import { serializeRunArgumentsSnapshot, serializeRunGlossarySnapshot } from '@/services/format/run-snapshot';
 import { schedulePersist } from '@/services/persist';
 import { deletePath, makeDir, orderFileRel, relJoin, writeFileAt } from '@/services/repo';
 import { previewReportHtml, previewRunReport } from '@/services/report/run-report';
 import type { RunReportModel } from '@/services/report/run-report-html';
 import { groupRunBySuite } from '@/services/report/suite-grouping';
 import { buildWeeklyReportHtml, weekLabel } from '@/services/report/weekly-report-html';
-import type { Approval, Case, CheckState, Run, RunRow } from '@/types';
+import { planRunSnapshot, type RunSnapshotPlan } from '@/services/run-snapshot';
+import type { Approval, Case, CheckState, CreateRunResult, Run, RunRow } from '@/types';
 import { buildWeeklyData } from '@/utils/run-dashboard';
 import { nowStamp } from '@/utils/ids';
 import { buildRunSummary, deriveItems, serializeRunSummary } from '@/utils/run-items';
@@ -23,6 +26,10 @@ import type { AppState, StoreCtx, StoreGet, StoreSet } from '../app-store';
 
 /** Repo-level runs live flat under `.casewright/runs/` (PRD §4 req 16). */
 const RUNS_REL = '.casewright/runs';
+
+/** Sidecar file names of the frozen reference snapshot (extension data, ignored by the loader). */
+const GLOSSARY_SNAPSHOT_FILE = 'glossary.json';
+const ARGUMENTS_SNAPSHOT_FILE = 'arguments.json';
 
 type RunsSlice = Pick<
   AppState,
@@ -165,7 +172,25 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
     }
   };
 
-  /** Fan-out write of a brand-new run folder: `_run.md` + every case sidecar. */
+  /**
+   * The run's frozen reference snapshot as sidecar files. Written once, at creation, and never
+   * rewritten: an empty snapshot writes nothing at all, so a run that references no record (or
+   * predates the feature) keeps the exact folder layout it always had.
+   */
+  const snapshotFiles = (run: Run): [string, string][] => {
+    const snap = run.snapshot;
+    if (!snap || isEmptyRunSnapshot(snap)) return [];
+    const files: [string, string][] = [];
+    if (snap.glossary.length || snap.unresolved.length) {
+      files.push([relJoin(run.file, GLOSSARY_SNAPSHOT_FILE), serializeRunGlossarySnapshot(snap.glossary, snap.unresolved)]);
+    }
+    if (snap.arguments) {
+      files.push([relJoin(run.file, ARGUMENTS_SNAPSHOT_FILE), serializeRunArgumentsSnapshot(snap.arguments)]);
+    }
+    return files;
+  };
+
+  /** Fan-out write of a brand-new run folder: `_run.md` + every case sidecar + the snapshot. */
   const writeWholeRun = (run: Run) => {
     const rp = get().repoPath;
     if (!rp) return;
@@ -176,6 +201,7 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
           ...run.rows.map((row) =>
             writeFileAt(rp, row.file, serializeRunCase(buildRunCaseFile(row, get().cases.find((c) => c.id === row.case_id)))),
           ),
+          ...snapshotFiles(run).map(([rel, text]) => writeFileAt(rp, rel, text)),
         ]),
       )
       .then(scheduleRefresh)
@@ -220,8 +246,26 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
       persistRunCase(runId, i);
     },
 
-    createRun: ({ name, caseIds, scopeLabel }) => {
-      const { cases } = get();
+    createRun: async ({ name, caseIds, scopeLabel, argsEntryId, allowIncomplete }) => {
+      const { cases, repoPath } = get();
+      if (!repoPath) return { ok: false, reason: 'io', message: 'Open a repository first.' };
+
+      // Freeze the reference book *before* anything is written: the snapshot must record the
+      // revisions actually on disk, and a run that cannot be frozen honestly is not created.
+      const seeded = caseIds.map((id) => cases.find((c) => c.id === id)).filter((c): c is Case => !!c);
+      let plan: RunSnapshotPlan;
+      try {
+        plan = await planRunSnapshot(repoPath, seeded, argsEntryId ?? null);
+      } catch (e) {
+        return { ok: false, reason: 'io', message: `Could not read the reference book: ${e instanceof Error ? e.message : String(e)}` };
+      }
+      if (plan.argsError) return { ok: false, reason: 'args', message: plan.argsError };
+      // An unresolved reference is never hidden: the user decides, and the run records what it
+      // could not freeze (`snapshot.unresolved`) either way.
+      if (plan.snapshot.unresolved.length && !allowIncomplete) {
+        return { ok: false, reason: 'snapshot', issues: plan.snapshot.unresolved };
+      }
+
       const date = new Date().toISOString().slice(0, 10);
       const dir = relJoin(RUNS_REL, runFileStem(name, date));
       const rows: RunRow[] = caseIds.map((id, i) => {
@@ -255,11 +299,13 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
         notes: '',
         testerApproval: null,
         reviewerApproval: null,
+        snapshot: plan.snapshot,
       };
       set((s) => ({ runs: [run, ...s.runs], modal: null, sel: { ...s.sel, kind: 'run', runId: run.id, guideIndex: 0 }, view: 'run' }));
       upsertChange({ kind: 'run', refId: run.id, path: run.file, status: 'A', label: run.name });
       writeWholeRun(run);
       get().toast(`Created run · ${rows.length} cases seeded`);
+      return { ok: true } satisfies CreateRunResult;
     },
 
     cycleRunCheck: (runId, i, key) => {
@@ -455,6 +501,9 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
         notes: '',
         testerApproval: null,
         reviewerApproval: null,
+        // The copy inherits the source's frozen definitions: its cases are the same cases, and
+        // re-freezing them from today's reference book would silently rewrite history.
+        snapshot: src.snapshot,
       };
       set((s) => ({ runs: [run, ...s.runs], sel: { ...s.sel, kind: 'run', runId: run.id, guideIndex: 0 }, view: 'run' }));
       upsertChange({ kind: 'run', refId: run.id, path: run.file, status: 'A', label: run.name });

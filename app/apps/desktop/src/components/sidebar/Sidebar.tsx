@@ -47,6 +47,7 @@ export function Sidebar() {
     openCase,
     openSuite,
     openRunsList,
+    openReferenceBook,
     collapsed,
     setCollapsed,
     renaming,
@@ -458,6 +459,7 @@ export function Sidebar() {
 
   const anyVisible = tree.some(subtreeHas);
   const runsActive = view === 'runs' || view === 'run' || view === 'guide';
+  const refActive = view === 'glossary';
 
   return (
     <aside
@@ -468,7 +470,7 @@ export function Sidebar() {
         <button
           className={cn(
             'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            !runsActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
+            !runsActive && !refActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
           )}
           onClick={() => sel.id && openCase(sel.id)}
         >
@@ -482,6 +484,16 @@ export function Sidebar() {
           onClick={openRunsList}
         >
           {I.grid({ size: 14 })} Runs
+        </button>
+        <button
+          className={cn(
+            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
+            refActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
+          )}
+          title="Reference book — shared links and arguments"
+          onClick={openReferenceBook}
+        >
+          {I.link({ size: 14 })} Reference
         </button>
       </div>
 

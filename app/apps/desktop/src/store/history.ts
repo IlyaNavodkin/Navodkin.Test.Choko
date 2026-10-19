@@ -29,8 +29,12 @@ const COALESCE_MS = 700;
 const primaryField = (patch: Partial<Case>): string => Object.keys(patch).find((k) => k !== 'modified') ?? 'title';
 
 export interface CaseHistory {
-  /** Snapshot a case's pre-edit state for undo, coalescing a rapid burst of same-field edits. */
-  recordEdit: (id: string, patch: Partial<Case>) => void;
+  /**
+   * Snapshot a case's pre-edit state for undo, coalescing a rapid burst of same-field edits.
+   * `separate` forces a distinct step (used by reference-book insertions, where the click must
+   * be undoable on its own, not merged into the typing that preceded it).
+   */
+  recordEdit: (id: string, patch: Partial<Case>, opts?: { separate?: boolean }) => void;
   /** Drop any history entries for a case (e.g. after delete) so undo can't resurrect it. */
   pruneHistory: (id: string) => void;
   /** Wipe all history when leaving a repo, so it can't replay one repo's edits into another. */
@@ -45,7 +49,7 @@ export function createCaseHistory({ get, set, casePath, upsertChange, writeCaseN
   let coalesceKey: string | null = null;
   let coalesceAt = 0;
 
-  const recordEdit = (id: string, patch: Partial<Case>) => {
+  const recordEdit = (id: string, patch: Partial<Case>, opts?: { separate?: boolean }) => {
     const field = primaryField(patch);
     const c = get().cases.find((x) => x.id === id);
     if (!c) return;
@@ -53,9 +57,15 @@ export function createCaseHistory({ get, set, casePath, upsertChange, writeCaseN
     const key = `${id}:${field}`;
     const top = undoStack[undoStack.length - 1];
     const coalesce =
-      !!top && top.caseId === id && top.field === field && key === coalesceKey && now - coalesceAt < COALESCE_MS;
-    coalesceKey = key;
-    coalesceAt = now;
+      !opts?.separate &&
+      !!top &&
+      top.caseId === id &&
+      top.field === field &&
+      key === coalesceKey &&
+      now - coalesceAt < COALESCE_MS;
+    // A separate step also closes the current burst, so the next keystroke starts a new one.
+    coalesceKey = opts?.separate ? null : key;
+    coalesceAt = opts?.separate ? 0 : now;
     if (coalesce) return; // same burst → the existing entry already snapshots the pre-burst state
     undoStack.push({ caseId: id, field, snapshot: { ...c } });
     if (undoStack.length > HISTORY_LIMIT) undoStack.shift();

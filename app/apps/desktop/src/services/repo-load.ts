@@ -1,11 +1,13 @@
 import { node } from '@/lib/node';
 import { ConfigYamlSchema, WorkspaceYamlSchema, type LintWarning } from '@/schemas';
+import type { RunSnapshot } from '@/schemas/run-snapshot';
 import type { Case, Run, TreeNode, Workspace } from '@/types';
 import { slug } from '@/utils/ids';
 import { parseCase } from './format/case';
 import { parseFolderNote } from './format/folder-note';
 import { parseOrder } from './format/order';
 import { parseRunCase, parseRunDetails, type RunCaseItem } from './format/run';
+import { parseRunArgumentsSnapshot, parseRunGlossarySnapshot } from './format/run-snapshot';
 import { parseSuite } from './format/suite';
 import {
   CASEWRIGHT_DIR,
@@ -331,6 +333,22 @@ async function loadRuns(repoPath: string, warnings: LintWarning[]): Promise<Run[
       });
     }
 
+    // The frozen reference snapshot, when the run has one. These JSON sidecars are *not* run
+    // content: the rows above come from `_run.md` + `NNN-*.md` only, and a missing or unreadable
+    // snapshot simply means the run has no frozen definitions to show.
+    const glossaryRaw = await readMaybe(path.join(dirAbs, 'glossary.json'));
+    const argumentsRaw = await readMaybe(path.join(dirAbs, 'arguments.json'));
+    let snapshot: RunSnapshot | undefined;
+    if (glossaryRaw != null || argumentsRaw != null) {
+      const glossary = glossaryRaw != null ? parseRunGlossarySnapshot(glossaryRaw) : { glossary: [], unresolved: [], issues: [] };
+      const args = argumentsRaw != null ? parseRunArgumentsSnapshot(argumentsRaw) : { snapshot: null, issues: [] };
+      for (const x of glossary.issues) warnings.push({ ...x, file: relJoin(dirRel, 'glossary.json') });
+      for (const x of args.issues) warnings.push({ ...x, file: relJoin(dirRel, 'arguments.json') });
+      if (glossary.glossary.length || glossary.unresolved.length || args.snapshot) {
+        snapshot = { glossary: glossary.glossary, unresolved: glossary.unresolved, arguments: args.snapshot };
+      }
+    }
+
     runs.push({
       id: dirRel,
       name: det?.details.name || stem,
@@ -345,6 +363,7 @@ async function loadRuns(repoPath: string, warnings: LintWarning[]): Promise<Run[
       notes: det?.details.notes ?? '',
       testerApproval: det?.details.testerApproval ?? null,
       reviewerApproval: det?.details.reviewerApproval ?? null,
+      ...(snapshot ? { snapshot } : {}),
     });
   }
   // Newest-first by created date (id as a stable tie-breaker) — an explicit order every consumer

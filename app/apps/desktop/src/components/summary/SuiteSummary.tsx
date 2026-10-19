@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { I } from '@/components/icons';
 import { Button, Field, Input, StatusPill, Textarea } from '@/components/ui';
+import { RefLinkButton } from '@/components/reference/ReferencePicker';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/store/app-store';
+import { insertAtCursor } from '@/utils/glossary-link';
 import type { Case, Result, Run, Status, SuiteNode, TreeNode, Workspace } from '@/types';
 import { EmptyCenter } from '@/components/common/EmptyCenter';
 
@@ -44,6 +46,7 @@ function StatCount({ label, n, dot }: { label: string; n: number; dot?: string }
 function FolderSettings({ node, ws }: { node: SuiteNode; ws: Workspace | null }) {
   const { updateWorkspace, updateSuite, resolveSuitePrefix } = useApp();
   const isWs = !!node.isWorkspace && !!ws;
+  const descRef = useRef<HTMLTextAreaElement>(null);
 
   const init = isWs && ws
     ? { name: ws.name, description: ws.description, prefix: ws.prefix }
@@ -84,6 +87,7 @@ function FolderSettings({ node, ws }: { node: SuiteNode; ws: Workspace | null })
         </Field>
         <Field label="Description">
           <Textarea
+            ref={descRef}
             rows={2}
             value={description}
             placeholder={isWs ? 'What this workspace is for…' : 'What this suite covers…'}
@@ -91,6 +95,23 @@ function FolderSettings({ node, ws }: { node: SuiteNode; ws: Workspace | null })
             onBlur={() => commit({ description })}
           />
         </Field>
+        <div className="flex items-center gap-2">
+          <RefLinkButton
+            baseRel={notePath}
+            onInsert={(markdown) => {
+              const el = descRef.current;
+              if (!el) return;
+              const r = insertAtCursor(el.value, el.selectionStart ?? el.value.length, el.selectionEnd ?? el.value.length, markdown);
+              setDescription(r.value);
+              commit({ description: r.value });
+              requestAnimationFrame(() => {
+                el.focus();
+                el.setSelectionRange(r.caret, r.caret);
+              });
+            }}
+          />
+          <span className="text-[11px] text-ink-faint">insert a link from the reference book</span>
+        </div>
         <Field label="Display ID prefix">
           <Input
             mono

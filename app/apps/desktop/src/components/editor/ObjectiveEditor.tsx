@@ -7,10 +7,14 @@ import { FmtBar } from './FmtBar';
 export interface ObjectiveEditorProps {
   value: string;
   onChange: (value: string) => void;
+  /** Repo-relative path of the case file — anchors links inserted from the reference book. */
+  baseRel?: string;
+  /** Apply a reference-book insertion as its own undo step. */
+  onInsertLink?: (value: string) => void;
 }
 
 /** Objective — the editorial reading surface (sans-serif editor + inline preview). */
-export function ObjectiveEditor({ value, onChange }: ObjectiveEditorProps) {
+export function ObjectiveEditor({ value, onChange, baseRel, onInsertLink }: ObjectiveEditorProps) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const [preview, setPreview] = useState(false);
   const badHeadings = hasHeadings13(value);
@@ -26,7 +30,7 @@ export function ObjectiveEditor({ value, onChange }: ObjectiveEditorProps) {
         </Button>
       </div>
       <div className="relative">
-        {!preview && <FmtBar targetRef={ref} onApply={onChange} />}
+        {!preview && <FmtBar targetRef={ref} onApply={onChange} baseRel={baseRel} onApplySeparate={onInsertLink} />}
         {preview ? (
           <div className="rounded-md border border-dashed border-border px-4 py-[14px] font-ui text-[15px] leading-[1.6] text-[oklch(0.30_0.012_60)]">
             {value.trim() ? renderMarkdown(value, 'obj') : <span className="text-ink-3">No objective yet.</span>}

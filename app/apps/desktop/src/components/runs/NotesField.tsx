@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { RefLinkButton } from '@/components/reference/ReferencePicker';
+import { insertAtCursor } from '@/utils/glossary-link';
 import { editorKeyDown, renderMarkdown } from '@/utils/markdown';
 
 const DEFAULT_LABEL_CLASS = 'text-[11px] font-bold uppercase tracking-[0.05em] text-ink-faint';
@@ -16,6 +18,11 @@ export interface NotesFieldProps {
   labelClassName?: string;
   /** Max auto-grow height of the raw editor, in px. */
   maxHeight?: number;
+  /**
+   * Repo-relative path of the note's owning case file — enables the «From the reference book»
+   * picker, which writes a link relative to that file (the note itself is a run sidecar).
+   */
+  baseRel?: string;
 }
 
 /**
@@ -32,6 +39,7 @@ export function NotesField({
   idPrefix = 'notes',
   labelClassName = DEFAULT_LABEL_CLASS,
   maxHeight = 400,
+  baseRel,
 }: NotesFieldProps) {
   const [editing, setEditing] = useState(false);
   const taRef = useRef<HTMLTextAreaElement>(null);
@@ -40,6 +48,19 @@ export function NotesField({
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = Math.min(el.scrollHeight, maxHeight) + 'px';
+  };
+
+  /** Drop a picked reference link in at the caret and keep the editor open. */
+  const insertLink = (markdown: string) => {
+    const el = taRef.current;
+    if (!el) return;
+    const r = insertAtCursor(el.value, el.selectionStart ?? el.value.length, el.selectionEnd ?? el.value.length, markdown);
+    onChange(r.value);
+    requestAnimationFrame(() => {
+      el.focus({ preventScroll: true });
+      grow(el);
+      el.setSelectionRange(r.caret, r.caret);
+    });
   };
 
   useEffect(() => {
@@ -64,6 +85,7 @@ export function NotesField({
         >
           {editing ? 'Done' : 'Edit'}
         </button>
+        {editing && baseRel && <RefLinkButton baseRel={baseRel} onInsert={insertLink} />}
       </div>
       {editing ? (
         <textarea

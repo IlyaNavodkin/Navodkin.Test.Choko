@@ -10,6 +10,8 @@
 // whitelist of tags is ever emitted — case/run content is untrusted repo data.
 // ---------------------------------------------------------------------------
 
+import { glossaryHrefId, referenceLinkInfo } from './glossary-link';
+
 /** HTML-escape text content. */
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -58,6 +60,19 @@ const link = (url: string, label: string): string => {
   return safe ? `<a href="${esc(safe)}">${esc(label)}</a>` : esc(label);
 };
 
+/**
+ * A reference-book link in a report: the record's name as a static chip. A PDF cannot navigate
+ * to a repository file, so nothing is clickable — and an unresolvable link is marked rather
+ * than silently rendered as its raw label.
+ */
+function refChip(id: string, label: string): string {
+  const info = referenceLinkInfo(id);
+  if (!info) return `<span class="ref-missing" title="${esc(id)}">${esc(label)}</span>`;
+  const title = info.entry.title.trim() || label;
+  const cls = info.entry.archived ? 'ref-chip ref-archived' : 'ref-chip';
+  return `<span class="${cls}">${esc(title)}</span>`;
+}
+
 const INLINE_RE =
   /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(~~([^~]+)~~)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s<`*]+)/g;
 
@@ -73,8 +88,10 @@ function inline(text: string): string {
     else if (m[3]) out += `<em>${esc(m[4])}</em>`;
     else if (m[5]) out += `<s>${esc(m[6])}</s>`;
     else if (m[7]) out += `<code>${esc(m[8])}</code>`;
-    else if (m[9]) out += link(m[11], m[10]);
-    else if (m[12]) {
+    else if (m[9]) {
+      const refId = glossaryHrefId(m[11]);
+      out += refId ? refChip(refId, m[10]) : link(m[11], m[10]);
+    } else if (m[12]) {
       const [url, trailing] = splitUrlTrailing(m[12]);
       out += link(url, url) + (trailing ? esc(trailing) : '');
     }

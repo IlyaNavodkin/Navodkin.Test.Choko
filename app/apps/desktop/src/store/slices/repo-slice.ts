@@ -68,6 +68,8 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
     openRepo: async (path) => {
       const target = path ?? (await pickDirectory());
       if (!target) return;
+      // A dirty reference-book draft outlives a repo switch only if the user says so.
+      if (!get().guardRefLeave('another repository', () => void get().openRepo(target))) return;
       history.resetHistory(); // a different repo's cases are about to load — old undo entries no longer apply
       set({ loading: true, error: null, needsInit: false, emptyRepo: false });
       try {
@@ -89,6 +91,14 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
             tree: [],
             cases: [],
             runs: [],
+            refs: [],
+            refIssues: [],
+            refSelId: null,
+            refDraft: null,
+            refDraftBase: null,
+            refDirty: false,
+            refSaveError: null,
+            refPendingLeave: null,
             changes: [],
             conflict: null,
             ahead: 0,
@@ -128,6 +138,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
           error: null,
         });
         seedPaths(loaded.paths);
+        void get().loadRefs(); // the reference book is a separate catalog — read-only
         void get().refreshStatus();
         startWatch(opened.repoPath); // live-reload on external file changes
         const recents = await addRecent({
@@ -162,6 +173,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
     },
 
     goHome: () => {
+      if (!get().guardRefLeave('the launcher', () => get().goHome())) return;
       void flushPersist();
       stopWatch();
       history.resetHistory(); // leaving the repo — don't let undo replay these edits into the next one opened
@@ -270,27 +282,35 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
     },
 
     openCase: (id) => {
+      const title = get().cases.find((c) => c.id === id)?.title;
+      if (!get().guardRefLeave(title ? `the case "${title}"` : 'that case', () => get().openCase(id))) return;
       void flushPersist();
       const c = get().cases.find((x) => x.id === id);
       const ws = c ? workspaceOfPath(buildSuiteIndex(get().tree).path[c.suite] ?? '') : null;
       set((s) => ({ sel: { ...s.sel, kind: 'case', id }, view: 'editor', workspace: ws ?? s.workspace }));
     },
     openSuite: (suiteId) => {
-      void flushPersist();
       const node = findSuiteNode(get().tree, suiteId);
+      if (!get().guardRefLeave(node ? `the suite "${node.name}"` : 'that suite', () => get().openSuite(suiteId))) return;
+      void flushPersist();
       const ws = node ? workspaceOfPath(node.path) : null;
       set((s) => ({ sel: { ...s.sel, kind: 'suite', suiteId }, view: 'suite', workspace: ws ?? s.workspace }));
     },
     openRunsList: () => {
+      if (!get().guardRefLeave('the runs list', () => get().openRunsList())) return;
       void flushPersist();
       set({ view: 'runs' });
     },
     openRun: (runId) => {
+      const name = get().runs.find((r) => r.id === runId)?.name;
+      if (!get().guardRefLeave(name ? `the run "${name}"` : 'that run', () => get().openRun(runId))) return;
       void flushPersist();
       set((s) => ({ sel: { ...s.sel, kind: 'run', runId }, view: 'run' }));
     },
     openCreateRun: () => set({ modal: 'createRun' }),
     startGuide: (runId, index = 0) => {
+      const name = get().runs.find((r) => r.id === runId)?.name;
+      if (!get().guardRefLeave(name ? `the run "${name}"` : 'that run', () => get().startGuide(runId, index))) return;
       void flushPersist();
       set((s) => ({ sel: { ...s.sel, kind: 'run', runId, guideIndex: index }, view: 'guide' }));
     },

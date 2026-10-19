@@ -1,5 +1,6 @@
 import { createElement, Fragment, type KeyboardEvent, type ReactNode } from 'react';
 import { openExternal } from '@/lib/nwjs';
+import { glossaryHrefId, openReferenceRecord, referenceLinkInfo } from './glossary-link';
 import { resolveVariables } from './variables';
 
 // ---------------------------------------------------------------------------
@@ -68,6 +69,43 @@ function extLink(key: string, url: string, label: string): ReactNode {
 }
 
 /**
+ * A link to a reference-book record, read as an explanation: it shows the record's name and
+ * opens its card in the Reference section. Nothing is fetched — the catalog (or, inside a run,
+ * the frozen snapshot of that run) resolves it — and a link whose record is missing (or archived)
+ * says so instead of pretending. The case text itself is never modified by reading it.
+ */
+function refChip(key: string, id: string, label: string): ReactNode {
+  const info = referenceLinkInfo(id);
+  const archived = !!info?.entry.archived;
+  const title = info?.entry.title.trim() || label;
+  const hint = !info
+    ? `Not found in this repository's reference book (.testoritto/glossary/${id}.md).`
+    : `${info.entry.description.split('\n')[0].trim() || 'No description.'}${archived ? ' — archived record.' : ''}${
+        info.runSnapshot ? ' — as recorded when this run was created.' : ''
+      }`;
+  const cls = !info
+    ? 'rounded-sm border border-dashed border-fail px-1 text-fail cursor-pointer'
+    : archived
+      ? 'rounded-sm border border-border bg-sunken px-1 text-ink-3 hover:bg-raise cursor-pointer'
+      : 'rounded-sm border border-accent-line bg-accent-soft px-1 text-accent-ink hover:bg-raise cursor-pointer';
+  return (
+    <button
+      key={key}
+      type="button"
+      title={hint}
+      className={cls}
+      onClick={(ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        openReferenceRecord(id);
+      }}
+    >
+      {title}
+    </button>
+  );
+}
+
+/**
  * Render the inline-formatting whitelist to React nodes.
  * Allowed: **bold**  *italic*  ~~strike~~  `code`  [text](url), plus bare http(s) URLs
  * (auto-linked). This is the single-line surface; for multi-line content use {@link renderMarkdown}.
@@ -92,8 +130,11 @@ export function renderInline(text: string | null | undefined, keyPrefix = 'k'): 
           {m[8]}
         </code>,
       );
-    else if (m[9]) out.push(extLink(key, m[11], m[10]));
-    else if (m[12]) {
+    else if (m[9]) {
+      // A reference-book link renders as a chip; anything else follows the external-link rules.
+      const linkId = glossaryHrefId(m[11]);
+      out.push(linkId ? refChip(key, linkId, m[10]) : extLink(key, m[11], m[10]));
+    } else if (m[12]) {
       // A bare URL — link the url itself, leaving any trailing sentence punctuation as plain text.
       const [url, trailing] = splitUrlTrailing(m[12]);
       out.push(extLink(key, url, url));

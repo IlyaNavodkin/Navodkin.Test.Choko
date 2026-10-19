@@ -9,18 +9,32 @@ import { FmtBar } from './FmtBar';
 export interface SetupControlProps {
   items: SetupItem[];
   onChange: (items: SetupItem[]) => void;
+  /** Repo-relative path of the case file — anchors links inserted from the reference book. */
+  baseRel?: string;
+  /** Apply a setup-body insertion from the reference book as its own undo step. */
+  onInsertLink?: (items: SetupItem[]) => void;
 }
 
 const dropLine =
   "relative mx-0.5 my-px h-0.5 rounded-[2px] bg-accent before:absolute before:-left-0.5 before:top-1/2 before:size-[7px] before:-translate-y-1/2 before:rounded-full before:bg-accent before:shadow-[0_0_0_2px_var(--panel)] before:content-['']";
 
 /** The body of a single setup item — a multi-line markdown editor that disallows h1–h3 headings. */
-function SetupBody({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+function SetupBody({
+  value,
+  onChange,
+  baseRel,
+  onInsertLink,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  baseRel?: string;
+  onInsertLink?: (value: string) => void;
+}) {
   const ref = useRef<HTMLTextAreaElement>(null);
   const badHeadings = hasHeadings13(value);
   return (
     <div className="mt-1.5">
-      <FmtBar targetRef={ref} onApply={onChange} hint={false} />
+      <FmtBar targetRef={ref} onApply={onChange} hint={false} baseRel={baseRel} onApplySeparate={onInsertLink} />
       <textarea
         ref={ref}
         className="min-h-[64px] w-full resize-y rounded-md border border-border bg-panel px-3 py-2 font-ui text-[14px] leading-[1.6] text-[oklch(0.30_0.012_60)] focus:border-accent-line focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
@@ -43,7 +57,7 @@ function SetupBody({ value, onChange }: { value: string; onChange: (value: strin
 }
 
 /** Setup — a reorderable list of named, multi-line markdown items (`### name` + body). */
-export function SetupControl({ items, onChange }: SetupControlProps) {
+export function SetupControl({ items, onChange, baseRel, onInsertLink }: SetupControlProps) {
   const nameRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const [drag, setDrag] = useState<number | null>(null);
   const [dropIdx, setDropIdx] = useState<number | null>(null);
@@ -51,6 +65,7 @@ export function SetupControl({ items, onChange }: SetupControlProps) {
 
   const setName = (i: number, v: string) => onChange(items.map((x, j) => (j === i ? { ...x, name: v } : x)));
   const setBody = (i: number, v: string) => onChange(items.map((x, j) => (j === i ? { ...x, body: v } : x)));
+  const insertBody = (i: number, v: string) => (onInsertLink ?? onChange)(items.map((x, j) => (j === i ? { ...x, body: v } : x)));
   const remove = (i: number) => onChange(items.filter((_, j) => j !== i));
   const add = () => {
     onChange([...items, { name: '', body: '' }]);
@@ -155,7 +170,12 @@ export function SetupControl({ items, onChange }: SetupControlProps) {
                   {I.trash({ size: 13 })}
                 </Button>
               </div>
-              <SetupBody value={it.body} onChange={(v) => setBody(i, v)} />
+              <SetupBody
+                value={it.body}
+                onChange={(v) => setBody(i, v)}
+                baseRel={baseRel}
+                onInsertLink={(v) => insertBody(i, v)}
+              />
             </div>
           </Fragment>
         ))}

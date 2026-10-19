@@ -6,7 +6,7 @@ import { useApp } from '@/store/app-store';
 import { firstUnrun, nowStamp } from '@/utils/ids';
 import { renderInline, renderMarkdown } from '@/utils/markdown';
 import { buildRunSummary, type RunSummaryEntry } from '@/utils/run-items';
-import type { Approval, Result, RunRow } from '@/types';
+import type { Approval, Result, Run, RunRow } from '@/types';
 import { NotesField } from './NotesField';
 import { RunCaseCard } from './RunCaseCard';
 
@@ -97,6 +97,72 @@ const RUN_STATUS: Record<string, string> = {
   closed: 'text-ink-3 bg-sunken',
 };
 
+/**
+ * What the run froze about the reference book when it was created: the argument set (or none),
+ * how many records its links resolve to, and — explicitly — the references that could not be
+ * frozen. Reading it never touches the live reference book, which may have moved on since.
+ */
+function RunSnapshotPanel({ snapshot }: { snapshot: NonNullable<Run['snapshot']> }) {
+  const args = snapshot.arguments;
+  const unfrozen = snapshot.unresolved.length;
+  return (
+    <section className="flex flex-col gap-2">
+      <div className="flex items-baseline gap-2">
+        <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-2">Reference snapshot</div>
+        <span className="text-[10.5px] text-ink-faint">frozen when the run was created</span>
+      </div>
+      <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-panel p-[14px]">
+        {args ? (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-semibold">{args.title || args.id}</span>
+              <span className="font-mono text-[10.5px] text-ink-faint" title="Revision of the record this run froze">
+                rev {args.revision.slice(0, 8)}
+              </span>
+            </div>
+            {args.description.trim() && (
+              <div className="text-[12px] leading-[1.45] text-ink-3">{args.description.split('\n')[0].trim()}</div>
+            )}
+            <ul className="flex flex-col gap-0.5">
+              {args.values.map((v) => (
+                <li key={v.key} className="flex items-baseline gap-2 text-[12.5px]">
+                  <span className="font-mono text-[11.5px] text-ink-3">{v.key}</span>
+                  <span className="text-[10px] uppercase tracking-[0.04em] text-ink-faint">{v.type}</span>
+                  <span className="min-w-0 flex-1 truncate font-mono text-[12px] text-ink-2" title={String(v.value)}>
+                    {String(v.value)}
+                  </span>
+                </li>
+              ))}
+              {args.values.length === 0 && <li className="text-[12.5px] text-ink-3">No values in this set.</li>}
+            </ul>
+          </>
+        ) : (
+          <div className="text-[12.5px] text-ink-3">No argument set was frozen with this run.</div>
+        )}
+        <div className="text-[11.5px] text-ink-faint">
+          {snapshot.glossary.length === 0
+            ? 'No reference records are frozen with this run.'
+            : `${snapshot.glossary.length} reference ${snapshot.glossary.length === 1 ? 'record is' : 'records are'} frozen with this run — links stay readable even if a record changes.`}
+        </div>
+        {unfrozen > 0 && (
+          <div className="flex flex-col gap-1 rounded-md border border-blocked bg-blocked-soft px-2.5 py-2">
+            <div className="flex items-center gap-1.5 text-[12px] font-semibold text-ink">
+              {I.warn({ size: 13 })} {unfrozen} {unfrozen === 1 ? 'reference was' : 'references were'} not frozen
+            </div>
+            <ul className="flex flex-col gap-0.5">
+              {snapshot.unresolved.map((u) => (
+                <li key={`${u.id}-${u.where}`} className="text-[11.5px] leading-[1.45] text-ink-2">
+                  <span className="font-mono text-[11px] text-ink-3">{u.where}</span> — {u.reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 // Vertical insertion indicator for the card grid — absolute so showing it never reflows the grid
 // (a reflow would shift the drag hit-targets mid-drag and make the drop index oscillate). Sits in
 // the gap to the left of the target card, or to the right of the last card.
@@ -105,6 +171,17 @@ const dropLine =
 
 export function RunGrid() {
   const ctx = useApp();
+
+  // Hooks must run on every render: the watched run folder can vanish between renders (deleted or
+  // reloaded from disk while this view is open), and the guard below then renders nothing.
+  const bodyRef = useRef<HTMLDivElement>(null); // the center+panel flex row, for live width bounds
+  const [panelWidth, setPanelWidth] = useState(() => {
+    const v = Number(localStorage.getItem(PANEL_KEY));
+    return v >= PANEL_MIN && v <= PANEL_MAX ? v : PANEL_DEFAULT;
+  });
+  const [drag, setDrag] = useState<number | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
+
   const run = ctx.runs.find((r) => r.id === ctx.sel.runId);
   if (!run) return null;
   const liveIds = new Set(ctx.cases.map((c) => c.id));
@@ -126,11 +203,6 @@ export function RunGrid() {
   const { counts: t, executed, passRate } = summary;
 
   // ---- resizable detail panel (left-edge handle; width persists) ----
-  const bodyRef = useRef<HTMLDivElement>(null); // the center+panel flex row, for live width bounds
-  const [panelWidth, setPanelWidth] = useState(() => {
-    const v = Number(localStorage.getItem(PANEL_KEY));
-    return v >= PANEL_MIN && v <= PANEL_MAX ? v : PANEL_DEFAULT;
-  });
   // Drag the left edge to resize; dragging left widens the panel (delta is inverted vs. the
   // sidebar since this panel is docked to the right). The upper bound is the live container width
   // minus a sliver of center (so the panel can never be dragged off-screen, even on a tiny
@@ -165,8 +237,6 @@ export function RunGrid() {
   };
 
   // ---- drag-reorder of the case cards (in-card handle; vertical drop line) ----
-  const [drag, setDrag] = useState<number | null>(null);
-  const [dropIdx, setDropIdx] = useState<number | null>(null);
   const cardOver = (i: number) => (e: DragEvent) => {
     if (drag === null) return;
     e.preventDefault();
@@ -340,6 +410,8 @@ export function RunGrid() {
             </span>
           </section>
 
+          {run.snapshot && <RunSnapshotPanel snapshot={run.snapshot} />}
+
           <section className="flex flex-col gap-2">
             <div className="flex items-baseline gap-2">
               <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-2">Summary</div>
@@ -449,6 +521,7 @@ export function RunGrid() {
               placeholder="General notes about this run."
               value={run.notes}
               onChange={(v) => ctx.setRunNotes(run.id, v)}
+              baseRel={`${run.file}/_run.md`}
             />
           </section>
           </div>

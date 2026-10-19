@@ -144,6 +144,14 @@ section{margin-top:22px;}
 .footer{margin-top:26px;padding-top:12px;border-top:1px solid var(--border);
   font-size:10.5px;color:var(--ink-faint);text-align:center;}
 .empty{margin-top:20px;border:1px dashed var(--border-2);border-radius:9px;padding:24px;text-align:center;color:var(--ink-3);}
+
+/* reference-book links inside prose: the record's name as a static chip — a PDF cannot
+   navigate to a repository file, so these are never anchors. A link whose record is not in
+   this repository's reference book stays visible and is marked as unresolved. */
+.ref-chip{font-weight:600;color:var(--accent-ink);background:var(--accent-soft);
+  border:1px solid var(--border);border-radius:4px;padding:0 3px;white-space:nowrap;}
+.ref-archived{color:var(--ink-3);background:var(--sunken);}
+.ref-missing{color:var(--fail);border:1px dashed var(--fail);border-radius:4px;padding:0 3px;white-space:nowrap;}
 `;
 
 /* Preview-only chrome: a sticky toolbar with a "Save PDF" button. The toolbar is hidden

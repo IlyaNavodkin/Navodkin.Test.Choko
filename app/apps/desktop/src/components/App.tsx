@@ -22,9 +22,12 @@ import { AppDialog } from './common/AppDialog';
 import { EmptyCenter } from './common/EmptyCenter';
 import { MergeResolver } from './merge/MergeResolver';
 import { SuiteSummary } from './summary/SuiteSummary';
+import { ReferenceBook } from './reference/ReferenceBook';
+import { ReferencePickerHost } from './reference/ReferencePicker';
 
 function Center() {
   const { view, sel } = useApp();
+  if (view === 'glossary') return <ReferenceBook />;
   if (view === 'suite') return <SuiteSummary />;
   if (view === 'runs') return <RunsList />;
   if (view === 'guide') return <RunGuide />;
@@ -66,6 +69,7 @@ function Workbench() {
           {modal === 'addCases' && <AddCasesModal />}
           {modal === 'about' && <AboutModal />}
           {modal === 'merge' && <MergeResolver />}
+          {modal === 'refPicker' && <ReferencePickerHost />}
           <Toasts />
         </>
       )}
@@ -81,6 +85,19 @@ export function App() {
   useEffect(() => {
     void autoReopen();
   }, [autoReopen]);
+
+  // An unsaved reference-book draft lives in memory only, so closing the window would lose
+  // it silently — ask first (the browser/NW.js shows its own confirm for a non-null return).
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (!useAppStore.getState().refDirty) return;
+      e.preventDefault();
+      e.returnValue = '';
+      return '';
+    };
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, []);
 
   // Poll GitHub for a newer release: once shortly after launch (off the critical
   // path), then on a slow interval. No-ops outside NW.js (dev preview / browser).

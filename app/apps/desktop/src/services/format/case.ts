@@ -4,6 +4,7 @@ import type { Case, SetupItem, Step } from '@/types';
 import { caseStem } from '@/services/format/filename';
 import { randomId, slug } from '@/utils/ids';
 import { numberSteps } from '@/utils/steps';
+import { yamlScalar } from './yaml-scalar';
 
 /** A case parsed from disk — everything except the suite-derived/runtime fields. */
 export type ParsedCase = Omit<Case, 'suite' | 'modified'>;
@@ -25,17 +26,6 @@ const HEADING_ALIASES: Record<string, string> = { 'Expected Results': 'Acceptanc
 // ---------------------------------------------------------------------------
 // Serialize
 // ---------------------------------------------------------------------------
-
-/** True when a YAML scalar can't be emitted plain (must be double-quoted). */
-function needsQuote(s: string): boolean {
-  if (s === '' || s !== s.trim()) return true;
-  if (/:( |$)/.test(s) || /\s#/.test(s) || /^#/.test(s)) return true;
-  if (/^[!&*?{}[\]|>@`"'%,\-]/.test(s)) return true;
-  if (/^(true|false|null|yes|no|on|off|~)$/i.test(s)) return true;
-  if (/^[\d.+-]+$/.test(s)) return true; // numeric-looking
-  return false;
-}
-const yamlScalar = (s: string): string => (needsQuote(s) ? JSON.stringify(s) : s);
 
 function serializeSteps(steps: Step[]): string {
   const nums = numberSteps(steps);

@@ -1,4 +1,5 @@
 import { customAlphabet } from 'nanoid';
+import { node } from '@/lib/node';
 import type { Run } from '@/types';
 
 const ALPHABET = '0123456789abcdefghijklmnopqrstuvwxyz';
@@ -7,6 +8,16 @@ const gen11 = customAlphabet(ALPHABET, 11);
 /** A stable lowercase-alphanumeric case id (~11 chars, `[a-z0-9]`; PRD §5.2). */
 export function randomId(len = 11): string {
   return len === 11 ? gen11() : customAlphabet(ALPHABET, len)();
+}
+
+/**
+ * A random RFC 4122 v4 uuid — the identity and file name of product-data records
+ * (`.testoritto/glossary/<uuid>.md`, later `.testoritto/bugs/<uuid>/`). Unlike
+ * {@link randomId} (short, human-facing, could collide) these are never displayed and
+ * never derived from a title, so a rename can't move a file or break a link.
+ */
+export function randomUuid(): string {
+  return node.crypto().randomUUID();
 }
 
 /**

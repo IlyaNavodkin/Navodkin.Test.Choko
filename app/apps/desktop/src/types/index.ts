@@ -1,3 +1,9 @@
+import type { ReferenceIssue } from '@/schemas/reference-book';
+import type { RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
+
+/** The run-snapshot model is part of the domain surface (components/tests read it off `Run`). */
+export type { RunArgumentsSnapshot, RunGlossaryEntry, RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
+
 /* ============================================================
    Casewright — domain model
    ============================================================ */
@@ -124,6 +130,11 @@ export interface Run {
   notes: string;
   testerApproval: Approval | null;
   reviewerApproval: Approval | null;
+  /**
+   * The reference book as frozen when the run was created (`glossary.json` / `arguments.json`
+   * sidecars) — absent on runs created before the feature or without any referenced record.
+   */
+  snapshot?: RunSnapshot;
 }
 
 export interface CreateRunArgs {
@@ -132,6 +143,51 @@ export interface CreateRunArgs {
   caseIds: string[];
   /** Human-readable scope label for the run-details sidecar. */
   scopeLabel?: string;
+  /** `arguments` record to freeze into the run, or `null`/absent for none (the default). */
+  argsEntryId?: string | null;
+  /**
+   * Create the run even when some referenced records could not be frozen. The user chose this
+   * after seeing exactly which references it affects; the run records them as unresolved.
+   */
+  allowIncomplete?: boolean;
+}
+
+/**
+ * Outcome of `createRun`. The store does not create a run it cannot freeze honestly; on failure
+ * it reports why so the create-run modal can show the problem while keeping the user's selection.
+ */
+export type CreateRunResult =
+  | { ok: true }
+  | { ok: false; reason: 'args'; message: string }
+  | { ok: false; reason: 'snapshot'; issues: RunSnapshotMiss[] }
+  | { ok: false; reason: 'io'; message: string };
+
+/* ---- reference book (`.testoritto/glossary/`) ---- */
+export type RefKindFilter = 'all' | 'link' | 'arguments';
+
+/**
+ * Why the last reference-book save did not happen. The draft is always kept: `fields` and
+ * `io` are retried after fixing, `conflict` needs an explicit decision (reload or overwrite).
+ */
+export type RefSaveError =
+  | { kind: 'fields'; issues: ReferenceIssue[] }
+  | { kind: 'conflict'; message: string }
+  | { kind: 'io'; message: string };
+
+/** Navigation waiting on a dirty-draft decision (stay / save / discard). */
+export interface RefLeaveRequest {
+  /** What the user was about to open — shown in the prompt. */
+  label: string;
+  proceed: () => void;
+}
+
+/**
+ * An open «From the reference book» picker: which document is being edited (so the inserted
+ * link is relative to it) and where the built Markdown link goes.
+ */
+export interface RefPickerRequest {
+  baseRel: string;
+  insert: (markdown: string) => void;
 }
 
 /* ---- git working state ---- */
@@ -153,9 +209,9 @@ export interface Selection {
   guideIndex?: number;
 }
 
-export type View = 'editor' | 'runs' | 'run' | 'guide' | 'suite';
+export type View = 'editor' | 'runs' | 'run' | 'guide' | 'suite' | 'glossary';
 export type Screen = 'launcher' | 'main';
-export type ModalKind = 'commit' | 'createRun' | 'addCases' | 'merge' | 'workspace' | 'about' | null;
+export type ModalKind = 'commit' | 'createRun' | 'addCases' | 'merge' | 'workspace' | 'about' | 'refPicker' | null;
 
 export interface Toast {
   id: number;

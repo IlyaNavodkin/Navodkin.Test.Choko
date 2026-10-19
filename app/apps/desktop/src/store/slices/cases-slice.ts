@@ -1,6 +1,7 @@
 import { schedulePersist } from '@/services/persist';
 import { deletePath, folderNoteRel, makeDir, moveFolderNote, renamePath, syncFolderNote } from '@/services/repo';
 import type { Case, TreeNode } from '@/types';
+import { rewriteGlossaryHrefs } from '@/utils/glossary-link';
 import { folderSlug, randomId, slug } from '@/utils/ids';
 import {
   baseName,
@@ -23,6 +24,7 @@ import type { AppState, StoreGet, StoreSet } from '../app-store';
 type CasesSlice = Pick<
   AppState,
   | 'updateCase'
+  | 'insertCaseLink'
   | 'undo'
   | 'redo'
   | 'duplicateCase'
@@ -51,26 +53,32 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
     lastCasePath,
     writeSuiteNote,
     syncOrder,
+    rebaseMovedCaseLinks,
+    rebaseSuiteNoteLinks,
   } = internals;
 
+  /** The shared body of every case-field edit; `separate` gives it its own undo step. */
+  const applyCasePatch = (id: string, patch: Partial<Case>, separate = false) => {
+    const c = get().cases.find((x) => x.id === id);
+    history.recordEdit(id, patch, { separate }); // snapshot the pre-edit state for undo (before we mutate)
+    set((s) => ({ cases: s.cases.map((x) => (x.id === id ? { ...x, ...patch, modified: true } : x)) }));
+    if (c) {
+      const merged = { ...c, ...patch };
+      const existing = get().changes.find((ch) => ch.kind === 'case' && ch.refId === id);
+      upsertChange({
+        kind: 'case',
+        refId: id,
+        path: casePath(merged),
+        status: existing?.status === 'A' ? 'A' : 'M',
+        label: merged.title,
+      });
+    }
+    schedulePersist('case:' + id, () => writeCaseNow(id));
+  };
+
   return {
-    updateCase: (id, patch) => {
-      const c = get().cases.find((x) => x.id === id);
-      history.recordEdit(id, patch); // snapshot the pre-edit state for undo (before we mutate)
-      set((s) => ({ cases: s.cases.map((x) => (x.id === id ? { ...x, ...patch, modified: true } : x)) }));
-      if (c) {
-        const merged = { ...c, ...patch };
-        const existing = get().changes.find((ch) => ch.kind === 'case' && ch.refId === id);
-        upsertChange({
-          kind: 'case',
-          refId: id,
-          path: casePath(merged),
-          status: existing?.status === 'A' ? 'A' : 'M',
-          label: merged.title,
-        });
-      }
-      schedulePersist('case:' + id, () => writeCaseNow(id));
-    },
+    updateCase: (id, patch) => applyCasePatch(id, patch),
+    insertCaseLink: (id, patch) => applyCasePatch(id, patch, true),
 
     undo: () => history.undo(),
 
@@ -219,6 +227,7 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
       const oldRel = suiteRel(id);
       const parentId = findParentSuiteId(get().tree, id); // its basename is this folder's `.order` key
       const folder = folderSlug(name) || baseName(oldRel);
+      const pathsBefore = new Map(get().cases.map((c) => [c.id, casePath(c)]));
       set((s) => {
         const next = clone(s.tree);
         const fix = (nodes: TreeNode[], parentPath: string) =>
@@ -238,6 +247,16 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
       const newRel = suiteRel(id);
       const renamed = findSuiteNode(get().tree, id);
       if (!rp || !renamed) return;
+      // The note's own body holds links relative to the note's folder, so a rename re-anchors them.
+      const noteDesc = renamed.description ? rewriteGlossaryHrefs(renamed.description, folderNoteRel(newRel)) : '';
+      if (noteDesc && noteDesc !== renamed.description) {
+        set((s) => {
+          const tree = clone(s.tree);
+          const n = findSuiteNode(tree, id);
+          if (n) n.description = noteDesc;
+          return { tree };
+        });
+      }
       void (async () => {
         try {
           if (oldRel && newRel && oldRel !== newRel) {
@@ -245,7 +264,8 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
             await renamePath(rp, oldRel, newRel);
             await syncOrder(parentId); // the folder's `.order` key (its basename) changed
           }
-          await syncFolderNote(rp, newRel, { name: renamed.name, prefix: renamed.prefix, description: renamed.description });
+          await syncFolderNote(rp, newRel, { name: renamed.name, prefix: renamed.prefix, description: noteDesc });
+          rebaseMovedCaseLinks(pathsBefore);
           reseed();
         } catch (e) {
           onWriteError(e);
@@ -310,6 +330,8 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
       const draggedCase = get().cases.find((c) => c.id === dragId);
       const oldRel = draggedCase ? lastCasePath.get(dragId) ?? casePath(draggedCase) : suiteRel(dragId);
       const oldParentId = draggedCase ? draggedCase.suite : findParentSuiteId(get().tree, dragId);
+      // Where every case lives now — a move re-anchors the links of the ones whose path changes.
+      const pathsBefore = new Map(get().cases.map((c) => [c.id, casePath(c)]));
       set((s) => {
         const next = clone(s.tree);
         let dragged: TreeNode | null = null;
@@ -368,8 +390,13 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
             await renamePath(rp, oldRel, newRel);
             // A moved suite's folder basename is unchanged — only its parent dir — so its
             // sibling note follows it (no-op when the suite has no note).
-            if (!movedCase) await moveFolderNote(rp, oldRel, newRel);
+            if (!movedCase) {
+              await moveFolderNote(rp, oldRel, newRel);
+              rebaseSuiteNoteLinks(dragId, newRel);
+            }
           }
+          // Links are relative to the file that holds them, so a moved case's text is re-anchored.
+          rebaseMovedCaseLinks(pathsBefore);
           // An explicit drag persists the new order — create/update `.order` for both ends
           // (same id when reordering within one folder).
           await syncOrder(oldParentId, { force: true });

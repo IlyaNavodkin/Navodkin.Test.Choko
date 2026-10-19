@@ -2,15 +2,23 @@ import type { Dispatch, SetStateAction } from 'react';
 import { create, type StoreApi } from 'zustand';
 
 import type { LintWarning } from '@/schemas';
+import type { ArgValue, ReferenceEntry, ReferenceKind } from '@/schemas/reference-book';
+import type { ReferenceDoc } from '@/services/reference-book';
+import { setReferenceCatalog, setReferenceOpener, setReferenceSnapshot } from '@/utils/glossary-link';
 import type {
   Case,
   Change,
   CheckState,
   Conflict,
   CreateRunArgs,
+  CreateRunResult,
   DialogRequest,
   ModalKind,
   Recent,
+  RefKindFilter,
+  RefLeaveRequest,
+  RefPickerRequest,
+  RefSaveError,
   Renaming,
   Resolutions,
   Result,
@@ -28,6 +36,7 @@ import { createStoreInternals } from './store-internals';
 import { createRepoSlice } from './slices/repo-slice';
 import { createCasesSlice } from './slices/cases-slice';
 import { createRunsSlice } from './slices/runs-slice';
+import { createReferenceSlice } from './slices/reference-slice';
 import { createGitSlice } from './slices/git-slice';
 import { createDialogSlice } from './slices/dialog-slice';
 import { createUpdatesSlice } from './slices/updates-slice';
@@ -91,6 +100,11 @@ export interface AppState {
 
   /* case + suite mutations */
   updateCase: (id: string, patch: Partial<Case>) => void;
+  /**
+   * Apply a reference-book insertion as its own undo step — a link dropped into Objective or a
+   * setup body is undone on its own (Ctrl+Z), not merged with the typing before it.
+   */
+  insertCaseLink: (id: string, patch: Partial<Case>) => void;
   /** Undo / redo the case content-edit history (Ctrl+Z / Ctrl+Y), navigating to the changed case + field. */
   undo: () => void;
   redo: () => void;
@@ -107,7 +121,12 @@ export interface AppState {
 
   /* runs */
   updateRunRow: (runId: string, i: number, patch: Partial<RunRow>) => void;
-  createRun: (args: CreateRunArgs) => void;
+  /**
+   * Seed a run and freeze its reference snapshot. Resolves with a failure (instead of creating a
+   * run) when the chosen argument set cannot be frozen, or when references are unresolved and the
+   * caller has not accepted that yet — so the modal can show the problem with the selection intact.
+   */
+  createRun: (args: CreateRunArgs) => Promise<CreateRunResult>;
   /** Cycle one checklist item: none → pass → fail → none (persisted to the case sidecar). */
   cycleRunCheck: (runId: string, i: number, key: string) => void;
   setRunFailNote: (runId: string, i: number, key: string, note: string) => void;
@@ -144,6 +163,52 @@ export interface AppState {
   rewriteRunDetails: (runId: string) => Promise<void>;
   lastTester: string;
   setLastTester: (v: string) => void;
+
+  /* reference book (`.testoritto/glossary/`) — catalog + a draft that is only written on save */
+  refs: ReferenceDoc[];
+  /** Diagnostics from reading the catalog (an unreadable folder, skipped files). */
+  refIssues: LintWarning[];
+  /** The saved record open in the section, if any. */
+  refSelId: string | null;
+  /** Editor content: the saved copy, an edited copy, or a brand-new record. */
+  refDraft: ReferenceEntry | null;
+  /** The sha256 the draft is based on; `null` marks a record that has never been saved. */
+  refDraftBase: string | null;
+  refDirty: boolean;
+  refSaveError: RefSaveError | null;
+  /** Navigation parked until the user decides on the dirty draft (stay / save / discard). */
+  refPendingLeave: RefLeaveRequest | null;
+  refQuery: string;
+  refKindFilter: RefKindFilter;
+  refShowArchived: boolean;
+  /** (Re)read the catalog — read-only: a repository without `.testoritto/` stays untouched. */
+  loadRefs: () => Promise<void>;
+  openReferenceBook: () => void;
+  selectRefEntry: (id: string) => void;
+  /** Start a new record of the given kind (nothing is written until `saveRefEntry`). */
+  createRefEntry: (kind: ReferenceKind) => void;
+  editRefDraft: (patch: Partial<ReferenceEntry>) => void;
+  addRefValue: () => void;
+  editRefValue: (index: number, patch: Partial<ArgValue>) => void;
+  removeRefValue: (index: number) => void;
+  /** Validate and save the draft; `force` overwrites a file changed outside the app. */
+  saveRefEntry: (opts?: { force?: boolean }) => Promise<boolean>;
+  discardRefDraft: () => void;
+  /** Adopt what is on disk now (the "reload" half of the conflict decision). */
+  reloadRefEntry: () => Promise<void>;
+  setRefArchived: (id: string, archived: boolean) => Promise<void>;
+  /** Gate a navigation on a dirty draft; `false` means the decision prompt is now up. */
+  guardRefLeave: (label: string, proceed: () => void) => boolean;
+  resolveRefLeave: (choice: 'stay' | 'save' | 'discard') => Promise<void>;
+  setRefQuery: (q: string) => void;
+  setRefKindFilter: (kind: RefKindFilter) => void;
+  setRefShowArchived: (show: boolean) => void;
+  /** The open «From the reference book» picker, if any (rendered at the app root, like other modals). */
+  refPicker: RefPickerRequest | null;
+  openRefPicker: (req: RefPickerRequest) => void;
+  closeRefPicker: () => void;
+  /** Open the Reference section at one record — what a link chip in case text does. */
+  openReferenceEntry: (id: string) => void;
 
   /* tree ui state (React-style setters for component compatibility) */
   collapsed: Record<string, boolean>;
@@ -272,12 +337,38 @@ export const useAppStore = create<AppState>()((set, get) => {
     ...createRepoSlice(set, get, internals),
     ...createCasesSlice(set, get, internals),
     ...createRunsSlice(set, get, ctx),
+    ...createReferenceSlice(set, get),
     ...createGitSlice(set, get, ctx),
     ...createDialogSlice(set),
     ...createUpdatesSlice(set, get),
     ...createUiSlice(set),
   };
 });
+
+/**
+ * The renderer's read-only view of the reference book: link chips in prose resolve a record's
+ * name and open its card, without every markdown call site threading the catalog through props.
+ * Installed once here, kept current by the subscription below.
+ */
+setReferenceCatalog(useAppStore.getState().refs);
+setReferenceOpener((id) => useAppStore.getState().openReferenceEntry(id));
+useAppStore.subscribe((s) => setReferenceCatalog(s.refs));
+
+/**
+ * While a run (or its guide) is on screen, chips resolve against that run's frozen snapshot
+ * first — a run keeps showing the definitions it recorded even after the reference book moved on.
+ * Anywhere else (and under a modal, which edits live content), the live catalog is the truth.
+ */
+let installedSnapshot: Run['snapshot'] | null = null;
+const syncRunSnapshot = (s: AppState): void => {
+  const active =
+    !s.modal && (s.view === 'run' || s.view === 'guide') ? (s.runs.find((r) => r.id === s.sel.runId)?.snapshot ?? null) : null;
+  if (active === installedSnapshot) return;
+  installedSnapshot = active;
+  setReferenceSnapshot(active ? active.glossary : null);
+};
+syncRunSnapshot(useAppStore.getState());
+useAppStore.subscribe(syncRunSnapshot);
 
 /**
  * Read the whole store (re-renders on any change — matches the previous context

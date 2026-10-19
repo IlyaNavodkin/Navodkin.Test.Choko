@@ -155,7 +155,13 @@ export function RunCaseCard({
           </div>
         )}
 
-        <NotesField value={row.notes} onChange={onNotes} idPrefix={`rn-${row.case_id}`} />
+        <NotesField
+          value={row.notes}
+          onChange={onNotes}
+          idPrefix={`rn-${row.case_id}`}
+          // The note lives in this run's sidecar, so links inserted here are relative to it.
+          baseRel={row.file}
+        />
       </div>
     </div>
   );

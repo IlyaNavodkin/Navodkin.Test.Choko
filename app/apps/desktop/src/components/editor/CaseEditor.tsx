@@ -70,6 +70,8 @@ export function CaseEditor() {
   const c = ctx.cases.find((x) => x.id === ctx.sel.id);
   if (!c) return null;
   const patch = (p: Partial<Case>) => ctx.updateCase(c.id, p);
+  // A reference-book insertion is its own undo step and writes a link relative to this case file.
+  const insertLink = (p: Partial<Case>) => ctx.insertCaseLink(c.id, p);
   const path = ctx.casePath(c);
   const dir = path.includes('/') ? path.slice(0, path.lastIndexOf('/') + 1) : '';
 
@@ -307,7 +309,7 @@ export function CaseEditor() {
             </section>
           )}
           <div data-edit-field="objective">
-            <ObjectiveEditor value={c.objective} onChange={(v) => patch({ objective: v })} />
+            <ObjectiveEditor value={c.objective} onChange={(v) => patch({ objective: v })} baseRel={path} onInsertLink={(v) => insertLink({ objective: v })} />
           </div>
           <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="systems">
@@ -323,7 +325,7 @@ export function CaseEditor() {
           </div>
           <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="setup">
-            <SetupControl items={c.setup} onChange={(v) => patch({ setup: v })} />
+            <SetupControl items={c.setup} onChange={(v) => patch({ setup: v })} baseRel={path} onInsertLink={(v) => insertLink({ setup: v })} />
           </div>
           <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="steps">

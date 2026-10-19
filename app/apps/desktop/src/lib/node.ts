@@ -20,6 +20,7 @@ type PathMod = typeof import('node:path');
 type OsMod = typeof import('node:os');
 type UrlMod = typeof import('node:url');
 type ChildProc = typeof import('node:child_process');
+type CryptoMod = typeof import('node:crypto');
 
 export class NotInNwjsError extends Error {
   constructor(mod?: string) {
@@ -64,6 +65,8 @@ export const node = {
   os: () => load<OsMod>('node:os'),
   url: () => load<UrlMod>('node:url'),
   childProcess: () => load<ChildProc>('node:child_process'),
+  /** SHA-256 / randomUUID — content revisions and product-data ids. */
+  crypto: () => load<CryptoMod>('node:crypto'),
   /** The `simpleGit` factory: `node.simpleGit()(repoPath)` → a SimpleGit instance. */
   simpleGit: () => load<typeof SimpleGitFactory>('simple-git'),
   /** gray-matter's callable parser/serializer. */

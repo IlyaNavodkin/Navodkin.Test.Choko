@@ -5,12 +5,53 @@ import { cn } from '@/lib/utils';
 import { useApp } from '@/store/app-store';
 import { deriveItems } from '@/utils/run-items';
 import { renderInline, renderMarkdown } from '@/utils/markdown';
-import type { Case, TreeNode } from '@/types';
+import type { Case, CreateRunResult, RunSnapshotMiss, TreeNode } from '@/types';
 
 type NodeState = 'on' | 'off' | 'partial';
 
+/** A failed creation, as the modal shows it (the store never creates a run it cannot freeze). */
+type CreateFailure = Extract<CreateRunResult, { ok: false }>;
+
 /** Width folder rows give their disclosure chevron (size-5 = 20px) plus its gap-1 (4px). */
 const CHEVRON_COL = 24;
+
+/**
+ * Why the run was not created. `args` is a hard stop (the chosen set must be fixed or dropped);
+ * `snapshot` is the explicit decision point for references that could not be frozen — the user
+ * may still create the run, and it records them as unresolved.
+ */
+function CreateIssuePanel({ failure, onProceed }: { failure: CreateFailure; onProceed: () => void }) {
+  if (failure.reason === 'snapshot')
+    return (
+      <div className="flex flex-col gap-1.5 rounded-md border border-blocked bg-blocked-soft px-3 py-2.5">
+        <div className="flex items-center gap-1.5 text-[12.5px] font-semibold text-ink">
+          {I.warn({ size: 14 })}
+          {failure.issues.length === 1 ? '1 reference has no record to freeze' : `${failure.issues.length} references have no record to freeze`}
+        </div>
+        <ul className="flex max-h-[120px] flex-col gap-1 overflow-auto">
+          {failure.issues.map((issue: RunSnapshotMiss) => (
+            <li key={`${issue.id}-${issue.where}`} className="text-[12px] leading-[1.45] text-ink-2">
+              <span className="font-mono text-[11px] text-ink-3">{issue.where}</span> — {issue.reason}
+            </li>
+          ))}
+        </ul>
+        <div className="text-[12px] text-ink-3">
+          Creating the run anyway freezes the rest and records these references as unresolved — nothing is hidden.
+        </div>
+        <div>
+          <Button variant="ghost" size="sm" onClick={onProceed}>
+            {I.plus({ size: 12 })} Create the run without them
+          </Button>
+        </div>
+      </div>
+    );
+  return (
+    <div className="rounded-md border border-fail bg-fail-soft px-3 py-2.5 text-[12.5px] text-ink">
+      <div className="flex items-center gap-1.5 font-semibold">{I.warn({ size: 14 })} The run was not created</div>
+      <div className="mt-1 text-ink-2">{failure.message}</div>
+    </div>
+  );
+}
 
 /** A tri-state checkbox: checked / indeterminate / empty. */
 function TriBox({ state }: { state: NodeState }) {
@@ -38,6 +79,10 @@ export function CreateRunModal() {
   const [name, setName] = useState('');
   const [tag, setTag] = useState(allTags[0] ?? '');
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // `arguments` set to freeze into the run ('' = none, the default — a run needs no values).
+  const [argsId, setArgsId] = useState('');
+  const [failure, setFailure] = useState<CreateFailure | null>(null);
+  const [busy, setBusy] = useState(false);
   // Case shown in the right-hand detail pane (clicking a case's name previews it;
   // clicking its checkbox toggles inclusion). Null until the user picks one.
   const [previewId, setPreviewId] = useState<string | null>(null);
@@ -98,6 +143,28 @@ export function CreateRunModal() {
   const count = selected.size;
   const scopeLabel = count === ctx.cases.length && count > 0 ? 'repo' : `custom (${count} ${count === 1 ? 'case' : 'cases'})`;
 
+  // Only sets the app can read and write: an archived or unreadable record must not be offered.
+  const argSets = useMemo(
+    () => ctx.refs.filter((d) => d.entry.kind === 'arguments' && !d.entry.archived && !d.readonly),
+    [ctx.refs],
+  );
+  const selectedArgs = argsId ? argSets.find((d) => d.id === argsId) : undefined;
+
+  /**
+   * Create the run. The store freezes the reference book first and refuses (with a reason) a run
+   * it cannot freeze honestly, so a failure here keeps every choice and shows the problem.
+   * `allowIncomplete` is the user's explicit "create it anyway" for unfreezable references.
+   */
+  const submit = (allowIncomplete: boolean) => {
+    setBusy(true);
+    void ctx
+      .createRun({ name: name.trim(), caseIds: [...selected], scopeLabel, argsEntryId: argsId || null, allowIncomplete })
+      .then((res) => {
+        setBusy(false);
+        if (!res.ok) setFailure(res);
+      });
+  };
+
   // ---- recursive tree rows ----
   const renderNodes = (nodes: TreeNode[], depth: number): ReactNode[] =>
     nodes.flatMap((node) => {
@@ -157,6 +224,34 @@ export function CreateRunModal() {
           <Field label="Run name">
             <Input value={name} placeholder="e.g. Regression — Sprint 13" onChange={(e) => setName(e.target.value)} />
           </Field>
+          <Field label="Arguments set — optional">
+            <Select
+              value={argsId}
+              onChange={(e) => {
+                setArgsId(e.target.value);
+                setFailure(null);
+              }}
+            >
+              <option value="">None</option>
+              {argSets.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.entry.title || d.id} · {(d.entry.values ?? []).length} values
+                </option>
+              ))}
+            </Select>
+            <div className="pt-1.5 text-[11.5px] text-ink-faint">
+              {argSets.length === 0 ? (
+                <>No argument sets yet — add one in the Reference section. A run without a set is fine.</>
+              ) : selectedArgs ? (
+                <>
+                  Values are frozen into the run as <span className="font-mono">arguments.json</span> with revision{' '}
+                  <span className="font-mono">{selectedArgs.revision.slice(0, 8)}</span>; editing the set later never changes this run.
+                </>
+              ) : (
+                <>Optional: freeze a set of values (e.g. <span className="font-mono">dev</span>) with this run for automation and reports.</>
+              )}
+            </div>
+          </Field>
           <Field className="min-h-0 flex-1" label="Cases — check workspaces, suites, or individual cases">
             <div className="flex flex-wrap items-center gap-2 pb-2">
               <Button variant="ghost" size="sm" onClick={selectAll}>
@@ -197,14 +292,19 @@ export function CreateRunModal() {
           <CasePreview kase={previewCase} />
         </div>
       </div>
+      {failure && (
+        <div className="flex-none border-t border-border px-[18px] py-3">
+          <CreateIssuePanel failure={failure} onProceed={() => submit(true)} />
+        </div>
+      )}
       <ModalFooter>
         <Button variant="ghost" onClick={close}>
           Cancel
         </Button>
         <Button
           variant="primary"
-          disabled={!name.trim() || count === 0}
-          onClick={() => ctx.createRun({ name: name.trim(), caseIds: [...selected], scopeLabel })}
+          disabled={!name.trim() || count === 0 || busy}
+          onClick={() => submit(false)}
         >
           {I.plus({ size: 14 })} Create run
         </Button>

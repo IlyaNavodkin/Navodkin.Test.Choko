@@ -4,60 +4,27 @@ context: |
   Language: Russian
   All artifacts must be written in Russian.
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
-  Testoritto is a new Git-backed desktop application for manual test cases.
-  Confirmed: Tauri 2, React, Windows/macOS, Git-based collaboration, compatibility with Casewright.
-  The user authorized starting the independent Tauri desktop foundation; implementation is not complete. Remaining MVP scope is still draft.
-  Selected foundation: Tauri 2, React 19, TypeScript strict, Vite, pnpm, Rust native backend.
-  System Git CLI is invoked by Rust; credentials use the OS helper/SSH.
-  Zod validates frontend forms/IPC responses; Rust validates deserialized command input.
-  TanStack Query, Zustand and typed i18n remain frontend patterns.
-  UI Kit: @codaa/ui in ui/, CSS Modules, --app-* tokens from Citadelic.
-  casewright-main/ is an unchanged source snapshot; code/tests outrank its stale README.
-  Current runs are Markdown folders with _run.md and per-case sidecars, not CSV.
-  Keep .casewright/config.yaml, declared workspace paths, case Markdown, .order and folder notes.
+  Testoritto — desktop-приложение для ручных тест-кейсов, прогонов и автотестов; Git-репозиторий — хранилище данных и способ совместной работы.
+  Продуктовое приложение — app/ (монорепо pnpm/turbo): apps/desktop — NW.js 0.112 + React 19 + TypeScript + Vite + Tailwind v4/shadcn UI; apps/web — маркетинговый сайт.
+  Renderer имеет доступ к Node (lib/node.ts); fs/Git-слой — services/*, состояние — Zustand-слайсы, валидация — TypeScript + Zod.
+  Данные репозитория — существующий формат приложения: .casewright/config.yaml, объявленные workspace-папки, Markdown-кейсы, прогоны-папки (_run.md + NNN-<id>.md + .order), folder notes и .order.
+  Продуктовые расширения (справочник, ассеты изображений, баг-репорты, автоматизация) живут в .testoritto/ и не переписывают существующие файлы кейсов и прогонов.
+  Переименование каталога данных .casewright/ не входит в текущие changes и требует явной миграции.
   No implicit migration on open; preserve unknown content; no automatic commit/push.
-  Rust owns fs/Git, watcher and sessions; WebView uses typed Tauri commands/events.
-  Custom commands have explicit AppManifest permissions and window-scoped capabilities.
-  No Node runtime, preload or Node sidecar; Node is frontend development tooling only.
-  No credentials in WebView and no inherited upstream update endpoints.
-  Node-dependent upstream services and parsers are reimplemented in Rust against compatibility fixtures.
-  Packaging targets Windows x64 and macOS arm64 on native runners; minimum OS versions remain open.
-  Native E2E uses WebdriverIO Tauri service; test-only plugins are excluded from release.
-  useCases folders and UseXxxArgs/UseXxxResult hooks follow the provided frontend skill.
-  Hub HTTP/admin/auth examples are adapted to repository IPC rather than copied literally.
-  Product scope and unresolved questions are in docs/PRD.md and docs/DISCUSSION.md.
-  Git conflicts show an error and unmerged paths; explicit safe abort is the only in-app action. No conflict editor/review UI or automatic reset/clean/force. If abort cannot safely complete, block and diagnose; do not promise unconditional recovery.
+  Автотесты — Playwright-тесты пользователя; запускает их внешний Node, приложение не устанавливает Node, Playwright и браузеры и не выполняет shell-строки.
+  Платформы поставки — Windows x64 и macOS arm64; текущая сборка — Windows, macOS описывается change add-macos-distribution.
+  CI/release pipeline в репозитории отсутствует; GitHub Actions читает только .github/workflows в корне репозитория, поэтому сборки требуется создавать там.
+  Источник истины по поведению — код и тесты app/apps/desktop/src; продуктовые решения — openspec/changes/*.
+  Git-конфликт показывается как ошибка и unmerged paths; безопасный abort — единственное встроенное действие; без автоматического reset/clean/force.
 
 rules:
   proposal:
     - Distinguish confirmed requirements, proposed decisions and unresolved questions.
   design:
-    - Explain Git collaboration, compatibility, IPC boundaries and per-OS packaging.
-    - Cite inspected source files and primary documentation for technical choices.
+    - Explain Git collaboration, storage-format boundaries and per-OS packaging.
+    - Cite inspected source files for technical choices.
   specs:
     - Every requirement SHALL have observable scenarios including failure paths.
   tasks:
     - Use numbered checkbox tasks ordered by dependencies with verification outcomes.
     - Keep implementation tasks unchecked until actually verified.
-
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always state what is out of scope
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
-
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing

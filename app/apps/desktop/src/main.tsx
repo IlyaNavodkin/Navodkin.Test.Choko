@@ -13,6 +13,10 @@ if (!container) throw new Error('Root container #root not found');
 // size/position/monitor before it ever appears — no jump from the default placement.
 // Outside NW.js (dev preview / browser) `win` is null and this is just a render.
 async function boot(win: NwWindow | null) {
+  if (!win && import.meta.env.MODE === 'mockup') {
+    const { initBrowserMockup } = await import('@/data/browser-mockup');
+    initBrowserMockup();
+  }
   let restored: WindowState | null = null;
   if (win) {
     try {

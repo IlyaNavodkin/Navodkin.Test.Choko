@@ -1,4 +1,4 @@
-// Generate the app icons from the shared brand mark (@casewright/brand/logo-mark.svg):
+// Generate the app icons from the supplied Chioko mascot:
 //   build-resources/icon.ico — embedded in Casewright.exe by the packaging pipeline.
 //   build-resources/icon.png — the NW.js `window.icon` (taskbar/window icon at runtime,
 //                              including `pnpm dev` and `nw .`, where there's no .exe icon).
@@ -12,20 +12,19 @@ import pngToIco from 'png-to-ico';
 
 const here = dirname(fileURLToPath(import.meta.url)); // apps/desktop/scripts
 const repoRoot = join(here, '..', '..', '..');
-const svgPath = join(repoRoot, 'packages', 'brand', 'logo-mark.svg');
+const mascotPath = join(repoRoot, 'packages', 'brand', 'chioko-mascot.png');
 const outDir = join(here, '..', 'build-resources');
 const outFile = join(outDir, 'icon.ico');
 const pngFile = join(outDir, 'icon.png');
 
 const SIZES = [16, 24, 32, 48, 64, 128, 256];
 
-const svg = readFileSync(svgPath);
+const mascot = readFileSync(mascotPath);
 
-// Render the 48px-viewBox mark at a high density so downscales stay crisp; the
-// largest icon (256) renders 1:1 at density 384 (48 * 384/72 = 256).
+// Resize directly from the supplied high-resolution artwork for each icon size.
 const pngs = await Promise.all(
   SIZES.map((size) =>
-    sharp(svg, { density: 384 })
+    sharp(mascot)
       .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
       .png()
       .toBuffer(),

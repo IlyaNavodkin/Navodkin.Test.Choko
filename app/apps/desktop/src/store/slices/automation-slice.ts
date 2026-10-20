@@ -9,7 +9,8 @@ import { resolveArguments } from '@/services/automation/arguments';
 import { planSelection, selectionArgs } from '@/services/automation/selection';
 import { planRunAutomation, type RunAutomationCandidate } from '@/services/automation/run-plan';
 import { startExecution, newExecutionId, type ExecutionHandle } from '@/services/automation/execute';
-import { saveExecutionToRun, planApplyToSummary, applyableChanges, loadRunAutomation as loadRunResults, loadRunAutomationExecutions, serializeAutomationResults, summarizeExecutions, saveImportToRun } from '@/services/automation/run-results';
+import { saveExecutionToRun, mapReportToRun, planApplyToSummary, applyableChanges, loadRunAutomation as loadRunResults, loadRunAutomationExecutions, serializeAutomationResults, summarizeExecutions, saveImportToRun } from '@/services/automation/run-results';
+import { parsePlaywrightReport } from '@/services/automation/report';
 import { importedResults, previewImport } from '@/services/automation/import';
 import { executionRel } from '@/services/automation/storage';
 import { ProgressTracker } from '@/services/automation/progress';
@@ -18,6 +19,7 @@ import { node } from '@/lib/node';
 import { loadGlossary } from '@/services/reference-book';
 import type { RunAutomationView } from '@/types';
 import { randomUuid } from '@/utils/ids';
+import { assignAutomationCase as assignCaseBindings, automationEntryKey, latestAutomationResults, planReferenceArguments } from '@/utils/automation-workflow';
 import type { AppState, StoreGet, StoreSet } from '../app-store';
 
 // ---------------------------------------------------------------------------
@@ -53,6 +55,8 @@ type AutomationSlice = Pick<
   | 'setAutomationTrusted'
   | 'discoverAutomation'
   | 'addAutomationBinding'
+  | 'assignAutomationCase'
+  | 'setAutomationArgumentSet'
   | 'removeAutomationBinding'
   | 'setAutomationBindingEnabled'
   | 'saveAutomationProfile'
@@ -91,7 +95,7 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
       automationBindings: bindings.file.bindings,
       automationProfiles: profiles.file.profiles,
       automationIssues: [...catalog.issues, ...bindings.issues, ...profiles.issues],
-      automationSelId: catalog.file.entries.some((e) => e.automationId === s.automationSelId) ? s.automationSelId : null,
+      automationSelId: catalog.file.entries.some((e) => automationEntryKey(e) === s.automationSelId || e.automationId === s.automationSelId) ? s.automationSelId : null,
     }));
   };
 
@@ -130,9 +134,9 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
     /** Archive/restore one catalog entry (never deletes history or bindings). */
     setAutomationArchived: async (automationId, archived) => {
       const repoPath = get().repoPath;
-      if (!repoPath) return;
       const next = get().automationCatalog.map((e) => (e.automationId === automationId ? { ...e, archived } : e));
       set({ automationCatalog: next });
+      if (!repoPath) return;
       try {
         const saved = await saveCatalog(repoPath, next.map(catalogEntryToDiscovered), {
           playwrightVersion: get().automationCatalog[0]?.revision ? '' : '',
@@ -229,6 +233,42 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
       }
     },
 
+    assignAutomationCase: async (entry, caseId) => {
+      if (caseId && !get().cases.some((c) => c.id === caseId)) return;
+      const next = assignCaseBindings(get().automationBindings, entry, caseId, randomUuid());
+      try {
+        const saved = get().repoPath ? (await saveBindings(get().repoPath, next)).file.bindings : next;
+        set({ automationBindings: saved, automationIssues: [] });
+      } catch (e) {
+        set({ automationIssues: [{ code: 'automation-write', message: errText(e) }] });
+      }
+    },
+
+    setAutomationArgumentSet: async (entry, referenceId) => {
+      const target = (b: AutomationBinding) => automationEntryKey(b) === automationEntryKey(entry);
+      if (!get().automationBindings.some(target)) return;
+      const doc = referenceId ? get().refs.find((d) => d.id === referenceId) : null;
+      if (referenceId && !doc) return;
+      const plan = doc ? planReferenceArguments(entry, doc) : { definitions: entry.arguments, values: {}, problems: [] };
+      if (plan.problems.length) {
+        set({ automationIssues: plan.problems.map((message) => ({ code: 'automation-arguments', message })) });
+        return;
+      }
+      const bindings = get().automationBindings.map((b) => target(b) ? { ...b, arguments: plan.values } : b);
+      const catalog = get().automationCatalog.map((e) => e.automationId === entry.automationId ? { ...e, arguments: plan.definitions } : e);
+      try {
+        if (get().repoPath) {
+          await saveCatalog(get().repoPath, catalog.map(catalogEntryToDiscovered), {
+            playwrightVersion: '', extraArguments: argsByAutomation(catalog), archived: archivedIds(catalog),
+          });
+          await saveBindings(get().repoPath, bindings);
+        }
+        set({ automationCatalog: catalog, automationBindings: bindings, automationIssues: [] });
+      } catch (e) {
+        set({ automationIssues: [{ code: 'automation-write', message: errText(e) }] });
+      }
+    },
+
     removeAutomationBinding: async (bindingId) => {
       const repoPath = get().repoPath;
       if (!repoPath) return;
@@ -293,13 +333,15 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
               logTail: '',
               error: e.error ?? null,
               startedAt: e.createdAt,
+              arguments: e.arguments,
             }));
           return {
             runAutomation: {
               ...s.runAutomation,
               [runId]: {
+                ...s.runAutomation[runId],
                 executions: [...live, ...restored],
-                results: loaded.results,
+                results: [...loaded.results, ...(s.runAutomation[runId]?.results ?? []).filter((r) => !loaded.results.some((saved) => saved.executionId === r.executionId && saved.automationId === r.automationId && saved.project === r.project))],
                 issues: loaded.issues,
                 busy: s.runAutomation[runId]?.busy ?? false,
               },
@@ -322,7 +364,7 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
       const problems: string[] = [];
       for (const binding of get().automationBindings) {
         if (!binding.enabled || binding.archived || !runCaseIds.has(binding.caseId)) continue;
-        const entry = get().automationCatalog.find((e) => e.automationId === binding.automationId);
+        const entry = get().automationCatalog.find((e) => automationEntryKey(e) === automationEntryKey(binding));
         if (!entry) {
           problems.push(`"${binding.automationId}" (${binding.caseId}) is no longer in the catalog.`);
           continue;
@@ -343,12 +385,14 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
       const repoPath = get().repoPath;
       const run = get().runs.find((r) => r.id === runId);
       if (!repoPath || !run) return;
+      if (get().runAutomation[runId]?.busy) return;
       if (!get().automationTrusted) {
-        set({ automationDiscoverError: 'Confirm that you trust this project before running its tests.' });
+        set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { executions: [], results: s.runAutomation[runId]?.results ?? [], busy: false, issues: ['Confirm that you trust this project before running its tests.'] } } }));
         return;
       }
       const only = opts?.onlyAutomationIds ? new Set(opts.onlyAutomationIds) : null;
-      const view: RunAutomationView = { executions: [], results: get().runAutomation[runId]?.results ?? [], issues: [], busy: true };
+      const activeBindingIds = get().automationBindings.filter((b) => b.enabled && !b.archived && run.rows.some((r) => r.case_id === b.caseId) && (!only || only.has(b.automationId)) && (!opts?.onlyBindingIds || opts.onlyBindingIds.includes(b.id))).map((b) => b.id);
+      const view: RunAutomationView = { executions: get().runAutomation[runId]?.executions ?? [], results: get().runAutomation[runId]?.results ?? [], issues: [], busy: true, activeBindingIds };
       set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: view } }));
 
       try {
@@ -357,9 +401,11 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
         const candidates: RunAutomationCandidate[] = [];
         const problems: string[] = [];
         for (const binding of get().automationBindings) {
+          if (!binding.enabled || binding.archived) continue;
           if (!runCaseIds.includes(binding.caseId)) continue;
           if (only && !only.has(binding.automationId)) continue;
-          const entry = get().automationCatalog.find((e) => e.automationId === binding.automationId);
+          if (opts?.onlyBindingIds && !opts.onlyBindingIds.includes(binding.id)) continue;
+          const entry = get().automationCatalog.find((e) => automationEntryKey(e) === automationEntryKey(binding));
           if (!entry) {
             problems.push(`"${binding.automationId}" is bound to ${binding.caseId} but is no longer in the catalog.`);
             continue;
@@ -379,7 +425,7 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
             args: resolved.values,
             selection: {
               automationId: entry.automationId,
-              caseId: entry.caseId,
+              caseId: binding.caseId,
               variantId: entry.variantId,
               title: entry.title,
               titlePath: entry.titlePath,
@@ -470,13 +516,22 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
           );
           handles.push(handle);
           set((s) =>
-            patchRunExecution(s, runId, executionId, { state: 'starting', project: group.project, startedAt: handle.manifest.createdAt }),
+            patchRunExecution(s, runId, executionId, { state: 'starting', project: group.project, startedAt: handle.manifest.createdAt, arguments: group.args }),
           );
         }
         liveHandles.set(runId, handles);
         set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], busy: true, issues: problems } } }));
 
-        await Promise.all(handles.map((h) => h.done));
+        const completed = await Promise.all(handles.map((h) => h.done));
+        for (const manifest of completed) {
+          try {
+            const raw = await node.fsp().readFile(node.path().join(repoPath, executionRel(manifest.executionId), 'report.json'), 'utf8');
+            const report = parsePlaywrightReport(raw);
+            if (report.ok) set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], results: [...s.runAutomation[runId].results, ...mapReportToRun(run, manifest, report.report)] } } }));
+          } catch {
+            // Runner errors/cancellation can finish without a report; the execution shows why.
+          }
+        }
         liveHandles.delete(runId);
         await get().loadRunAutomation(runId);
         set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], busy: false } } }));
@@ -491,15 +546,16 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
 
     rerunFailedAutomation: async (runId) => {
       const results = get().runAutomation[runId]?.results ?? [];
-      const failed = results.filter((r) => r.status === 'failed' || r.status === 'timedOut');
+      const failed = latestAutomationResults(results).filter((r) => r.status === 'failed' || r.status === 'timedOut');
       if (failed.length === 0) {
         get().toast?.('There are no failed automated results to rerun.');
         return;
       }
       const parentExecutionId = failed[0].executionId;
       const onlyAutomationIds = [...new Set(failed.map((r) => r.automationId))];
+      const onlyBindingIds = get().automationBindings.filter((b) => failed.some((r) => r.automationId === b.automationId && (!r.project || r.project === b.project))).map((b) => b.id);
       get().toast?.(`Rerunning ${onlyAutomationIds.length} failed autotest${onlyAutomationIds.length === 1 ? '' : 's'}…`);
-      await get().startRunAutomation(runId, { onlyAutomationIds, parentExecutionId });
+      await get().startRunAutomation(runId, { onlyAutomationIds, onlyBindingIds, parentExecutionId });
     },
 
     importAutomationReport: async (runId) => {
@@ -520,7 +576,7 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
         return;
       }
       const format = /\.xml$/i.test(abs) ? 'junit' : 'playwright-json';
-      const preview = previewImport(payload, format, run);
+      const preview = previewImport(payload, format, run, get().automationBindings);
       set((s) => ({
         runAutomation: {
           ...s.runAutomation,
@@ -553,8 +609,6 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
 
     stopRunAutomation: (runId) => {
       for (const h of liveHandles.get(runId) ?? []) h.stop();
-      liveHandles.delete(runId);
-      set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], busy: false } } }));
     },
 
     saveAutomationExecution: async (runId, executionId) => {

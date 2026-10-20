@@ -66,7 +66,7 @@ src/
 ```
 
 The UI is **Tailwind v4 + shadcn/ui (Radix)**; the `ui/` primitives keep a stable export
-surface (`<Button variant="primary" size="sm">`). The brand oklch tokens in
+surface (`<Button variant="primary" size="sm">`). The Chioko brand tokens in
 [`@casewright/brand`](../../packages/brand) are bridged into Tailwind via `@theme inline` in
 `styles/app.css` and remain the single source of truth (shared with the marketing site).
 
@@ -210,8 +210,8 @@ This runs [`scripts/package-win.mjs`](scripts/package-win.mjs), which:
 The installer step (Inno Setup) runs in CI; build it locally with
 `ISCC.exe /DMyAppVersion=0.1.0 build-resources/casewright.iss` if you have Inno Setup 6 installed.
 
-The app **icon** (`build-resources/icon.ico`) is generated from the shared brand mark
-(`@casewright/brand/logo-mark.svg`) by [`scripts/make-icon.mjs`](scripts/make-icon.mjs); it's
+The app **icon** (`build-resources/icon.ico`) is generated from the supplied Chioko mascot
+(`@casewright/brand/chioko-mascot.png`) by [`scripts/make-icon.mjs`](scripts/make-icon.mjs); it's
 committed, so packaging needs no rasterizer. Re-run `pnpm --filter @casewright/desktop make-icon`
 whenever the mark changes. Everything under `build/` and `.nwcache/` is gitignored.
 
@@ -233,3 +233,27 @@ end-to-end open → load → edit → `git status` against the fixture). Intenti
 - **macOS / Linux packaging.** The Windows pipeline is in place (see _Packaging & releases_ above);
   `nw-builder` can target `osx`/`linux` too — add matrix jobs + per-OS bundling (`.dmg` / `.AppImage`)
   when those platforms are in scope.
+
+## HTTP mockup of the current app
+
+From this directory, run `pnpm dev:mockup` and open http://127.0.0.1:5199/.
+This uses the current app components and styles with the sample cases and runs.
+Edits live in memory and reset on reload; filesystem, Git and native desktop
+operations require the desktop app. Vite updates the page as layout files change.
+
+Direct views: `/?view=suite`, `/?view=runs`, `/?view=run`, `/?view=guide`,
+`/?view=glossary`, and `/?view=automation`.
+
+`/?view=run-autotests` opens the dedicated automation workspace for the sample run.
+The demo contains nested source folders, single-Case selectors, Development and
+Staging reference sets, and passed/failed/not-run results. Browser launches are
+explicitly simulated and never start Playwright. Refreshing resets the demo.
+
+The Autotests catalog reflects folder/file paths discovered from the project.
+Select a Case directly, then choose an arguments set from the Reference book;
+argument values are stored as references. In Runs, **Open autotests** opens the
+run's test browser with individual, all, and latest-failed launches. External
+terminal/VS Code results use **Import report** (Playwright JSON or JUnit); refreshing
+the catalog and importing reports remain explicit actions. Execution history and
+manual results remain separate. See the workflow decisions in
+`../../../openspec/changes/improve-autotest-workflow/design.md`.

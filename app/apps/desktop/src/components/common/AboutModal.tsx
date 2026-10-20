@@ -90,8 +90,8 @@ export function AboutModal() {
   return (
     <Modal onClose={close} maxWidth={520}>
       <ModalHeader>
-        <Logo size={26} className="rounded-[6px]" />
-        <h3>Casewright</h3>
+        <Logo size={38} />
+        <h3>Chioko</h3>
         <Tag className="ml-auto font-mono">v{__APP_VERSION__}</Tag>
       </ModalHeader>
       <ModalBody className="flex flex-col gap-4">

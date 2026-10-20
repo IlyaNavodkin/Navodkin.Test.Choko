@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { CatalogEntry } from '@/schemas/automation-store';
 import { AutomationCard, AutomationListView } from './AutomationBook';
+import { cases } from '@/data/sample';
 
 const entry = (over: Partial<CatalogEntry> = {}): CatalogEntry => ({
   automationId: 'login',
@@ -69,12 +70,12 @@ describe('AutomationCard', () => {
         createElement(AutomationCard, {
           entry: entry(),
           bindings: [],
-          currentCaseId: null,
+          cases,
+          docs: [],
           onArchive: noop,
-          onAddBinding: noop,
-          onRemoveBinding: noop,
-          onToggleBinding: noop,
-          onArgs: noop,
+          onCase: noop,
+          onArgumentSet: noop,
+          onOpenReference: noop,
           ...over,
         }),
       ),
@@ -86,20 +87,21 @@ describe('AutomationCard', () => {
     expect(html).toContain('login');
     expect(html).toContain('chromium');
     expect(html).toContain('RND-0001');
-    expect(html).toContain('declares no arguments');
-    expect(html).toContain('Not linked to any case yet');
+    expect(html).toContain('Argument set');
+    expect(html).toContain('Not linked to a case');
+    expect(html).toContain('Reference book');
+    expect(html).not.toContain('Bind to open case');
   });
 
-  it('renders argument definition rows and binding controls', () => {
+  it('renders a direct Case selector independent of the open editor', () => {
     const html = render({
       entry: entry({ arguments: [{ key: 'baseUrl', type: 'url', required: true }] }),
-      bindings: [{ id: 'b1', caseId: 'RND-0001', enabled: true }],
-      currentCaseId: 'RND-0001',
+      bindings: [{ id: 'b1', caseId: cases[0].id, automationId: 'login', project: 'chromium', variantId: 'default', enabled: true, archived: false, arguments: {} }],
     });
-    expect(html).toContain('baseUrl');
-    expect(html).toContain('required');
-    expect(html).toContain('enabled');
-    expect(html).toContain('Bind to open case');
+    expect(html).toContain('aria-label="Test case"');
+    expect(html).toContain('aria-label="Argument set"');
+    expect(html).toContain('RND-0011');
+    expect(html).not.toContain('Save arguments');
   });
 
   it('shows an empty-selection placeholder', () => {

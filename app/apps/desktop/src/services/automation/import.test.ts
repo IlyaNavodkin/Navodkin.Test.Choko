@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Run, RunRow } from '@/types';
 import { importedResults, isAlreadyImported, matchImport, parseJUnit, parsePlaywrightImport, previewImport } from './import';
+import type { AutomationBinding } from '@/schemas/automation-store';
 
 const row = (over: Partial<RunRow> = {}): RunRow => ({
   case_id: 'RND-0001',
@@ -31,6 +32,25 @@ const run = (rows: RunRow[] = [row()]): Run => ({
 });
 
 const junit = (cases: string): string => `<testsuites><testsuite name="s">${cases}</testsuite></testsuites>`;
+
+describe('project identity and explicit UI bindings', () => {
+  const binding = (project: string, caseId: string): AutomationBinding => ({ id: project, caseId, automationId: 'login', project, variantId: 'default', enabled: true, archived: false, arguments: {} });
+  const payload = JSON.stringify({ suites: [{ title: 'auth', file: 'auth/login.spec.ts', specs: [{ title: 'validates credentials', tags: ['@tt:login'], tests: [
+    { projectName: 'chromium', results: [{ status: 'passed', duration: 10 }] },
+    { projectName: 'firefox', results: [{ status: 'failed', duration: 20 }] },
+  ] }] }] });
+  it('preserves each project and matches the selected Case without matching titles or case annotations', () => {
+    const preview = previewImport(payload, 'playwright-json', run([row(), row({ case_id: 'c2', display_id: 'CASE-2' })]), [binding('chromium', 'RND-0001'), binding('firefox', 'c2')]);
+    expect(preview.ok).toBe(true);
+    expect(preview.matched.map(({ test, rowIndex }) => [test.project, test.status, rowIndex])).toEqual([['chromium', 'passed', 0], ['firefox', 'failed', 1]]);
+    expect(importedResults(preview, run(), 'external').map((r) => r.project)).toEqual(['chromium', 'firefox']);
+  });
+  it('does not guess a Case for a project-less report with ambiguous bindings', () => {
+    const preview = previewImport(junit('<testcase name="validates credentials @tt:login" />'), 'junit', run([row(), row({ case_id: 'c2' })]), [binding('chromium', 'RND-0001'), binding('firefox', 'c2')]);
+    expect(preview.ok).toBe(false);
+    expect(preview.unmatched).toHaveLength(1);
+  });
+});
 
 describe('parseJUnit', () => {
   it('reads passed, failed and skipped testcases without executing anything', () => {

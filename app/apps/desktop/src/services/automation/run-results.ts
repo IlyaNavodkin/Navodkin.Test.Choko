@@ -45,6 +45,8 @@ export const runImportRel = (runFile: string, importId: string): string =>
 
 /** One automation result mapped onto a run row. */
 export interface RunAutomationResult {
+  /** Execution/import time for ordering external reports alongside native runs. */
+  recordedAt?: string;
   executionId: string;
   automationId: string;
   project: string;
@@ -91,6 +93,7 @@ export function mapReportToRun(run: Run, manifest: ExecutionManifest, report: Pl
         if (caseRowIndex < 0) caseRowIndex = null;
       }
       out.push({
+        recordedAt: manifest.createdAt,
         executionId: manifest.executionId,
         automationId,
         project,
@@ -156,7 +159,8 @@ export async function saveImportToRun(
   results: readonly RunAutomationResult[],
 ): Promise<void> {
   const rel = runImportRel(run.file, importId);
-  await writeFileAt(repoPath, rel, stableStringify({ schemaVersion: 1, importId, format, results: [...results] }));
+  const recordedAt = new Date().toISOString();
+  await writeFileAt(repoPath, rel, stableStringify({ schemaVersion: 1, importId, format, results: results.map((r) => ({ ...r, recordedAt: r.recordedAt ?? recordedAt })) }));
 }
 
 /** Read all imported-results sidecars of a run. */
@@ -179,7 +183,8 @@ export async function loadImportedResults(
         results?: unknown;
       };
       if (!Array.isArray(raw.results)) throw new Error('no results');
-      results.push(...(raw.results as RunAutomationResult[]));
+      const modified = (await node.fsp().stat(node.path().join(repoPath, runImportRel(run.file, id)))).mtime.toISOString();
+      results.push(...(raw.results as RunAutomationResult[]).map((r) => ({ ...r, recordedAt: r.recordedAt ?? modified })));
     } catch {
       issues.push(`Imported report ${id} could not be read.`);
     }

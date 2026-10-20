@@ -1,23 +1,19 @@
 /* ============================================================
-   Casewright — Tailwind v4 entry stylesheet
+   Chioko — Tailwind v4 entry stylesheet
 
    Order matters: the Google Fonts @import MUST come first (an @import
    after the Tailwind import is dropped by the CSS parser), then Tailwind,
-   then the shared brand tokens, then the @theme bridge that exposes those
-   brand vars to Tailwind utilities (bg-panel, text-ink, rounded-md, …).
+   then the shared brand tokens and the @theme bridge
+   that exposes the vars to Tailwind utilities (bg-panel, text-ink, …).
 
-   The brand tokens (packages/brand/tokens.css) remain the single source of
-   truth — also consumed by the marketing site. We only *reference* them here.
+   Palette, typography and geometry come from packages/brand/tokens.css.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 @import 'tailwindcss';
 
 @import '@casewright/brand/tokens.css';
-
-/* Bridge the brand oklch tokens → Tailwind theme tokens. `inline` keeps the
-   var() references live (utilities resolve to var(--bg) etc.) so the brand
-   layer stays the source of truth rather than being inlined at build time. */
+/* `inline` keeps utility colors connected to the live palette. */
 @theme inline {
   /* surfaces */
   --color-bg: var(--bg);
@@ -67,9 +63,9 @@
      a self-referential var() cycle; utilities: font-ui / font-mono / font-read) */
   --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --font-read: 'Newsreader', Georgia, serif;
+  --font-read: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
 
-  /* radii (4 / 6 / 9 px → rounded-sm / rounded-md / rounded-lg) */
+  /* radii (5 / 8 / 12 px → rounded-sm / rounded-md / rounded-lg) */
   --radius-sm: var(--r-sm);
   --radius-md: var(--r);
   --radius-lg: var(--r-lg);
@@ -108,18 +104,129 @@
     height: 11px;
   }
   *::-webkit-scrollbar-thumb {
-    background: oklch(0.8 0.006 70);
+    background: var(--border-2);
     border-radius: 99px;
     border: 3px solid transparent;
     background-clip: padding-box;
   }
   *::-webkit-scrollbar-thumb:hover {
-    background: oklch(0.72 0.008 70);
+    background: var(--ink-faint);
   }
   *::-webkit-scrollbar-track {
     background: transparent;
   }
 }
+
+/* Every module uses the brand accent. Semantic colors belong to results. */
+.module-nav-icon { color: var(--accent-ink); }
+.module-nav-button:hover {
+  background: var(--raise);
+  color: var(--accent-ink);
+}
+.module-nav-button[aria-current='page'] {
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+.module-nav-button[aria-current='page'] .module-nav-icon { color: var(--accent-fg); }
+
+/* The supplied artwork has a white canvas; multiply integrates it into ivory. */
+.brand-mascot {
+  display: inline-block;
+  flex-shrink: 0;
+  object-fit: contain;
+  mix-blend-mode: multiply;
+}
+
+.mascot-lift,
+.mascot-wiggle {
+  display: grid;
+  place-items: center;
+  transform-origin: 50% 75%;
+}
+.mascot-lift {
+  transition: transform 180ms ease;
+  mix-blend-mode: multiply;
+}
+.mascot-trigger:is(:hover, :focus-visible) .mascot-lift {
+  transform: translateY(-3px) rotate(-4deg) scale(1.08);
+}
+.mascot-trigger:active .mascot-lift {
+  transform: translateY(-1px) scale(0.96);
+}
+.mascot-barking {
+  animation: chioko-bark 380ms ease-in-out;
+}
+.mascot-bark {
+  position: absolute;
+  top: 8px;
+  left: 30px;
+  width: max-content;
+  border: 1px solid var(--accent-line);
+  border-radius: 14px 14px 14px 4px;
+  padding: 6px 11px;
+  background: var(--panel);
+  color: var(--accent-ink);
+  box-shadow: 0 3px 10px var(--shadow);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  animation: chioko-bubble 1600ms ease-out forwards;
+  will-change: transform, opacity;
+}
+.mascot-bark::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 8px;
+  width: 7px;
+  height: 7px;
+  border-right: 1px solid var(--accent-line);
+  border-bottom: 1px solid var(--accent-line);
+  background: var(--panel);
+  transform: rotate(45deg);
+}
+@keyframes chioko-bark {
+  0%, 100% { transform: rotate(0) translateY(0); }
+  18% { transform: rotate(-13deg) translateY(-2px) scale(1.08); }
+  38% { transform: rotate(12deg) translateY(-4px) scale(1.1); }
+  58% { transform: rotate(-9deg) translateY(-2px); }
+  78% { transform: rotate(6deg); }
+}
+@keyframes chioko-bubble {
+  0% { opacity: 0; transform: translate(0, 4px) scale(0.65) rotate(-6deg); }
+  12% { opacity: 1; transform: translate(4px, -6px) scale(1.06); }
+  28% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--bark-drift), -72px) scale(1.16) rotate(8deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-lift { transition: none; }
+  .mascot-trigger:is(:hover, :focus-visible, :active) .mascot-lift { transform: none; }
+  .mascot-barking { animation: none; }
+  .mascot-bark { animation: chioko-bubble-fade 1200ms ease-out forwards; }
+}
+@keyframes chioko-bubble-fade {
+  0%, 65% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.case-sections > [data-edit-field] {
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--panel);
+  padding: 16px;
+}
+.case-sections > [data-edit-field] > div > div:first-child > span:first-child {
+  color: var(--accent);
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+.automation-tree-branch > summary::-webkit-details-marker { display: none; }
+.automation-tree-branch:not([open]) > summary .automation-tree-chevron { transform: rotate(-90deg); }
 
 /* Modal / scrim entrance animations (referenced via animate-[fade…] / animate-[pop…]). */
 @keyframes fade {

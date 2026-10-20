@@ -120,7 +120,7 @@ export function CaseEditor() {
     .filter(Boolean);
 
   return (
-    <div ref={rootRef} className="flex min-h-0 flex-1 flex-col bg-panel">
+    <div ref={rootRef} className="flex min-h-0 min-w-0 flex-1 flex-col bg-bg">
       <div className="flex flex-none items-center gap-2.5 border-b border-border bg-panel-2 px-[26px] py-[7px]">
         <span className="text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-faint">Variables</span>
         <Button
@@ -253,7 +253,7 @@ export function CaseEditor() {
       )}
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <div className="mx-auto flex max-w-[760px] flex-col gap-[26px] px-[26px] pb-20 pt-[26px]">
+        <div className="case-sections mx-auto flex w-full max-w-[960px] flex-col gap-3 px-5 pb-20 pt-5">
           {previewVars && (
             <section className="flex flex-col gap-3 rounded-lg border border-dashed border-accent-line bg-accent-soft px-4 py-3.5">
               <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.05em] text-ink-faint">
@@ -311,7 +311,6 @@ export function CaseEditor() {
           <div data-edit-field="objective">
             <ObjectiveEditor value={c.objective} onChange={(v) => patch({ objective: v })} baseRel={path} onInsertLink={(v) => insertLink({ objective: v })} />
           </div>
-          <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="systems">
             <ListControl
               icon={I.layers({ size: 15 })}
@@ -323,15 +322,12 @@ export function CaseEditor() {
               placeholder="System or component…"
             />
           </div>
-          <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="setup">
             <SetupControl items={c.setup} onChange={(v) => patch({ setup: v })} baseRel={path} onInsertLink={(v) => insertLink({ setup: v })} />
           </div>
-          <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="steps">
             <StepsControl steps={c.steps} onChange={(v) => patch({ steps: v })} />
           </div>
-          <hr className="m-0 h-px border-0 bg-border" />
           <div data-edit-field="expected">
             <ListControl
               icon={I.check({ size: 15 })}

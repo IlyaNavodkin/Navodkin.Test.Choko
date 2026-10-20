@@ -98,6 +98,7 @@ export interface AppState {
   openSuite: (suiteId: string) => void;
   openRunsList: () => void;
   openRun: (runId: string) => void;
+  openRunAutomation: (runId: string) => void;
   openCreateRun: () => void;
   startGuide: (runId: string, index?: number) => void;
   guideGo: (index: number) => void;
@@ -241,6 +242,8 @@ export interface AppState {
   /** Run discovery (explicit action, trusted profile) and replace the catalog. */
   discoverAutomation: () => Promise<void>;
   addAutomationBinding: (entry: CatalogEntry, caseId: string) => Promise<void>;
+  assignAutomationCase: (entry: CatalogEntry, caseId: string | null) => Promise<void>;
+  setAutomationArgumentSet: (entry: CatalogEntry, referenceId: string | null) => Promise<void>;
   removeAutomationBinding: (bindingId: string) => Promise<void>;
   setAutomationBindingEnabled: (bindingId: string, enabled: boolean) => Promise<void>;
   saveAutomationProfile: (profile: AutomationProfile) => Promise<void>;
@@ -253,7 +256,7 @@ export interface AppState {
   /** Plan + start the run's enabled bindings (requires the trusted profile and a profile). */
   startRunAutomation: (
     runId: string,
-    opts?: { onlyAutomationIds?: string[]; parentExecutionId?: string },
+    opts?: { onlyAutomationIds?: string[]; onlyBindingIds?: string[]; parentExecutionId?: string },
   ) => Promise<void>;
   /** Start a new execution containing only the failed automated tests (parentExecutionId set). */
   rerunFailedAutomation: (runId: string) => Promise<void>;

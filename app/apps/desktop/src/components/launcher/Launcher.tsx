@@ -32,8 +32,8 @@ export function Launcher() {
     <div className="flex min-h-0 flex-1 justify-center bg-bg">
       <div className="flex min-h-0 w-full max-w-[660px] flex-col px-8 py-[clamp(28px,6vh,64px)]">
         <div className="mb-7 flex flex-none items-center gap-3">
-          <Logo size={38} className="shrink-0 rounded-xl shadow-[0_2px_10px_var(--shadow)]" />
-          <span className="text-[21px] font-semibold tracking-[-0.01em]">Casewright</span>
+          <Logo size={88} />
+          <span className="text-[32px] font-bold tracking-[-0.04em] text-accent">Chioko</span>
         </div>
 
         {needsInit && (

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useApp, useAppStore } from '@/store/app-store';
 import { isNwjs } from '@/lib/nwjs';
 import { I } from './icons';
@@ -9,9 +9,11 @@ import { Toasts } from './chrome/Toasts';
 import { UpdateBanner } from './chrome/UpdateBanner';
 import { Launcher } from './launcher/Launcher';
 import { Sidebar } from './sidebar/Sidebar';
+import { ModuleNav } from './sidebar/ModuleNav';
 import { CaseEditor } from './editor/CaseEditor';
 import { RunsList } from './runs/RunsList';
 import { RunGrid } from './runs/RunGrid';
+import { RunAutomationPage } from './runs/RunAutomationPage';
 import { RunGuide } from './guide/RunGuide';
 import { CreateRunModal } from './runs/CreateRunModal';
 import { AddCasesModal } from './runs/AddCasesModal';
@@ -35,6 +37,7 @@ function Center() {
   if (view === 'glossary') return <ReferenceBook />;
   if (view === 'suite') return <SuiteSummary />;
   if (view === 'runs') return <RunsList />;
+  if (view === 'runAutomation') return <RunAutomationPage />;
   if (view === 'guide') return <RunGuide />;
   if (view === 'run') return <RunGrid />;
   if (sel.id) return <CaseEditor />;
@@ -42,7 +45,9 @@ function Center() {
 }
 
 function Workbench() {
-  const { screen, modal, workspace, mergeBanner, abortMerge } = useApp();
+  const { screen, view, modal, workspace, mergeBanner, abortMerge } = useApp();
+  const [casesSidebarOpen, setCasesSidebarOpen] = useState(true);
+  const casesActive = view === 'editor' || view === 'suite';
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-panel">
@@ -63,10 +68,9 @@ function Workbench() {
           )}
           <UpdateBanner />
           <div className="flex min-h-0 flex-1">
-            <div className="flex min-h-0 flex-1">
-              <Sidebar />
-              <Center />
-            </div>
+            <ModuleNav casesSidebarOpen={casesSidebarOpen} onToggleCases={() => setCasesSidebarOpen((open) => !open)} />
+            <Sidebar hidden={!casesActive || !casesSidebarOpen} onHide={() => setCasesSidebarOpen(false)} />
+            <Center />
           </div>
           {modal === 'commit' && <CommitModal />}
           {modal === 'workspace' && <WorkspaceModal />}

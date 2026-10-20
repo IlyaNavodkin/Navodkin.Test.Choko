@@ -9,7 +9,7 @@
   "main": "dist/index.html",
   "node-remote": "<all_urls>",
   "window": {
-    "title": "Casewright",
+    "title": "Chioko",
     "icon": "build-resources/icon.png",
     "width": 1480,
     "height": 940,
@@ -20,6 +20,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev.mjs",
+    "dev:mockup": "vite --mode mockup --host 127.0.0.1 --port 5199",
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

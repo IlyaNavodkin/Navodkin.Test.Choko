@@ -2,6 +2,7 @@ import type { Run } from '@/types';
 import { sha256Hex } from '@/services/hash';
 import { parsePlaywrightReport, walkSpecs } from './report';
 import type { RunAutomationResult } from './run-results';
+import type { AutomationBinding } from '@/schemas/automation-store';
 
 // ---------------------------------------------------------------------------
 // Importing a completed Playwright report from CI or a manual run (design §Решение 8).
@@ -15,6 +16,7 @@ import type { RunAutomationResult } from './run-results';
 export type ImportFormat = 'playwright-json' | 'junit';
 
 export interface ImportTest {
+  project?: string;
   /** Stable identity when the payload provides one (automationId from annotations). */
   automationId: string | null;
   caseId: string | null;
@@ -106,19 +108,18 @@ export function parsePlaywrightImport(json: string): { ok: true; tests: ImportTe
   for (const { spec, suite } of walkSpecs(parsed.report)) {
     const tags = spec.tags ?? [];
     const automationId = /@tt:([A-Za-z0-9._-]+)/.exec(tags.join(' '))?.[1] ?? null;
-    const results = (spec.tests ?? []).flatMap((t) => t.results ?? []);
-    const final = results.at(-1);
-    const status: RunAutomationResult['status'] = final?.status ?? 'interrupted';
-    tests.push({
-      automationId,
-      caseId: null,
-      title: spec.title,
-      file: suite.file ?? spec.file ?? null,
-      status,
-      duration: results.reduce((n, r) => n + (r.duration ?? 0), 0),
-      flaky: status === 'passed' && results.slice(0, -1).some((r) => r.status === 'failed' || r.status === 'timedOut'),
-      attempts: results.length,
-    });
+    for (const invocation of spec.tests?.length ? spec.tests : [{ results: [] }]) {
+      const results = invocation.results ?? [];
+      const final = results.at(-1);
+      const status: RunAutomationResult['status'] = final?.status ?? 'interrupted';
+      tests.push({
+        project: 'projectName' in invocation ? invocation.projectName ?? suite.projectName ?? '' : suite.projectName ?? '',
+        automationId, caseId: null, title: spec.title, file: suite.file ?? spec.file ?? null, status,
+        duration: results.reduce((n, r) => n + (r.duration ?? 0), 0),
+        flaky: status === 'passed' && results.slice(0, -1).some((r) => r.status === 'failed' || r.status === 'timedOut'),
+        attempts: results.length,
+      });
+    }
   }
   if (tests.length === 0) return { ok: false, error: 'The Playwright report contains no tests.' };
   return { ok: true, tests };
@@ -128,7 +129,7 @@ export function parsePlaywrightImport(json: string): { ok: true; tests: ImportTe
  * Preview + apply
  * ------------------------------------------------------------------------- */
 
-const identityOf = (t: ImportTest): string => `${t.automationId ?? ''}|${t.file ?? ''}|${t.title}`;
+const identityOf = (t: ImportTest): string => `${t.automationId ?? ''}|${t.project ?? ''}|${t.file ?? ''}|${t.title}`;
 
 /**
  * Read a payload and match it against a run. Foreign reports (no test maps to any row) are
@@ -138,16 +139,17 @@ export function previewImport(
   payload: string,
   format: ImportFormat,
   run: Run,
+  bindings: readonly AutomationBinding[] = [],
 ): ImportPreview {
   const parsed = format === 'junit' ? parseJUnit(payload) : parsePlaywrightImport(payload);
   if (!parsed.ok) {
     return { ok: false, format, importId: sha256Hex(payload), tests: [], matched: [], unmatched: [], duplicates: [], problems: [parsed.error] };
   }
-  return matchImport(parsed.tests, format, payload, run);
+  return matchImport(parsed.tests, format, payload, run, bindings);
 }
 
 /** Pure matching step (exported for tests and for an execution manifest import). */
-export function matchImport(tests: readonly ImportTest[], format: ImportFormat, payload: string, run: Run): ImportPreview {
+export function matchImport(tests: readonly ImportTest[], format: ImportFormat, payload: string, run: Run, bindings: readonly AutomationBinding[] = []): ImportPreview {
   const seen = new Map<string, ImportTest>();
   const duplicates: ImportTest[] = [];
   for (const t of tests) {
@@ -157,6 +159,15 @@ export function matchImport(tests: readonly ImportTest[], format: ImportFormat, 
   }
 
   const rowFor = (t: ImportTest): number | null => {
+    if (t.automationId) {
+      const linked = bindings.filter((b) => b.automationId === t.automationId && b.enabled && !b.archived && (!t.project || b.project === t.project));
+      const ids = [...new Set(linked.map((b) => b.caseId))];
+      if (ids.length > 1) return null;
+      if (ids.length === 1) {
+        const index = run.rows.findIndex((r) => r.case_id === ids[0]);
+        return index < 0 ? null : index;
+      }
+    }
     const byCase = t.caseId ? run.rows.findIndex((r) => r.case_id === t.caseId) : -1;
     if (byCase >= 0) return byCase;
     const base = (p: string): string => p.split(/[\\/]/).pop() ?? p;
@@ -198,7 +209,7 @@ export function importedResults(preview: ImportPreview, run: Run, executionId: s
   return preview.matched.map(({ test, rowIndex }) => ({
     executionId,
     automationId: test.automationId ?? test.title,
-    project: '',
+    project: test.project ?? '',
     caseId: run.rows[rowIndex]?.case_id ?? null,
     caseRowIndex: rowIndex,
     status: test.status,

@@ -38,7 +38,7 @@ const rowBase =
 const selBefore =
   "before:absolute before:bottom-1 before:left-0 before:top-1 before:w-[2.5px] before:rounded-[2px] before:bg-accent before:content-['']";
 
-export function Sidebar() {
+export function Sidebar({ hidden = false, onHide }: { hidden?: boolean; onHide: () => void }) {
   const {
     cases,
     tree,
@@ -46,9 +46,6 @@ export function Sidebar() {
     view,
     openCase,
     openSuite,
-    openRunsList,
-    openReferenceBook,
-    openAutomationSection,
     collapsed,
     setCollapsed,
     renaming,
@@ -459,54 +456,19 @@ export function Sidebar() {
   };
 
   const anyVisible = tree.some(subtreeHas);
-  const runsActive = view === 'runs' || view === 'run' || view === 'guide';
-  const refActive = view === 'glossary';
-  const autoActive = view === 'automation';
 
   return (
     <aside
-      className="relative flex min-h-0 flex-none flex-col border-r border-border bg-panel-2"
+      id="cases-sidebar"
+      aria-label="Cases workspaces"
+      className={cn('relative flex min-h-0 flex-none flex-col border-r border-border bg-bg', hidden && 'hidden')}
       style={{ width }}
     >
-      <div className="flex gap-0.5 px-2.5 pt-2">
-        <button
-          className={cn(
-            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            !runsActive && !refActive && !autoActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
-          )}
-          onClick={() => sel.id && openCase(sel.id)}
-        >
-          {I.layers({ size: 14 })} Cases
-        </button>
-        <button
-          className={cn(
-            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            runsActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
-          )}
-          onClick={openRunsList}
-        >
-          {I.grid({ size: 14 })} Runs
-        </button>
-        <button
-          className={cn(
-            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            refActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
-          )}
-          title="Reference book — shared links and arguments"
-          onClick={openReferenceBook}
-        >
-          {I.link({ size: 14 })} Reference
-        </button>
-        <button
-          className={cn(
-            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            autoActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
-          )}
-          title="Autotests — discovered Playwright tests, arguments and case bindings"
-          onClick={openAutomationSection}
-        >
-          {I.play({ size: 14 })} Autotests
-        </button>
+      <div className="flex h-11 shrink-0 items-center justify-between border-b border-border px-3">
+        <span className="text-[13px] font-semibold">Cases</span>
+        <Button size="sm" variant="ghost" title="Hide workspaces" aria-label="Hide workspaces" onClick={onHide}>
+          {I.chevron({ size: 14, style: { transform: 'rotate(180deg)' } })}
+        </Button>
       </div>
 
       <div className="flex flex-col gap-2 border-b border-border p-2.5">

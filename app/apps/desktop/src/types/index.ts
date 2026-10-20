@@ -169,6 +169,7 @@ export type AutomationFilter = 'all' | 'runnable' | 'archived';
 
 /** Live/observable state of one automation execution shown in a run (design §Наблюдаемость). */
 export interface AutomationExecutionView {
+  arguments?: import('@/schemas/automation').ResolvedAutomationArg[];
   executionId: string;
   project: string;
   state: import('@/schemas/automation').ExecutionState;
@@ -182,6 +183,7 @@ export interface AutomationExecutionView {
 
 /** The automation panel state of one run. */
 export interface RunAutomationView {
+  activeBindingIds?: string[];
   executions: AutomationExecutionView[];
   results: import('@/services/automation/run-results').RunAutomationResult[];
   issues: string[];
@@ -237,7 +239,7 @@ export interface Selection {
   guideIndex?: number;
 }
 
-export type View = 'editor' | 'runs' | 'run' | 'guide' | 'suite' | 'glossary' | 'automation';
+export type View = 'editor' | 'runs' | 'run' | 'runAutomation' | 'guide' | 'suite' | 'glossary' | 'automation';
 export type Screen = 'launcher' | 'main';
 export type ModalKind = 'commit' | 'createRun' | 'addCases' | 'merge' | 'workspace' | 'about' | 'refPicker' | null;
 

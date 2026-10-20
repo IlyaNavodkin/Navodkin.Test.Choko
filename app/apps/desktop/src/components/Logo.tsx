@@ -1,12 +1,17 @@
-import logoMark from '@casewright/brand/logo-mark.svg';
+import mascot from '@casewright/brand/chioko-mascot.png';
 
 /**
- * The Casewright brand mark — the accent rounded-square with the white test-case
- * folder glyph (top-left tab, check, and lines; from `@casewright/brand`).
- * Self-contained, so it sits on any background.
+ * The supplied Chioko mascot, shared with the application icon.
  */
 export function Logo({ size = 24, className }: { size?: number; className?: string }) {
   return (
-    <img src={logoMark} width={size} height={size} alt="Casewright" draggable={false} className={className} />
+    <img
+      src={mascot}
+      alt="Chioko"
+      className={['brand-mascot', className].filter(Boolean).join(' ')}
+      width={size}
+      height={size}
+      draggable={false}
+    />
   );
 }

@@ -10,6 +10,7 @@ import type { Approval, Result, Run, RunRow } from '@/types';
 import { NotesField } from './NotesField';
 import { RunCaseCard } from './RunCaseCard';
 import { RunAutomationPanel } from './RunAutomationPanel';
+import { latestAutomationResults } from '@/utils/automation-workflow';
 import { DefectReportModal } from '@/components/guide/DefectReportModal';
 
 /** A tester/reviewer approval control: shows the stamp when set, else a name + approve button. */
@@ -360,7 +361,7 @@ export function RunGrid() {
                   onRemove={() => void ctx.removeRunRow(run.id, i)}
                   onDragStart={() => setDrag(i)}
                   onDragEnd={endDrag}
-                  automation={(ctx.runAutomation[run.id]?.results ?? []).filter((r) => r.caseRowIndex === i)}
+                  automation={latestAutomationResults(ctx.runAutomation[run.id]?.results ?? []).filter((r) => r.caseRowIndex === i)}
                 />
               </div>
             ))}

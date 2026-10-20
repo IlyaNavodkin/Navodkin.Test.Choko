@@ -40,6 +40,7 @@ type RepoSlice = Pick<
   | 'openSuite'
   | 'openRunsList'
   | 'openRun'
+  | 'openRunAutomation'
   | 'openCreateRun'
   | 'startGuide'
   | 'guideGo'
@@ -313,6 +314,11 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
       set((s) => ({ sel: { ...s.sel, kind: 'run', runId }, view: 'run' }));
     },
     openCreateRun: () => set({ modal: 'createRun' }),
+    openRunAutomation: (runId) => {
+      if (!get().guardRefLeave('run autotests', () => get().openRunAutomation(runId))) return;
+      void flushPersist();
+      set((s) => ({ sel: { ...s.sel, kind: 'run', runId }, view: 'runAutomation' }));
+    },
     startGuide: (runId, index = 0) => {
       const name = get().runs.find((r) => r.id === runId)?.name;
       if (!get().guardRefLeave(name ? `the run "${name}"` : 'that run', () => get().startGuide(runId, index))) return;

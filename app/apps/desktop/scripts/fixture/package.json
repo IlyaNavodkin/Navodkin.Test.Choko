@@ -1,0 +1,12 @@
+{
+  "name": "casewright-fixture-autotests",
+  "private": true,
+  "description": "Demo Playwright project for the Casewright fixture (lives in .casewright/autotests).",
+  "scripts": {
+    "test": "playwright test",
+    "list": "playwright test --list"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
+  }
+}

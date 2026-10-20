@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -16,6 +16,7 @@ afterEach(async () => {
 async function mkRepo(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'testoritto-args-'));
   cleanup.push(dir);
+  await mkdir(join(dir, '.casewright', 'autotests'), { recursive: true });
   return dir;
 }
 
@@ -95,6 +96,6 @@ describe('argument env channel', () => {
     await startRunner(buildInvocation(spec), spec, {}, () => {}).done;
     // Only the CLI script and the execution output exist; no args.json / .env was written.
     const { readdir } = await import('node:fs/promises');
-    expect((await readdir(repo)).sort()).toEqual(['cli.js', 'exec']);
+    expect((await readdir(repo)).sort()).toEqual(['.casewright', 'cli.js', 'exec']);
   });
 });

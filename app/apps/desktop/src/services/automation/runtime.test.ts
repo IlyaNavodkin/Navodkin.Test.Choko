@@ -21,11 +21,12 @@ async function mkRepo(prefix = 'testoritto-automation-'): Promise<string> {
   return dir;
 }
 
-/** Create a minimal `node_modules/@playwright/test` inside `repo` with the given version. */
+/** Create a minimal `node_modules/@playwright/test` inside the autotest project. */
 async function installFakePlaywright(repo: string, version: string): Promise<void> {
-  const pkgDir = join(repo, 'node_modules', '@playwright', 'test');
+  const project = join(repo, '.casewright', 'autotests');
+  const pkgDir = join(project, 'node_modules', '@playwright', 'test');
   await mkdir(pkgDir, { recursive: true });
-  await writeFile(join(repo, 'package.json'), JSON.stringify({ name: 'fixture', version: '1.0.0' }));
+  await writeFile(join(project, 'package.json'), JSON.stringify({ name: 'fixture', version: '1.0.0' }));
   await writeFile(join(pkgDir, 'package.json'), JSON.stringify({ name: '@playwright/test', version, bin: { playwright: 'cli.js' } }));
   await writeFile(join(pkgDir, 'cli.js'), '// fake CLI\n');
 }
@@ -104,16 +105,25 @@ describe('resolveNodeRuntime', () => {
 });
 
 describe('resolveProjectPlaywright', () => {
-  it('resolves the repository CLI and reads its version', async () => {
+  it('resolves the autotest project CLI and reads its version', async () => {
     const repo = await mkRepo();
     await installFakePlaywright(repo, '1.44.1');
     const pw = await resolveProjectPlaywright(repo);
     expect(pw.version).toBe('1.44.1');
-    expect(pw.cliPath.replace(/\\/g, '/')).toMatch(/node_modules\/@playwright\/test\/cli\.js$/);
+    expect(pw.cliPath.replace(/\\/g, '/')).toMatch(/\.casewright\/autotests\/node_modules\/@playwright\/test\/cli\.js$/);
   });
 
-  it('diagnoses a repository without Playwright', async () => {
+  it('detects the project by the .casewright/autotests folder', async () => {
     const repo = await mkRepo();
+    await expect(resolveProjectPlaywright(repo)).rejects.toMatchObject({ code: 'no-project' });
+
+    await mkdir(join(repo, '.casewright', 'autotests'), { recursive: true });
+    await expect(resolveProjectPlaywright(repo)).rejects.toMatchObject({ code: 'no-cli' });
+  });
+
+  it('diagnoses a project without Playwright', async () => {
+    const repo = await mkRepo();
+    await mkdir(join(repo, '.casewright', 'autotests'), { recursive: true });
     await expect(resolveProjectPlaywright(repo)).rejects.toMatchObject({ code: 'no-cli' });
   });
 

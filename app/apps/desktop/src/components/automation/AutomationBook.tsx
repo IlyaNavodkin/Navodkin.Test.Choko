@@ -318,7 +318,7 @@ export function AutomationBook() {
     <div className="flex min-h-0 flex-1 flex-col bg-panel">
       <div className="flex items-center gap-3 px-[22px] py-[14px]">
         <h2 className="m-0 text-[18px] font-semibold">Autotests</h2>
-        <Tag>.testoritto/automation/</Tag>
+        <Tag>.casewright/autotests/</Tag>
         <span className="flex-1" />
         <label className="flex items-center gap-1.5 text-[12px] text-ink-2">
           <input type="checkbox" checked={ctx.automationTrusted} onChange={(e) => ctx.setAutomationTrusted(e.target.checked)} />
@@ -348,8 +348,9 @@ export function AutomationBook() {
             {I.play({ size: 30, style: { color: 'var(--ink-faint)' } })}
             <div className="text-[14px] font-medium">No autotests discovered yet</div>
             <div className="text-[13px] text-ink-3">
-              Confirm that you trust this project, then run discovery. It executes the project’s Playwright config and
-              lists the tests it finds — nothing runs on open.
+              Put a Playwright project in <span className="font-mono">.casewright/autotests/</span> (package.json,
+              playwright.config.ts, tests and node_modules). Confirm that you trust this project, then run discovery — it
+              executes the project’s Playwright config and lists the tests it finds. Nothing runs on open.
             </div>
           </div>
         </div>

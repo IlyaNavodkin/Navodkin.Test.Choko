@@ -10,6 +10,7 @@ import type { Approval, Result, Run, RunRow } from '@/types';
 import { NotesField } from './NotesField';
 import { RunCaseCard } from './RunCaseCard';
 import { RunAutomationPanel } from './RunAutomationPanel';
+import { DefectReportModal } from '@/components/guide/DefectReportModal';
 
 /** A tester/reviewer approval control: shows the stamp when set, else a name + approve button. */
 function ApprovalCard({
@@ -182,6 +183,7 @@ export function RunGrid() {
   });
   const [drag, setDrag] = useState<number | null>(null);
   const [dropIdx, setDropIdx] = useState<number | null>(null);
+  const [defect, setDefect] = useState<{ row: RunRow; idx: number } | null>(null);
 
   const run = ctx.runs.find((r) => r.id === ctx.sel.runId);
   if (!run) return null;
@@ -354,6 +356,7 @@ export function RunGrid() {
                   onNotes={(v) => update(i, { notes: v })}
                   onTester={(v) => setTester(i, v)}
                   onGuide={() => ctx.startGuide(run.id, i)}
+                  onDefect={() => setDefect({ row, idx: i })}
                   onRemove={() => void ctx.removeRunRow(run.id, i)}
                   onDragStart={() => setDrag(i)}
                   onDragEnd={endDrag}
@@ -530,6 +533,16 @@ export function RunGrid() {
           </div>
         </aside>
       </div>
+
+      {defect && (
+        <DefectReportModal
+          run={run}
+          row={defect.row}
+          idx={defect.idx}
+          kase={caseById.get(defect.row.case_id)}
+          onClose={() => setDefect(null)}
+        />
+      )}
     </div>
   );
 }

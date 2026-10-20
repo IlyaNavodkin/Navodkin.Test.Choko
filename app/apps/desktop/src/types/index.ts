@@ -162,7 +162,7 @@ export type CreateRunResult =
   | { ok: false; reason: 'snapshot'; issues: RunSnapshotMiss[] }
   | { ok: false; reason: 'io'; message: string };
 
-/* ---- reference book (`.testoritto/glossary/`) ---- */
+/* ---- reference book (`.casewright/glossary/`) ---- */
 export type RefKindFilter = 'all' | 'link' | 'arguments';
 /** Automation catalog filter (see utils/automation-catalog.ts). */
 export type AutomationFilter = 'all' | 'runnable' | 'archived';

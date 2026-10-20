@@ -57,6 +57,8 @@ export interface RunCaseCardProps {
   onNotes: (value: string) => void;
   onTester: (value: string) => void;
   onGuide: () => void;
+  /** Open the defect-snapshot composer for this row. */
+  onDefect: () => void;
   /** Remove this case from the run. */
   onRemove: () => void;
   /** Native drag handlers for the in-card reorder handle. */
@@ -81,6 +83,7 @@ export function RunCaseCard({
   onNotes,
   onTester,
   onGuide,
+  onDefect,
   onRemove,
   onDragStart,
   onDragEnd,
@@ -113,6 +116,16 @@ export function RunCaseCard({
             <span className="cursor-grab text-ink-faint" title="Drag to reorder" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
               {I.drag({ size: 14 })}
             </span>
+            {(row.result === 'fail' || row.result === 'blocked') && (
+              <button
+                className="text-ink-faint transition-colors hover:text-accent"
+                title="Defect report…"
+                aria-label="Defect report"
+                onClick={onDefect}
+              >
+                {I.file({ size: 13 })}
+              </button>
+            )}
             <button
               className="text-ink-faint transition-colors hover:text-fail"
               title="Remove from run"

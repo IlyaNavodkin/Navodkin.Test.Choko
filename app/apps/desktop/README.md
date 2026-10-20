@@ -87,6 +87,10 @@ my-repo/
 ├── .casewright/
 │   ├── config.yaml          # repo-wide config (version, optional name)
 │   ├── runs/                # all run CSVs + .md sidecars — repo-level, may span workspaces
+│   ├── glossary/            # reference book records (one Markdown file per entry)
+│   ├── automation/          # autotest catalog, bindings and execution snapshots
+│   ├── autotests/           # Playwright project (marker + package.json/config/tests)
+│   ├── defects/             # defect snapshots + evidence
 │   └── .gitignore           # keeps cache/ out of Git (config.yaml + runs/ are committed)
 ├── areas/payments/
 │   ├── casewright.yaml      # presence declares this folder a workspace (name, displayIdPrefix)
@@ -118,6 +122,32 @@ state are persisted to `window-state.json` in the OS data dir (next to recents) 
 the saved geometry is restored *before* it appears (no jump from the default placement); a
 window saved on a since-unplugged monitor reopens centered on the primary one.
 
+## Defect snapshots
+
+A non-passing run row can be turned into a **defect snapshot** — a self-contained Markdown report that can be
+pasted into any work-item tracker without links. The runner's Defect report panel (or the file action on a
+failed/blocked run card) opens a composer prefilled from the row, the case and the run's frozen arguments; the
+tester reviews/corrects the summary, environment, objective, steps, expected/actual and notes, attaches
+evidence, then copies or saves it.
+
+Snapshots live next to the run data and are committed with it:
+
+```
+.casewright/defects/<run-stem>/
+├── RND-0002.md
+└── RND-0002.evidence/
+    └── 001-screenshot.png
+```
+
+`RND-0002.md` is the snapshot: front matter (case/run/tester/date/source/evidence) plus the ready-to-paste
+body. Reopening it reads the file, never the live case; **Reset from case** is the explicit rebuild. Copy
+puts both `text/html` and Markdown `text/plain` on the clipboard, and the summary has its own Copy action.
+
+Manual and automated results stay separate: `RunRow.result` is the manual (human) result, while autotest
+results live in the run's automation sidecars and are shown in the Autotests panel. **Apply to unrecorded**
+only fills rows that have no manual result (`executed_at` empty); automation never overwrites a manual
+pass/fail. Defect sources are recorded as Manual, Autotest or both.
+
 ## Testing & the fixture repo
 
 ```bash
@@ -131,6 +161,12 @@ pnpm --filter @casewright/desktop fixture --with-origin   # …plus a bare .fixt
 target. Run the app against it (`pnpm dev:desktop`, then Open repository… → `.fixture/`). The
 Vitest suite covers the pure format layer plus integration tests for `repo.ts`/`git.ts` against
 temp git repos (open/load, write/rename/delete, commit/push/pull/conflict+abort).
+
+The fixture also contains a tiny **Playwright demo project** at
+`.fixture/.casewright/autotests/` (the folder is the detection marker): two green tests and one
+intentionally red test. Run `npm install` once inside that folder, then use the app's **Autotests**
+section (Trust this project → Discover tests → bind a test to an open case). See
+`.fixture/.casewright/autotests/README.md` for the exact flow and expected results.
 
 ## Packaging & releases (Windows)
 

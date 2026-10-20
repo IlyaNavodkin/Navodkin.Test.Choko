@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { ExecutionManifest, PlaywrightJsonReport } from '@/schemas/automation';
 import type { Run, RunRow } from '@/types';
-import { loadRunAutomation, mapReportToRun, planApplyToSummary, saveExecutionToRun, saveImportToRun, summarizeExecutions, loadImportedResults } from './run-results';
+import { loadRunAutomation, mapReportToRun, planApplyToSummary, applyableChanges, saveExecutionToRun, saveImportToRun, summarizeExecutions, loadImportedResults } from './run-results';
 import { writeExecutionManifest } from './storage';
 import { executionRel } from './storage';
 
@@ -119,6 +119,22 @@ describe('planApplyToSummary', () => {
     const plan = planApplyToSummary(run(), []);
     expect(plan.ok).toBe(false);
     expect(plan.problems[0]).toMatch(/no test results/);
+  });
+});
+
+describe('applyableChanges', () => {
+  it('keeps manually recorded rows and applies only to unrecorded ones', () => {
+    const changes = [
+      { rowIndex: 0, title: 'manual', from: 'not_run' as const, to: 'pass' as const, tests: [] },
+      { rowIndex: 1, title: 'unrecorded', from: 'not_run' as const, to: 'fail' as const, tests: [] },
+    ];
+    const r = run({
+      rows: [
+        row({ executed_at: '2026-10-19 10:00', tester: 'jpatel', result: 'pass' }),
+        row({ case_id: 'RND-0002', display_id: 'RND-0002', title: 'logout works' }),
+      ],
+    });
+    expect(applyableChanges(r, changes).map((c) => c.rowIndex)).toEqual([1]);
   });
 });
 

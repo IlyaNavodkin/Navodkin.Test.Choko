@@ -4,14 +4,13 @@ context: |
   Language: Russian
   All artifacts must be written in Russian.
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
-  Testoritto — desktop-приложение для ручных тест-кейсов, прогонов и автотестов; Git-репозиторий — хранилище данных и способ совместной работы.
+  Casewright — desktop-приложение для ручных тест-кейсов, прогонов и автотестов; Git-репозиторий — хранилище данных и способ совместной работы.
   Продуктовое приложение — app/ (монорепо pnpm/turbo): apps/desktop — NW.js 0.112 + React 19 + TypeScript + Vite + Tailwind v4/shadcn UI; apps/web — маркетинговый сайт.
   Renderer имеет доступ к Node (lib/node.ts); fs/Git-слой — services/*, состояние — Zustand-слайсы, валидация — TypeScript + Zod.
   Данные репозитория — существующий формат приложения: .casewright/config.yaml, объявленные workspace-папки, Markdown-кейсы, прогоны-папки (_run.md + NNN-<id>.md + .order), folder notes и .order.
-  Продуктовые расширения (справочник, ассеты изображений, баг-репорты, автоматизация) живут в .testoritto/ и не переписывают существующие файлы кейсов и прогонов.
-  Переименование каталога данных .casewright/ не входит в текущие changes и требует явной миграции.
+  Продуктовые расширения (справочник, ассеты изображений, баг-репорты, автоматизация) живут в подпапках .casewright/ и не переписывают существующие файлы кейсов и прогонов.
   No implicit migration on open; preserve unknown content; no automatic commit/push.
-  Автотесты — Playwright-тесты пользователя; запускает их внешний Node, приложение не устанавливает Node, Playwright и браузеры и не выполняет shell-строки.
+  Автотесты — Playwright-тесты пользователя в `.casewright/autotests/` (папка — маркер проекта); запускает их внешний Node, приложение не устанавливает Node, Playwright и браузеры и не выполняет shell-строки.
   Платформы поставки — Windows x64 и macOS arm64; текущая сборка — Windows, macOS описывается change add-macos-distribution.
   CI/release pipeline в репозитории отсутствует; GitHub Actions читает только .github/workflows в корне репозитория, поэтому сборки требуется создавать там.
   Источник истины по поведению — код и тесты app/apps/desktop/src; продуктовые решения — openspec/changes/*.

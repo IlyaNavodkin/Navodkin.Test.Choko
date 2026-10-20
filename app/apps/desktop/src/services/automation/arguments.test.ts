@@ -22,7 +22,7 @@ const fakeReader =
 
 const doc = (id: string, values: ArgValue[], over: Partial<ReferenceDoc['entry']> = {}): ReferenceDoc => ({
   id,
-  rel: `.testoritto/glossary/${id}.md`,
+  rel: `.casewright/glossary/${id}.md`,
   entry: { id, kind: 'arguments', title: 'dev', aliases: [], archived: false, description: 'dev', values, ...over },
   extra: {},
   eol: '\n',

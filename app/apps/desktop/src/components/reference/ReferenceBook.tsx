@@ -250,7 +250,7 @@ export function ReferenceBookView(props: ReferenceBookViewProps) {
     <div className="flex min-h-0 flex-1 flex-col bg-panel">
       <div className="flex items-center gap-3 px-[22px] py-[14px]">
         <h2 className="m-0 text-[18px] font-semibold">Reference book</h2>
-        <Tag>.testoritto/glossary/</Tag>
+        <Tag>.casewright/glossary/</Tag>
         <span className="flex-1" />
         <Button onClick={() => props.onCreate('link')}>{I.plus({ size: 14 })} New link</Button>
         <Button onClick={() => props.onCreate('arguments')}>{I.plus({ size: 14 })} New arguments set</Button>
@@ -283,7 +283,7 @@ export function ReferenceBookView(props: ReferenceBookViewProps) {
             <div className="text-[13px] text-ink-3">
               Keep the definitions, documents and environment values your cases repeat here — and link them from case text
               instead of copying them. Each record is one readable Markdown file under{' '}
-              <span className="font-mono">.testoritto/glossary/</span>, so it travels with the repository.
+              <span className="font-mono">.casewright/glossary/</span>, so it travels with the repository.
             </div>
             <div className="flex items-center gap-2">
               <Button variant="primary" onClick={() => props.onCreate('link')}>
@@ -329,7 +329,7 @@ export function ReferenceBookView(props: ReferenceBookViewProps) {
 
 /**
  * The reference book section: the catalog of `link` and `arguments` records, stored one
- * Markdown file per record under `.testoritto/glossary/`. The section coexists with the
+ * Markdown file per record under `.casewright/glossary/`. The section coexists with the
  * case tree and runs in the sidebar; nothing here writes until the user saves explicitly.
  */
 export function ReferenceBook() {

@@ -6,6 +6,12 @@ describe('slug (tree ids)', () => {
     expect(slug('User Management')).toBe('user-management');
     expect(slug('Auth & Sessions')).toBe('auth-sessions');
   });
+
+  it('transliterates Cyrillic titles to stable ASCII filenames', () => {
+    expect(slug('Генератор целых чисел')).toBe('generator-tselykh-chisel');
+    expect(slug('Бросок кубиков — проверка')).toBe('brosok-kubikov-proverka');
+    expect(slug('Ёжик в тумане')).toBe('ezhik-v-tumane');
+  });
 });
 
 describe('folderSlug (wiki-safe folder + note filename, AzDO-encoded)', () => {

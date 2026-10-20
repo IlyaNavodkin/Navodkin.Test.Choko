@@ -26,7 +26,7 @@ export function summarizeExecutions(
 // Automation results in a run (spec "Run from a test run and save results", "Explicit apply to
 // summary").
 //
-// Executions live in `.testoritto/automation/executions/<id>/`; an explicit "save to run" copies
+// Executions live in `.casewright/automation/executions/<id>/`; an explicit "save to run" copies
 // the manifest/report into `<run>/automation/<id>/` (a sidecar the run loader ignores). Applying
 // results to the run's *summary* is a separate, explicit, revision-checked action: automated results
 // never overwrite manual checks/notes on their own.
@@ -319,6 +319,18 @@ function combinedResult(tests: readonly RunAutomationResult[]): Result {
   if (mapped.includes('blocked')) return 'blocked';
   if (mapped.includes('pass')) return 'pass';
   return 'not_run';
+}
+
+/**
+ * The part of a plan that may actually change the summary. A row with a manual execution
+ * (`executed_at` set) is authoritative: automation is an additional signal, never an override.
+ * Only unrecorded rows take the automated status (the automated-only case).
+ */
+export function applyableChanges(run: Run, changes: ApplyPlan['changes']): ApplyPlan['changes'] {
+  return changes.filter((c) => {
+    const row = run.rows[c.rowIndex];
+    return !!row && !row.executed_at;
+  });
 }
 
 /** Read the saved executions of a run's own folder (for the panel). */

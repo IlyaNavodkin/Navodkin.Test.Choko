@@ -58,7 +58,7 @@ export async function makeDir(repoPath: string, rel: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Guarded, atomic writes for product data (`.testoritto/*`): a relative path may not
+// Guarded, atomic writes for product data (`.casewright/*`): a relative path may not
 // escape the repository — neither lexically nor through a symlinked directory or file —
 // and the bytes land via a temp file + rename so a reader never sees a half-written file.
 // ---------------------------------------------------------------------------
@@ -111,7 +111,7 @@ export async function resolveRepoWritePath(repoPath: string, rel: string): Promi
   const abs = path.join(repoPath, rel);
 
   // Walk up to the deepest ancestor that exists: a symlink anywhere on the way
-  // (`.testoritto` or `glossary` pointing elsewhere) would otherwise redirect the write.
+  // (`.casewright` or `glossary` pointing elsewhere) would otherwise redirect the write.
   const missing: string[] = [];
   let ancestor = path.dirname(abs);
   while (!(await exists(ancestor)) && path.dirname(ancestor) !== ancestor) {

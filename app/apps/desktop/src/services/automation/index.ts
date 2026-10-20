@@ -1,3 +1,4 @@
+export * from './project';
 export * from './runtime';
 export * from './report';
 export * from './execution';

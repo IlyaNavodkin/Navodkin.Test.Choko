@@ -40,9 +40,9 @@ function roundTrip(entry: ReferenceEntry, extra?: Record<string, unknown>, eol?:
 }
 
 describe('glossary paths', () => {
-  it('places records under .testoritto/glossary with the id as the file stem', () => {
-    expect(GLOSSARY_DIR).toBe('.testoritto/glossary');
-    expect(glossaryRel(ID)).toBe('.testoritto/glossary/0f8fad5b-d9cb-469f-a165-70867728950e.md');
+  it('places records under .casewright/glossary with the id as the file stem', () => {
+    expect(GLOSSARY_DIR).toBe('.casewright/glossary');
+    expect(glossaryRel(ID)).toBe('.casewright/glossary/0f8fad5b-d9cb-469f-a165-70867728950e.md');
   });
 });
 

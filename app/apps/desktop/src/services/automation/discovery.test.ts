@@ -1,3 +1,4 @@
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { DiscoverySpec } from './discovery';
 import { buildDiscoveryInvocation, discoverTests, type CliRunner } from './discovery';
@@ -36,11 +37,12 @@ const runner =
   async () => ({ exitCode: 0, stdout: '', stderr: '', ...out });
 
 describe('buildDiscoveryInvocation', () => {
-  it('lists with the json reporter on stdout (no output-name override)', () => {
+  it('lists from the autotest project with the json reporter on stdout (no output-name override)', () => {
     const inv = buildDiscoveryInvocation(spec());
     expect(inv.command).toBe('C:\\nodejs\\node.exe');
     expect(inv.args).toEqual([spec().playwright.cliPath, 'test', '--list', '--reporter=json']);
     expect(inv.options.shell).toBe(false);
+    expect(inv.options.cwd).toBe(join('C:\\repo', '.casewright', 'autotests'));
     expect((inv.options.env as Record<string, string>).PLAYWRIGHT_JSON_OUTPUT_NAME).toBeUndefined();
   });
 });

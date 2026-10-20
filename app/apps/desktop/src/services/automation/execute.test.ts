@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -15,6 +15,7 @@ afterEach(async () => {
 async function mkRepo(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'testoritto-execute-'));
   cleanup.push(dir);
+  await mkdir(join(dir, '.casewright', 'autotests'), { recursive: true });
   return dir;
 }
 
@@ -130,7 +131,7 @@ describe('startExecution', () => {
     const cli = await fakeCli(repo, report());
     const handle = startExecution(input(repo, cli, { executionId: 'fixed-id' }));
     await handle.done;
-    const raw = await readFile(join(repo, '.testoritto', 'automation', 'executions', 'fixed-id', 'manifest.json'), 'utf8');
+    const raw = await readFile(join(repo, '.casewright', 'automation', 'executions', 'fixed-id', 'manifest.json'), 'utf8');
     expect(raw.startsWith('{\n  "args"')).toBe(true);
   });
 });

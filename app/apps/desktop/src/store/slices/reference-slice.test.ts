@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useAppStore } from '../app-store';
 
-const GLOSSARY = '.testoritto/glossary';
+const GLOSSARY = '.casewright/glossary';
 let repo = '';
 
 const store = () => useAppStore.getState();

@@ -2,12 +2,14 @@ import type { SpawnOptions } from 'node:child_process';
 import { node } from '@/lib/node';
 import { AUTOMATION_LIMITS, type DiscoveredTest, type DiscoveryProblem } from '@/schemas/automation';
 import { discoveredTests, discoveryIssues, parsePlaywrightReport, type DiscoveryIssues } from './report';
+import { automationProjectPath } from './project';
 import { AutomationRuntimeError, type NodeRuntime, type ProjectPlaywright } from './runtime';
 
 // ---------------------------------------------------------------------------
 // Discovery (`playwright test --list --reporter=json`) — spec "Autotest catalog from explicit
 // discovery". It runs only on an explicit user action for a trusted profile: this module is never
-// called when a repository/section is opened. The JSON goes to stdout (no output-name override).
+// called when a repository/section is opened. The project is detected by `.casewright/autotests/`
+// and the CLI runs with that folder as its cwd. The JSON goes to stdout (no output-name override).
 // ---------------------------------------------------------------------------
 
 export interface DiscoverySpec {
@@ -32,7 +34,7 @@ export function buildDiscoveryInvocation(spec: DiscoverySpec): DiscoveryInvocati
     command: spec.node.command,
     args,
     options: {
-      cwd: spec.repoPath,
+      cwd: automationProjectPath(spec.repoPath),
       shell: false,
       windowsHide: true,
       env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },

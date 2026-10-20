@@ -4,7 +4,7 @@ import { caseLinkUses } from './run-snapshot';
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const OTHER = '1a2b3c4d-5e6f-4a8b-9c0d-1e2f3a4b5c6d';
-const link = (id: string, label = 'Runbook') => `[${label}](../../.testoritto/glossary/${id}.md)`;
+const link = (id: string, label = 'Runbook') => `[${label}](../../.casewright/glossary/${id}.md)`;
 
 const kase = (patch: Partial<Case> = {}): Case => ({
   id: 'case0000001',

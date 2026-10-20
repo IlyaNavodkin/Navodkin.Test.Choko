@@ -1,18 +1,21 @@
 import { node } from '@/lib/node';
 import { isSupportedPlaywrightVersion, parseSemver, PLAYWRIGHT_SUPPORTED } from '@/schemas/automation';
+import { AUTOTESTS_DIR, findAutomationProject } from './project';
 
 // ---------------------------------------------------------------------------
 // Resolving the *external* Node and the project's Playwright CLI (design §Решение по запуску).
 //
 // The app never ships Node and never installs anything: `process.execPath` under NW.js is the
-// NW.js binary, so a real system `node` is required. The CLI is located *inside the repository's
-// own dependency tree* (`createRequire(<repo>/package.json).resolve(...)`), so Playwright — and
-// its browser provisioning — stay the project's responsibility. Nothing here spawns a shell.
+// NW.js binary, so a real system `node` is required. The CLI is located *inside the autotest
+// project's own dependency tree* (`createRequire(<repo>/.casewright/autotests/package.json)`), so
+// Playwright — and its browser provisioning — stay the project's responsibility. The project folder
+// itself (`.casewright/autotests/`) is the marker: no folder means no autotests. Nothing here spawns
+// a shell.
 // ---------------------------------------------------------------------------
 
 /** Thrown when the external Node or the project's Playwright cannot be resolved/used. */
 export class AutomationRuntimeError extends Error {
-  readonly code: 'no-node' | 'bad-node-version' | 'no-cli' | 'unsupported-version' | 'no-package';
+  readonly code: 'no-node' | 'bad-node-version' | 'no-project' | 'no-package' | 'no-cli' | 'unsupported-version';
   constructor(code: AutomationRuntimeError['code'], message: string) {
     super(message);
     this.name = 'AutomationRuntimeError';
@@ -139,29 +142,37 @@ export async function resolveNodeRuntime(opts: ResolveNodeOptions = {}): Promise
 }
 
 /**
- * Locate the repository's own `@playwright/test` CLI and read its version. Throws a clear
- * diagnostic when the package is not installed there (we never install it for the user).
+ * Locate the autotest project's own `@playwright/test` CLI and read its version. The project is
+ * detected by the `.casewright/autotests/` folder; a missing folder, missing dependency or an
+ * unsupported Playwright version produces a clear diagnostic (we never install anything).
  */
 export async function resolveProjectPlaywright(repoPath: string): Promise<ProjectPlaywright> {
   const path = node.path();
-  let require_from_repo: NodeRequire;
+  const project = await findAutomationProject(repoPath);
+  if (!project.exists) {
+    throw new AutomationRuntimeError(
+      'no-project',
+      `No autotest project found at ${AUTOTESTS_DIR}. Create that folder with package.json and playwright.config.ts (or move your Playwright project there), then try again.`,
+    );
+  }
+  let require_from_project: NodeRequire;
   try {
-    require_from_repo = node.module().createRequire(path.join(repoPath, 'package.json'));
+    require_from_project = node.module().createRequire(path.join(project.dir, 'package.json'));
   } catch (e) {
-    throw new AutomationRuntimeError('no-package', `Could not read ${path.join(repoPath, 'package.json')}: ${errText(e)}`);
+    throw new AutomationRuntimeError('no-package', `Could not read ${AUTOTESTS_DIR}/package.json: ${errText(e)}`);
   }
   let cliPath: string;
   try {
-    cliPath = require_from_repo.resolve('@playwright/test/cli');
+    cliPath = require_from_project.resolve('@playwright/test/cli');
   } catch {
     throw new AutomationRuntimeError(
       'no-cli',
-      'Playwright is not installed in this repository. Run "npm install -D @playwright/test" (or pnpm/yarn) in the project, then try again.',
+      `Playwright is not installed in ${AUTOTESTS_DIR}. Run "npm install -D @playwright/test" (or pnpm/yarn) inside that folder, then try again.`,
     );
   }
   let version = '';
   try {
-    const pkgPath = require_from_repo.resolve('@playwright/test/package.json');
+    const pkgPath = require_from_project.resolve('@playwright/test/package.json');
     version = JSON.parse(await node.fsp().readFile(pkgPath, 'utf8')).version ?? '';
   } catch {
     version = '';
@@ -169,9 +180,9 @@ export async function resolveProjectPlaywright(repoPath: string): Promise<Projec
   if (!isSupportedPlaywrightVersion(version)) {
     throw new AutomationRuntimeError(
       'unsupported-version',
-      `This app understands Playwright ${PLAYWRIGHT_SUPPORTED.minMajor}.${PLAYWRIGHT_SUPPORTED.minMinor}+ report format, but the repository has ${
+      `This app understands Playwright ${PLAYWRIGHT_SUPPORTED.minMajor}.${PLAYWRIGHT_SUPPORTED.minMinor}+ report format, but ${AUTOTESTS_DIR} has ${
         version || 'an unknown version'
-      }. Update @playwright/test in the project.`,
+      }. Update @playwright/test in the autotest project.`,
     );
   }
   return { cliPath, version };

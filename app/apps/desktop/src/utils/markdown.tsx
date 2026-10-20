@@ -79,7 +79,7 @@ function refChip(key: string, id: string, label: string): ReactNode {
   const archived = !!info?.entry.archived;
   const title = info?.entry.title.trim() || label;
   const hint = !info
-    ? `Not found in this repository's reference book (.testoritto/glossary/${id}.md).`
+    ? `Not found in this repository's reference book (.casewright/glossary/${id}.md).`
     : `${info.entry.description.split('\n')[0].trim() || 'No description.'}${archived ? ' — archived record.' : ''}${
         info.runSnapshot ? ' — as recorded when this run was created.' : ''
       }`;

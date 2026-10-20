@@ -12,7 +12,7 @@ export function randomId(len = 11): string {
 
 /**
  * A random RFC 4122 v4 uuid — the identity and file name of product-data records
- * (`.testoritto/glossary/<uuid>.md`, later `.testoritto/bugs/<uuid>/`). Unlike
+ * (`.casewright/glossary/<uuid>.md`, later `.casewright/bugs/<uuid>/`). Unlike
  * {@link randomId} (short, human-facing, could collide) these are never displayed and
  * never derived from a title, so a rename can't move a file or break a link.
  */
@@ -21,13 +21,27 @@ export function randomUuid(): string {
 }
 
 /**
+ * Cyrillic → Latin transliteration for stable ASCII ids/filenames. Russian (and the
+ * common Ukrainian letters) is enough for the case/run slugs; anything unmapped falls
+ * through to the ASCII filter below.
+ */
+const CYRILLIC: Record<string, string> = {
+  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i',
+  й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p', р: 'r', с: 's', т: 't',
+  у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y',
+  ь: '', э: 'e', ю: 'yu', я: 'ya', і: 'i', ї: 'yi', є: 'ye', ґ: 'g',
+};
+
+const transliterate = (s: string): string =>
+  s.replace(/[\u0400-\u04FF]/g, (ch) => CYRILLIC[ch] ?? '');
+
+/**
  * Filename-safe slug from a title (lowercase, hyphenated) — used for stable tree ids.
  * Truncates to `max` chars (default 48). Pass a larger `max` for an explicit, user-chosen
  * filename override where the auto-truncation would otherwise force a collision.
  */
 export function slug(s: string, max = 48): string {
-  return (s || '')
-    .toLowerCase()
+  return transliterate((s || '').toLowerCase())
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '')
     .slice(0, max);

@@ -5,9 +5,10 @@ import { cn } from '@/lib/utils';
 import { useApp } from '@/store/app-store';
 import { renderInline, renderMarkdown } from '@/utils/markdown';
 import { resolveVariables } from '@/utils/variables';
-import { buildDefectText, deriveItems, effectiveTestDate, type ChecklistItem } from '@/utils/run-items';
+import { deriveItems, effectiveTestDate, type ChecklistItem } from '@/utils/run-items';
 import type { CheckState, Result } from '@/types';
 import { GuideChecklist } from './GuideChecklist';
+import { DefectReportModal } from './DefectReportModal';
 
 export function RunGuide() {
   const ctx = useApp();
@@ -17,6 +18,7 @@ export function RunGuide() {
   const [tester, setTester] = useState(ctx.lastTester);
   const [notes, setNotes] = useState('');
   const [forceRecord, setForceRecord] = useState(false);
+  const [defectOpen, setDefectOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const runId = run?.id;
@@ -91,19 +93,7 @@ export function RunGuide() {
 
   // ---- defect helper (shown once a non-passing result is chosen) ----
   const effResult: Result | null = result ?? (row.result !== 'not_run' ? row.result : null);
-  const showDefect = effResult === 'fail' || effResult === 'blocked' || effResult === 'skipped';
-  const defectText = showDefect ? buildDefectText(run, { ...row, result: effResult, tester, notes }, kase) : '';
-  const copyDefect = () => {
-    const writing = navigator.clipboard?.writeText(defectText);
-    if (!writing) {
-      ctx.toast('Clipboard unavailable');
-      return;
-    }
-    void writing.then(
-      () => ctx.toast('Defect copied to clipboard'),
-      () => ctx.toast('Could not copy'),
-    );
-  };
+  const showDefect = effResult === 'fail' || effResult === 'blocked';
 
   return (
     <div className="flex min-h-0 flex-1 flex-col bg-bg">
@@ -319,16 +309,31 @@ export function RunGuide() {
             <section className="overflow-hidden rounded-lg border border-[oklch(0.85_0.07_27)] bg-fail-soft">
               <div className="flex items-center gap-2.5 border-b border-[oklch(0.88_0.05_27)] px-4 py-3">
                 <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-fail">Defect report</span>
-                <span className="flex-1 text-[12px] text-ink-3">Paste into your work-item tracker; link back to this run.</span>
-                <Button variant="ghost" size="sm" onClick={copyDefect}>
-                  {I.copy({ size: 13 })} Copy
+                <span className="flex-1 text-[12px] text-ink-3">
+                  A self-contained snapshot of this case — safe to paste anywhere, no links required.
+                </span>
+                <Button variant="primary" size="sm" onClick={() => setDefectOpen(true)}>
+                  {I.file({ size: 13 })} Open report…
                 </Button>
               </div>
-              <pre className="max-h-[280px] overflow-auto whitespace-pre-wrap px-4 py-3 font-mono text-[12px] leading-[1.5] text-ink-2">{defectText}</pre>
+              <div className="px-4 py-3 text-[12px] text-ink-3">
+                Summary, environment, expected/actual, evidence and notes are prefilled from this run. Review, attach a
+                screenshot, then copy or save the snapshot.
+              </div>
             </section>
           )}
         </div>
       </div>
+
+      {defectOpen && (
+        <DefectReportModal
+          run={run}
+          row={row}
+          idx={idx}
+          kase={kase}
+          onClose={() => setDefectOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -169,7 +169,7 @@ export interface AppState {
   lastTester: string;
   setLastTester: (v: string) => void;
 
-  /* reference book (`.testoritto/glossary/`) — catalog + a draft that is only written on save */
+  /* reference book (`.casewright/glossary/`) — catalog + a draft that is only written on save */
   refs: ReferenceDoc[];
   /** Diagnostics from reading the catalog (an unreadable folder, skipped files). */
   refIssues: LintWarning[];
@@ -186,7 +186,7 @@ export interface AppState {
   refQuery: string;
   refKindFilter: RefKindFilter;
   refShowArchived: boolean;
-  /** (Re)read the catalog — read-only: a repository without `.testoritto/` stays untouched. */
+  /** (Re)read the catalog — read-only: a repository without `.casewright/` stays untouched. */
   loadRefs: () => Promise<void>;
   openReferenceBook: () => void;
   selectRefEntry: (id: string) => void;
@@ -215,7 +215,7 @@ export interface AppState {
   /** Open the Reference section at one record — what a link chip in case text does. */
   openReferenceEntry: (id: string) => void;
 
-  /* automation (`.testoritto/automation/`) — catalog, bindings, trusted profile */
+  /* automation (`.casewright/automation/`) — catalog, bindings, trusted profile */
   automationCatalog: CatalogEntry[];
   automationBindings: AutomationBinding[];
   automationProfiles: AutomationProfile[];

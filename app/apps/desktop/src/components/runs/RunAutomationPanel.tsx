@@ -123,7 +123,7 @@ export function RunAutomationPanel({ run }: { run: Run }) {
             <span className={cn('font-semibold', STATE_TONE[e.state])}>{STATE_LABEL[e.state] ?? e.state}</span>
             <span className="font-mono text-[11px] text-ink-3">{e.project}</span>
             <span className="text-ink-3">
-              {e.completed}
+              {e.state === 'completed' && e.total !== null ? e.total : e.completed}
               {e.total !== null ? `/${e.total}` : ''} done
             </span>
             <span className="flex-1" />
@@ -140,8 +140,14 @@ export function RunAutomationPanel({ run }: { run: Run }) {
             <Button size="sm" variant="ghost" disabled={e.state === 'running' || e.state === 'starting'} onClick={() => void ctx.saveAutomationExecution(run.id, e.executionId)}>
               Save to run
             </Button>
-            <Button size="sm" variant="ghost" disabled={e.state !== 'completed'} onClick={() => void ctx.applyAutomationExecution(run.id, e.executionId)}>
-              Apply to summary
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={e.state !== 'completed'}
+              title="Apply the automated status only to rows without a manual result"
+              onClick={() => void ctx.applyAutomationExecution(run.id, e.executionId)}
+            >
+              Apply to unrecorded
             </Button>
           </div>
         </div>

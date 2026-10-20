@@ -2,15 +2,16 @@ import type { ChildProcess, SpawnOptions } from 'node:child_process';
 import { node } from '@/lib/node';
 import { AUTOMATION_LIMITS, type ExecutionState } from '@/schemas/automation';
 import { classifyTerminal, type TerminalOutcome } from './execution';
+import { automationProjectPath } from './project';
 import { ProgressTracker, type ProgressSnapshot } from './progress';
 
 // ---------------------------------------------------------------------------
 // The Playwright runner (design §Решение по запуску, §Наблюдаемость исполнения).
 //
-// We spawn the *repository's* Playwright CLI with the *external* Node — an argv array with
-// `shell: false`, cwd at the repository, and a prepared environment. The JSON report is the sole
-// source of truth for status; stdout (`line` reporter) only feeds display progress. A clean exit
-// with no report is `runner_error`, never a success.
+// We spawn the *autotest project's* Playwright CLI with the *external* Node — an argv array with
+// `shell: false`, cwd at `.casewright/autotests/`, and a prepared environment. The JSON report is
+// the sole source of truth for status; stdout (`line` reporter) only feeds display progress. A clean
+// exit with no report is `runner_error`, never a success.
 // ---------------------------------------------------------------------------
 
 export interface InvocationSpec {
@@ -54,7 +55,7 @@ export function buildInvocation(spec: InvocationSpec): BuiltInvocation {
     ...(spec.args ?? []),
   ];
   const options: SpawnOptions = {
-    cwd: spec.repoPath,
+    cwd: automationProjectPath(spec.repoPath),
     shell: false,
     windowsHide: true,
     // A process group on POSIX lets us signal the whole tree; on Windows we use taskkill /T.

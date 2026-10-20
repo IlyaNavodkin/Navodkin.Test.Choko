@@ -16,7 +16,7 @@ import { createRequire } from 'node:module';
 // The format layer pulls gray-matter / papaparse through the node bridge.
 (globalThis as { require?: NodeRequire }).require ??= createRequire(import.meta.url);
 
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { simpleGit } from 'simple-git';
@@ -91,6 +91,14 @@ for (const ws of workspaces) {
   walk(trees[ws.id] ?? [], dir);
 }
 
+// --- demo Playwright project (the Autotests section) ----------------------
+// The autotest project lives inside the repository's data folder: `.casewright/autotests/`.
+// Its presence is the detection marker; the app runs Playwright with that folder as cwd and
+// resolves dependencies from its own package.json/node_modules. Browsers/deps are the user's
+// `npm install` step (see .casewright/autotests/README.md); nothing here downloads them.
+const fixtureTemplate = join(here, 'fixture');
+cpSync(fixtureTemplate, join(cwDir, 'autotests'), { recursive: true });
+
 // --- runs: one folder per run (_run.md + a sidecar per case) under .casewright/runs/ ---
 const runsDir = join(cwDir, 'runs');
 const overlay = (row: RunRow, key: string, text: string): RunCaseItem => ({
@@ -161,3 +169,4 @@ const fileCount = cases.length + runs.length * 2 + folderNotes + 2;
 console.log(
   `Fixture written to ${repoRoot} (~${fileCount} files, ${cases.length} cases, ${runs.length} runs, ${workspaces.length} workspaces, ${folderNotes} folder notes).`,
 );
+console.log('Autotests demo: run "npm install" in .fixture/.casewright/autotests, then discover/bind tests in the Autotests section.');

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * Reference book (`.testoritto/glossary/<uuid>.md`): one record per file, two kinds —
+ * Reference book (`.casewright/glossary/<uuid>.md`): one record per file, two kinds —
  * `link` (a named reference with an optional URL and a Markdown description) and
  * `arguments` (a named set of typed `key → value` pairs for automation/reports).
  *

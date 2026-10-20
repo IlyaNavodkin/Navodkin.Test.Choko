@@ -46,16 +46,16 @@ const entry = (patch: Partial<ReferenceEntry> = {}): ReferenceEntry => ({
 });
 
 describe('loadGlossary', () => {
-  it('reads a repository without .testoritto/ as an empty catalog and writes nothing', async () => {
+  it('reads a repository without .casewright/ as an empty catalog and writes nothing', async () => {
     const repo = await mkRepo();
     expect(await loadGlossary(repo)).toEqual({ docs: [], issues: [] });
     expect(await readdir(repo)).toEqual([]);
-    await expect(stat(join(repo, '.testoritto'))).rejects.toThrow();
+    await expect(stat(join(repo, '.casewright'))).rejects.toThrow();
   });
 
   it('reports an unreadable glossary folder instead of throwing', async () => {
     const repo = await mkRepo();
-    await writeFile(join(repo, '.testoritto'), 'not a directory');
+    await writeFile(join(repo, '.casewright'), 'not a directory');
     const load = await loadGlossary(repo);
     expect(load.docs).toEqual([]);
     expect(load.issues.map((i) => i.code)).toEqual(['glossary-read']);
@@ -157,10 +157,10 @@ describe('saveGlossaryEntry', () => {
     expect(await readdir(repo)).toEqual([]);
   });
 
-  it('refuses to write through a symlinked .testoritto/ (junction on Windows)', async () => {
+  it('refuses to write through a symlinked .casewright/ (junction on Windows)', async () => {
     const repo = await mkRepo();
     const outside = await mkRepo('testoritto-outside-');
-    await symlink(outside, join(repo, '.testoritto'), process.platform === 'win32' ? 'junction' : 'dir');
+    await symlink(outside, join(repo, '.casewright'), process.platform === 'win32' ? 'junction' : 'dir');
     await expect(saveGlossaryEntry(repo, entry(), { kind: 'create' })).rejects.toBeInstanceOf(RepoPathError);
     expect(await readdir(outside)).toEqual([]);
   });

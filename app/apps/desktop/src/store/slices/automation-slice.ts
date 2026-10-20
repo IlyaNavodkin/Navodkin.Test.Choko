@@ -9,7 +9,7 @@ import { resolveArguments } from '@/services/automation/arguments';
 import { planSelection, selectionArgs } from '@/services/automation/selection';
 import { planRunAutomation, type RunAutomationCandidate } from '@/services/automation/run-plan';
 import { startExecution, newExecutionId, type ExecutionHandle } from '@/services/automation/execute';
-import { saveExecutionToRun, planApplyToSummary, loadRunAutomation as loadRunResults, loadRunAutomationExecutions, serializeAutomationResults, summarizeExecutions, saveImportToRun } from '@/services/automation/run-results';
+import { saveExecutionToRun, planApplyToSummary, applyableChanges, loadRunAutomation as loadRunResults, loadRunAutomationExecutions, serializeAutomationResults, summarizeExecutions, saveImportToRun } from '@/services/automation/run-results';
 import { importedResults, previewImport } from '@/services/automation/import';
 import { executionRel } from '@/services/automation/storage';
 import { ProgressTracker } from '@/services/automation/progress';
@@ -579,15 +579,33 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
         set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], issues: plan.problems } } }));
         return;
       }
+      // Manual results are authoritative: only rows that were never recorded can take an
+      // automated status. This keeps autotests a second signal, not a silent overwrite.
+      const changes = applyableChanges(run, plan.changes);
+      const kept = plan.changes.length - changes.length;
+      if (changes.length === 0) {
+        get().toast?.(
+          kept
+            ? `${kept} row${kept === 1 ? '' : 's'} already have a manual result; automation was not applied.`
+            : 'This execution has no row changes to apply.',
+        );
+        return;
+      }
       const ok = await get().confirm({
         title: 'Apply automated results to the summary?',
-        message: `${plan.changes.length} row${plan.changes.length === 1 ? '' : 's'} will change. Manual notes and checks are kept.`,
+        message: `${changes.length} unrecorded row${changes.length === 1 ? '' : 's'} will take the automated status${
+          kept ? `; ${kept} manually recorded row${kept === 1 ? '' : 's'} will keep its result` : ''
+        }. Manual notes and checks are always kept.`,
         confirmLabel: 'Apply',
       });
       if (!ok) return;
-      for (const change of plan.changes) get().updateRunRow(runId, change.rowIndex, { result: change.to });
+      for (const change of changes) get().updateRunRow(runId, change.rowIndex, { result: change.to });
       await get().rewriteRunDetails(runId);
-      get().toast?.(`Applied ${plan.changes.length} automated result${plan.changes.length === 1 ? '' : 's'}`);
+      get().toast?.(
+        `Applied ${changes.length} automated result${changes.length === 1 ? '' : 's'}${
+          kept ? `; kept ${kept} manual result${kept === 1 ? '' : 's'}` : ''
+        }`,
+      );
     },
   };
 }

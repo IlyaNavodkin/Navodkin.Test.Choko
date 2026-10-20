@@ -1,6 +1,7 @@
 import { isNwjs, pickDirectory } from '@/lib/nwjs';
 import { flushPersist, schedulePersist } from '@/services/persist';
 import { addRecent, listRecents } from '@/services/recents';
+import { reconcileOnOpen } from '@/services/automation/lifecycle';
 import {
   derivePrefix,
   ensureWikiSafeFolder,
@@ -138,7 +139,11 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
           error: null,
         });
         seedPaths(loaded.paths);
+        // A crash leaves executions in a non-terminal state; reconcile before the panel reads them
+        // so reopening never shows a phantom "running" (spec "Cancel and crash are distinct").
+        void reconcileOnOpen(opened.repoPath);
         void get().loadRefs(); // the reference book is a separate catalog — read-only
+        void get().loadAutomation(); // automation stores are read-only as well
         void get().refreshStatus();
         startWatch(opened.repoPath); // live-reload on external file changes
         const recents = await addRecent({

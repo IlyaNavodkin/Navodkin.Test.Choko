@@ -37,6 +37,7 @@ export {
   type RunSnapshot,
   type RunSnapshotMiss,
 } from './run-snapshot';
+export * from './automation';
 
 /**
  * A non-blocking import/parse warning (PRD §5.2 tolerance). Surfaced in the UI,

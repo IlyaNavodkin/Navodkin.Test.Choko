@@ -94,6 +94,47 @@ function buildModel(overrides: Partial<RunReportModel> = {}): RunReportModel {
 }
 
 describe('buildRunReportHtml', () => {
+  it('renders the autotests section with arguments, sources and a runner error', () => {
+    const html = buildRunReportHtml(
+      buildModel({
+        automation: {
+          executions: [
+            {
+              executionId: 'exec-123456789',
+              project: 'chromium',
+              state: 'completed',
+              createdAt: '2026-06-12T09:00:00.000Z',
+              arguments: [
+                { key: 'baseUrl', type: 'string', value: 'https://dev.example.com', source: 'binding', reference: { title: 'dev', revision: 'abcdef123456', key: 'baseUrl' } },
+                { key: 'retries', type: 'number', value: 0, source: 'run-override' },
+              ],
+              results: [{ automationId: 'login', status: 'passed', flaky: true, attempts: 2, duration: 1234 }],
+            },
+            {
+              executionId: 'exec-broken',
+              project: 'chromium',
+              state: 'runner_error',
+              createdAt: '2026-06-12T09:05:00.000Z',
+              error: 'Playwright stopped before writing a report',
+              arguments: [],
+              results: [],
+            },
+          ],
+        },
+      }),
+    );
+    expect(html).toContain('<h2>Autotests</h2>');
+    expect(html).toContain('https://dev.example.com');
+    expect(html).toContain('dev');
+    expect(html).toContain('abcdef12');
+    expect(html).toContain('flaky');
+    expect(html).toContain('Playwright stopped before writing a report');
+  });
+
+  it('omits the autotests section when the run has no saved executions', () => {
+    expect(buildRunReportHtml(buildModel())).not.toContain('<h2>Autotests</h2>');
+  });
+
   it('emits a self-contained HTML document with no scripts or external assets', () => {
     const html = buildRunReportHtml(buildModel());
     expect(html.startsWith('<!doctype html>')).toBe(true);

@@ -164,6 +164,34 @@ export type CreateRunResult =
 
 /* ---- reference book (`.testoritto/glossary/`) ---- */
 export type RefKindFilter = 'all' | 'link' | 'arguments';
+/** Automation catalog filter (see utils/automation-catalog.ts). */
+export type AutomationFilter = 'all' | 'runnable' | 'archived';
+
+/** Live/observable state of one automation execution shown in a run (design §Наблюдаемость). */
+export interface AutomationExecutionView {
+  executionId: string;
+  project: string;
+  state: import('@/schemas/automation').ExecutionState;
+  completed: number;
+  total: number | null;
+  currentLine: string | null;
+  logTail: string;
+  error: string | null;
+  startedAt: string;
+}
+
+/** The automation panel state of one run. */
+export interface RunAutomationView {
+  executions: AutomationExecutionView[];
+  results: import('@/services/automation/run-results').RunAutomationResult[];
+  issues: string[];
+  busy: boolean;
+  /** Resolved values of the enabled bindings, shown before starting. */
+  preview?: import('@/schemas/automation').ResolvedAutomationArg[];
+  previewProblems?: string[];
+  /** A report chosen for import, previewed before anything is written. */
+  importPreview?: import('@/services/automation/import').ImportPreview;
+}
 
 /**
  * Why the last reference-book save did not happen. The draft is always kept: `fields` and
@@ -209,7 +237,7 @@ export interface Selection {
   guideIndex?: number;
 }
 
-export type View = 'editor' | 'runs' | 'run' | 'guide' | 'suite' | 'glossary';
+export type View = 'editor' | 'runs' | 'run' | 'guide' | 'suite' | 'glossary' | 'automation';
 export type Screen = 'launcher' | 'main';
 export type ModalKind = 'commit' | 'createRun' | 'addCases' | 'merge' | 'workspace' | 'about' | 'refPicker' | null;
 

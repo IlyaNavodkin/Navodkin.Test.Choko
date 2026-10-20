@@ -201,6 +201,38 @@ export function pickDirectory(): Promise<string | null> {
   });
 }
 
+/**
+ * Prompt the user to pick one file via NW.js's `<input type=file>`.
+ * Resolves to the absolute path, or `null` if cancelled / not in NW.js.
+ */
+export function pickFile(accept?: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    if (typeof document === 'undefined') {
+      resolve(null);
+      return;
+    }
+    const input = document.createElement('input');
+    input.type = 'file';
+    if (accept) input.accept = accept;
+    input.style.display = 'none';
+
+    let settled = false;
+    const finish = (value: string | null) => {
+      if (settled) return;
+      settled = true;
+      window.removeEventListener('focus', onFocus);
+      input.remove();
+      resolve(value);
+    };
+    const onFocus = () => setTimeout(() => finish(input.files?.length ? pathOf(input) : null), 350);
+
+    input.onchange = () => finish(pathOf(input));
+    window.addEventListener('focus', onFocus);
+    document.body.appendChild(input);
+    input.click();
+  });
+}
+
 function pathOf(input: HTMLInputElement): string | null {
   const file = input.files?.[0] as (File & { path?: string }) | undefined;
   return file?.path ?? (input.value || null);

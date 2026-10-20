@@ -24,9 +24,14 @@ import { MergeResolver } from './merge/MergeResolver';
 import { SuiteSummary } from './summary/SuiteSummary';
 import { ReferenceBook } from './reference/ReferenceBook';
 import { ReferencePickerHost } from './reference/ReferencePicker';
+import { AutomationBook } from './automation/AutomationBook';
+import { activeRuns } from '@/services/automation/lifecycle';
+import { closeAfterRunsSettle } from '@/services/automation/quit-guard';
+import { nwWindow } from '@/lib/nwjs';
 
 function Center() {
   const { view, sel } = useApp();
+  if (view === 'automation') return <AutomationBook />;
   if (view === 'glossary') return <ReferenceBook />;
   if (view === 'suite') return <SuiteSummary />;
   if (view === 'runs') return <RunsList />;
@@ -97,6 +102,27 @@ export function App() {
     };
     window.addEventListener('beforeunload', onBeforeUnload);
     return () => window.removeEventListener('beforeunload', onBeforeUnload);
+  }, []);
+
+  // Orderly quit: stop in-flight Playwright runs and wait (bounded) for their terminal state to be
+  // saved, so the next open does not show a phantom "running" execution. An installed 'close'
+  // listener suppresses NW.js's default close, so every path must call close(true) explicitly.
+  useEffect(() => {
+    if (!isNwjs()) return;
+    const win = nwWindow();
+    if (!win) return;
+    let closing = false;
+    const onClose = () => {
+      if (closing) return;
+      closing = true;
+      void closeAfterRunsSettle({
+        runs: activeRuns,
+        close: () => win.close(true),
+        onTimeout: (pending) => useAppStore.getState().toast(`${pending} autotest run(s) did not stop in time; closing anyway.`),
+      });
+    };
+    win.on('close', onClose);
+    return () => win.removeListener('close', onClose);
   }, []);
 
   // Poll GitHub for a newer release: once shortly after launch (off the critical

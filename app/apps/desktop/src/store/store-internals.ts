@@ -85,6 +85,7 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
       set({ tree: loaded.tree, cases: loaded.cases, runs: loaded.runs, warnings: loaded.warnings });
       seedPaths(loaded.paths);
       void get().loadRefs();
+      void get().loadAutomation();
     } catch {
       /* keep optimistic state if even the reload fails */
     }
@@ -169,6 +170,7 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
     });
     seedPaths(loaded.paths);
     void get().loadRefs();
+    void get().loadAutomation();
     void get().refreshStatus();
     get().toast('Reloaded — external changes detected');
   };

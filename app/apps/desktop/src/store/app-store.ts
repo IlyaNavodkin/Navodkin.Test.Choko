@@ -2,10 +2,13 @@ import type { Dispatch, SetStateAction } from 'react';
 import { create, type StoreApi } from 'zustand';
 
 import type { LintWarning } from '@/schemas';
+import type { AutomationArgDefinition } from '@/schemas/automation';
+import type { AutomationBinding, AutomationProfile, CatalogEntry } from '@/schemas/automation-store';
 import type { ArgValue, ReferenceEntry, ReferenceKind } from '@/schemas/reference-book';
 import type { ReferenceDoc } from '@/services/reference-book';
 import { setReferenceCatalog, setReferenceOpener, setReferenceSnapshot } from '@/utils/glossary-link';
 import type {
+  AutomationFilter,
   Case,
   Change,
   CheckState,
@@ -24,6 +27,7 @@ import type {
   Result,
   Run,
   RunRow,
+  RunAutomationView,
   Screen,
   Selection,
   Toast,
@@ -37,6 +41,7 @@ import { createRepoSlice } from './slices/repo-slice';
 import { createCasesSlice } from './slices/cases-slice';
 import { createRunsSlice } from './slices/runs-slice';
 import { createReferenceSlice } from './slices/reference-slice';
+import { createAutomationSlice } from './slices/automation-slice';
 import { createGitSlice } from './slices/git-slice';
 import { createDialogSlice } from './slices/dialog-slice';
 import { createUpdatesSlice } from './slices/updates-slice';
@@ -210,6 +215,57 @@ export interface AppState {
   /** Open the Reference section at one record — what a link chip in case text does. */
   openReferenceEntry: (id: string) => void;
 
+  /* automation (`.testoritto/automation/`) — catalog, bindings, trusted profile */
+  automationCatalog: CatalogEntry[];
+  automationBindings: AutomationBinding[];
+  automationProfiles: AutomationProfile[];
+  automationIssues: LintWarning[];
+  automationQuery: string;
+  automationFilter: AutomationFilter;
+  automationProjectFilter: string;
+  automationSelId: string | null;
+  automationBusy: boolean;
+  automationDiscoverError: string | null;
+  /** Explicit trust acknowledgement: discovery runs the project's config, so it is never implicit. */
+  automationTrusted: boolean;
+  openAutomationSection: () => void;
+  /** (Re)read the three automation stores — read-only, tolerant of missing/broken files. */
+  loadAutomation: () => Promise<void>;
+  setAutomationQuery: (q: string) => void;
+  setAutomationFilter: (f: AutomationFilter) => void;
+  setAutomationProjectFilter: (p: string) => void;
+  selectAutomationEntry: (id: string | null) => void;
+  setAutomationArchived: (automationId: string, archived: boolean) => Promise<void>;
+  setAutomationArgs: (automationId: string, args: AutomationArgDefinition[]) => Promise<void>;
+  setAutomationTrusted: (trusted: boolean) => void;
+  /** Run discovery (explicit action, trusted profile) and replace the catalog. */
+  discoverAutomation: () => Promise<void>;
+  addAutomationBinding: (entry: CatalogEntry, caseId: string) => Promise<void>;
+  removeAutomationBinding: (bindingId: string) => Promise<void>;
+  setAutomationBindingEnabled: (bindingId: string, enabled: boolean) => Promise<void>;
+  saveAutomationProfile: (profile: AutomationProfile) => Promise<void>;
+
+  /* automation results inside a run */
+  runAutomation: Record<string, RunAutomationView>;
+  loadRunAutomation: (runId: string) => Promise<void>;
+  /** Resolve the enabled bindings' values without starting anything (the pre-run preview). */
+  previewRunAutomation: (runId: string) => Promise<void>;
+  /** Plan + start the run's enabled bindings (requires the trusted profile and a profile). */
+  startRunAutomation: (
+    runId: string,
+    opts?: { onlyAutomationIds?: string[]; parentExecutionId?: string },
+  ) => Promise<void>;
+  /** Start a new execution containing only the failed automated tests (parentExecutionId set). */
+  rerunFailedAutomation: (runId: string) => Promise<void>;
+  stopRunAutomation: (runId: string) => void;
+  saveAutomationExecution: (runId: string, executionId: string) => Promise<void>;
+  /** Explicit apply of one saved execution's results to the run summary (revision-checked). */
+  applyAutomationExecution: (runId: string, executionId: string) => Promise<void>;
+  /** Pick a Playwright JSON / JUnit report and preview its match against the run (no writes). */
+  importAutomationReport: (runId: string) => Promise<void>;
+  /** Persist the previewed import (idempotent by payload hash). */
+  applyAutomationImport: (runId: string) => Promise<void>;
+
   /* tree ui state (React-style setters for component compatibility) */
   collapsed: Record<string, boolean>;
   setCollapsed: Dispatch<SetStateAction<Record<string, boolean>>>;
@@ -338,6 +394,7 @@ export const useAppStore = create<AppState>()((set, get) => {
     ...createCasesSlice(set, get, internals),
     ...createRunsSlice(set, get, ctx),
     ...createReferenceSlice(set, get),
+    ...createAutomationSlice(set, get),
     ...createGitSlice(set, get, ctx),
     ...createDialogSlice(set),
     ...createUpdatesSlice(set, get),

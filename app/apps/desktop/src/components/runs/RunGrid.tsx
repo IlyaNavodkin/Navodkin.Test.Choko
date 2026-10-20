@@ -9,6 +9,7 @@ import { buildRunSummary, type RunSummaryEntry } from '@/utils/run-items';
 import type { Approval, Result, Run, RunRow } from '@/types';
 import { NotesField } from './NotesField';
 import { RunCaseCard } from './RunCaseCard';
+import { RunAutomationPanel } from './RunAutomationPanel';
 
 /** A tester/reviewer approval control: shows the stamp when set, else a name + approve button. */
 function ApprovalCard({
@@ -356,6 +357,7 @@ export function RunGrid() {
                   onRemove={() => void ctx.removeRunRow(run.id, i)}
                   onDragStart={() => setDrag(i)}
                   onDragEnd={endDrag}
+                  automation={(ctx.runAutomation[run.id]?.results ?? []).filter((r) => r.caseRowIndex === i)}
                 />
               </div>
             ))}
@@ -411,6 +413,7 @@ export function RunGrid() {
           </section>
 
           {run.snapshot && <RunSnapshotPanel snapshot={run.snapshot} />}
+          <RunAutomationPanel run={run} />
 
           <section className="flex flex-col gap-2">
             <div className="flex items-baseline gap-2">

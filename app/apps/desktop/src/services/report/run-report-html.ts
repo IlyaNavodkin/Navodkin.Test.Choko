@@ -56,6 +56,21 @@ export interface RunReportModel {
   notes: string;
   testerApproval: Approval | null;
   reviewerApproval: Approval | null;
+  /** Saved autotest executions (5.1) — omitted when the run has none. */
+  automation?: AutomationReportSection;
+}
+
+/** Per-execution data the report renders (arguments + sources, statuses, errors). */
+export interface AutomationReportSection {
+  executions: {
+    executionId: string;
+    project: string;
+    state: string;
+    createdAt: string;
+    error?: string;
+    arguments: { key: string; type: string; value: string | number | boolean; source: string; reference?: { title: string; revision: string; key: string } }[];
+    results: { automationId: string; status: string; flaky: boolean; attempts: number; duration: number }[];
+  }[];
 }
 
 /** A "completed" test reached a pass or fail verdict — blocked / skipped / not-run did not.
@@ -295,6 +310,16 @@ body.cw-with-notes .notes-block{display:block;}
 .note-case-result{font-family:var(--font-mono);font-size:11px;font-weight:700;flex:0 0 auto;}
 .note-fails{margin:8px 0 0;padding-left:18px;font-size:12px;color:var(--ink-2);}
 .note-fails li{margin-bottom:3px;}
+/* autotests — saved executions with arguments and mapped results (5.1) */
+.auto{margin-top:22px;break-inside:avoid;}
+.auto-exec{border:1px solid var(--border);border-radius:9px;padding:10px 12px;margin-bottom:8px;break-inside:avoid;}
+.auto-exec-head{display:flex;gap:12px;align-items:baseline;font-size:12px;font-weight:600;}
+.auto-exec-head .mono{font-family:var(--font-mono);font-size:10.5px;color:var(--ink-3);font-weight:400;}
+.auto-error{color:var(--fail);font-size:12px;margin-top:4px;}
+.auto-table{width:100%;border-collapse:collapse;font-size:11.5px;margin-top:6px;}
+.auto-table th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:0.04em;color:var(--ink-3);border-bottom:1px solid var(--border);padding:3px 0;}
+.auto-table td{padding:3px 0;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere;}
+.auto-table .mono{font-family:var(--font-mono);}
 .note-fail-note{color:var(--ink-3);}
 .note-case .note-prose{margin-top:8px;}
 
@@ -318,6 +343,41 @@ export interface BuildReportOptions {
   preview?: boolean;
 }
 
+function renderAutomation(m: RunReportModel): string {
+  const section = m.automation;
+  if (!section || section.executions.length === 0) return '';
+  const rows = section.executions
+    .map((e) => {
+      const argRows = e.arguments
+        .map(
+          (a) =>
+            `<tr><td class="mono">${esc(a.key)}</td><td>${esc(a.type)}</td><td class="mono">${esc(String(a.value))}</td><td>${esc(a.source)}${
+              a.reference ? ` (${esc(a.reference.title)} · ${esc(a.reference.key)} @ ${esc(a.reference.revision.slice(0, 8))})` : ''
+            }</td></tr>`,
+        )
+        .join('');
+      const resultRows = e.results
+        .map(
+          (r) =>
+            `<tr><td class="mono">${esc(r.automationId)}</td><td>${esc(r.status)}${r.flaky ? ' (flaky)' : ''}</td><td>${r.attempts}</td><td>${Math.round(r.duration)} ms</td></tr>`,
+        )
+        .join('');
+      return `
+      <div class="auto-exec">
+        <div class="auto-exec-head">
+          <span class="mono">${esc(e.project)}</span>
+          <span>${esc(e.state)}</span>
+          <span class="mono">${esc(e.executionId.slice(0, 8))}</span>
+        </div>
+        ${e.error ? `<div class="auto-error">${esc(e.error)}</div>` : ''}
+        ${argRows ? `<table class="auto-table"><thead><tr><th>Argument</th><th>Type</th><th>Value</th><th>Source</th></tr></thead><tbody>${argRows}</tbody></table>` : ''}
+        ${resultRows ? `<table class="auto-table"><thead><tr><th>Test</th><th>Status</th><th>Attempts</th><th>Duration</th></tr></thead><tbody>${resultRows}</tbody></table>` : ''}
+      </div>`;
+    })
+    .join('');
+  return `<section class="auto"><h2>Autotests</h2>${rows}</section>`;
+}
+
 /** Build the complete, self-contained report HTML document for one run. */
 export function buildRunReportHtml(model: RunReportModel, opts: BuildReportOptions = {}): string {
   const preview = opts.preview ?? false;
@@ -333,6 +393,7 @@ export function buildRunReportHtml(model: RunReportModel, opts: BuildReportOptio
         renderBar(model),
         renderSuiteBreakdown(model.suites),
         renderPassed(model.summary.passed),
+        renderAutomation(model),
         withNotes ? renderNotesSections(model) : '',
       ].join('\n');
 

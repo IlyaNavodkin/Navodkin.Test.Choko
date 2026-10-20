@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { I } from '@/components/icons';
 import { Input, RES, RESULTS } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import { renderInline } from '@/utils/markdown';
 import { rowFailures } from '@/utils/run-items';
 import type { Case, Result, RunRow } from '@/types';
@@ -61,6 +62,8 @@ export interface RunCaseCardProps {
   /** Native drag handlers for the in-card reorder handle. */
   onDragStart: () => void;
   onDragEnd: () => void;
+  /** Automated results mapped to this row (shown as a separate badge — never merged into the manual result). */
+  automation?: { status: string; flaky: boolean; attempts: number }[];
 }
 
 /**
@@ -81,6 +84,7 @@ export function RunCaseCard({
   onRemove,
   onDragStart,
   onDragEnd,
+  automation,
 }: RunCaseCardProps) {
   const failures = rowFailures(row, kase);
 
@@ -89,6 +93,21 @@ export function RunCaseCard({
       <div className="flex flex-col gap-2 border-b border-border px-3 py-2.5">
         <div className="flex items-center gap-2">
           <span className="shrink-0 font-mono text-[11.5px] text-ink-3">{row.display_id}</span>
+          {automation && automation.length > 0 && (
+            <span
+              className={cn(
+                'shrink-0 rounded-full border px-1.5 py-0.5 text-[10.5px] font-semibold',
+                automation.some((a) => a.status === 'failed' || a.status === 'timedOut')
+                  ? 'border-fail bg-fail-soft text-fail'
+                  : automation.some((a) => a.status === 'passed')
+                    ? 'border-pass bg-pass-soft text-pass'
+                    : 'border-border bg-sunken text-ink-3',
+              )}
+              title={`Automated: ${automation.map((a) => `${a.status}${a.flaky ? ' (flaky)' : ''}`).join(', ')}`}
+            >
+              auto {automation.some((a) => a.status === 'failed' || a.status === 'timedOut') ? 'fail' : automation.some((a) => a.status === 'passed') ? 'pass' : '—'}
+            </span>
+          )}
           {row.executed_at && <span className="truncate font-mono text-[10.5px] text-ink-faint">{row.executed_at}</span>}
           <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/card:opacity-100">
             <span className="cursor-grab text-ink-faint" title="Drag to reorder" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>

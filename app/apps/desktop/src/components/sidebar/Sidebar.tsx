@@ -48,6 +48,7 @@ export function Sidebar() {
     openSuite,
     openRunsList,
     openReferenceBook,
+    openAutomationSection,
     collapsed,
     setCollapsed,
     renaming,
@@ -460,6 +461,7 @@ export function Sidebar() {
   const anyVisible = tree.some(subtreeHas);
   const runsActive = view === 'runs' || view === 'run' || view === 'guide';
   const refActive = view === 'glossary';
+  const autoActive = view === 'automation';
 
   return (
     <aside
@@ -470,7 +472,7 @@ export function Sidebar() {
         <button
           className={cn(
             'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
-            !runsActive && !refActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
+            !runsActive && !refActive && !autoActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
           )}
           onClick={() => sel.id && openCase(sel.id)}
         >
@@ -494,6 +496,16 @@ export function Sidebar() {
           onClick={openReferenceBook}
         >
           {I.link({ size: 14 })} Reference
+        </button>
+        <button
+          className={cn(
+            'inline-flex h-7 flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent bg-transparent text-[12.5px] font-medium text-ink-2 hover:bg-raise',
+            autoActive && 'border-border bg-panel text-ink shadow-[0_1px_2px_var(--shadow)]',
+          )}
+          title="Autotests — discovered Playwright tests, arguments and case bindings"
+          onClick={openAutomationSection}
+        >
+          {I.play({ size: 14 })} Autotests
         </button>
       </div>
 

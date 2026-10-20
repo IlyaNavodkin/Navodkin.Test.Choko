@@ -5,6 +5,7 @@ import { serializeOrder } from '@/services/format/order';
 import { serializeRunCase, serializeRunDetails, type RunCaseFile, type RunCaseItem } from '@/services/format/run';
 import { serializeRunArgumentsSnapshot, serializeRunGlossarySnapshot } from '@/services/format/run-snapshot';
 import { schedulePersist } from '@/services/persist';
+import { loadRunAutomationExecutions } from '@/services/automation/run-results';
 import { deletePath, makeDir, orderFileRel, relJoin, writeFileAt } from '@/services/repo';
 import { previewReportHtml, previewRunReport } from '@/services/report/run-report';
 import type { RunReportModel } from '@/services/report/run-report-html';
@@ -546,6 +547,7 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
         get().toast('PDF export needs the desktop app');
         return;
       }
+      const automation = await loadRunAutomationExecutions(repoPath, run);
       const model: RunReportModel = {
         runName: run.name,
         status: run.status,
@@ -558,6 +560,33 @@ export function createRunsSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Ru
         notes: run.notes,
         testerApproval: run.testerApproval,
         reviewerApproval: run.reviewerApproval,
+        ...(automation.executions.length
+          ? {
+              automation: {
+                executions: automation.executions.map((e) => ({
+                  executionId: e.executionId,
+                  project: e.project,
+                  state: e.state,
+                  createdAt: e.createdAt,
+                  ...(e.error ? { error: e.error } : {}),
+                  arguments: e.arguments.map((a) => ({
+                    key: a.key,
+                    type: a.type,
+                    value: a.value,
+                    source: a.source,
+                    ...(a.reference ? { reference: a.reference } : {}),
+                  })),
+                  results: e.results.map((r) => ({
+                    automationId: r.automationId,
+                    status: r.status,
+                    flaky: r.flaky,
+                    attempts: r.attempts,
+                    duration: r.duration,
+                  })),
+                })),
+              },
+            }
+          : {}),
       };
       try {
         const res = await previewRunReport(model);

@@ -251,11 +251,8 @@ export function DefectReportModal({ run, row, idx, kase, onClose }: Props) {
                 <Input value={draft.summary} onChange={(e) => update({ summary: e.target.value })} />
               </Field>
               <Field label="Source">
-                <Select value={draft.source} onChange={(e) => update({ source: e.target.value as DefectSource, automation: draft.automation ?? automation })}>
-                  <option value="manual">Manual</option>
-                  {automation && <option value="automation">Autotest</option>}
-                  {automation && <option value="both">Manual + autotest</option>}
-                </Select>
+                <Select aria-label="Defect source" value={draft.source} onValueChange={(value) => update({ source: value as DefectSource, automation: draft.automation ?? automation })}
+                  options={[{ value: 'manual', label: 'Manual' }, ...(automation ? [{ value: 'automation', label: 'Autotest' }, { value: 'both', label: 'Manual + autotest' }] : [])]} />
               </Field>
             </div>
 

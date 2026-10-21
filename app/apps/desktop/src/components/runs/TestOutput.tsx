@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Select } from '@/components/ui';
 import type { RunAutomationResult } from '@/services/automation/run-results';
 import { AutomationStatus } from './automation-status';
 import { plainConsoleText } from '@/services/automation/test-output';
@@ -10,10 +11,8 @@ export function TestOutput({ result }: { result: RunAutomationResult }) {
   return <section className="mt-4 border-t border-border pt-4" aria-label="Selected test output">
     <div className="flex flex-wrap items-center justify-between gap-2">
       <h5 className="text-[12px] font-semibold">Test output</h5>
-      {attempts.length > 1 && <select aria-label="Output attempt" value={selected} onChange={(e) => setSelected(Number(e.target.value))}
-        className="rounded border border-border bg-panel px-2 py-1 text-[11px]">
-        {attempts.map((a, i) => <option key={i} value={i}>Attempt {a.retry + 1} · {a.status}</option>)}
-      </select>}
+      {attempts.length > 1 && <Select size="sm" aria-label="Output attempt" value={String(selected)} onValueChange={(value) => setSelected(Number(value))}
+        options={attempts.map((a, i) => ({ value: String(i), label: `Attempt ${a.retry + 1} · ${a.status}` }))} />}
     </div>
     <p className="mt-1 text-[11px] text-ink-3">Only this test’s stdout / stderr. Available after its report is received.</p>
     {attempt && <div className="mt-3 flex items-center gap-3 text-[11px] text-ink-3">

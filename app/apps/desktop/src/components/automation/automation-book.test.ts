@@ -86,7 +86,7 @@ describe('AutomationCard', () => {
     expect(html).toContain('login works');
     expect(html).toContain('login');
     expect(html).toContain('chromium');
-    expect(html).toContain('RND-0001');
+    expect(html).toContain('role="combobox"');
     expect(html).toContain('Argument set');
     expect(html).toContain('Not linked to a case');
     expect(html).toContain('Reference book');
@@ -100,7 +100,7 @@ describe('AutomationCard', () => {
     });
     expect(html).toContain('aria-label="Test case"');
     expect(html).toContain('aria-label="Argument set"');
-    expect(html).toContain('RND-0011');
+    expect(html).toContain(cases[0].displayId);
     expect(html).not.toContain('Save arguments');
   });
 

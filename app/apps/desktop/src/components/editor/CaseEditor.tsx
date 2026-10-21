@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { I } from '@/components/icons';
-import { Button } from '@/components/ui';
+import { Button, Select } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { caseFileName, caseStem } from '@/services/format/filename';
 import { slug } from '@/utils/ids';
@@ -14,12 +14,6 @@ import { ObjectiveEditor } from './ObjectiveEditor';
 import { SetupControl } from './SetupControl';
 import { StepsControl } from './StepsControl';
 import { TagEditor } from './TagEditor';
-
-const STATUS_TEXT: Record<Status, string> = {
-  active: 'text-pass',
-  draft: 'text-blocked',
-  deprecated: 'text-ink-3 line-through',
-};
 
 export function CaseEditor() {
   const ctx = useApp();
@@ -61,9 +55,9 @@ export function CaseEditor() {
     const section = root.querySelector(`[data-edit-field="${focus.field}"]`);
     if (!(section instanceof HTMLElement)) return;
     section.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    const target = section.matches('input, textarea, select')
+    const target = section.matches('input, textarea, [role="combobox"]')
       ? section
-      : section.querySelector('input, textarea, select');
+      : section.querySelector('input, textarea, [role="combobox"]');
     if (target instanceof HTMLElement) target.focus();
   }, [ctx.editorFocus]);
 
@@ -197,27 +191,18 @@ export function CaseEditor() {
           </div>
           <div className="inline-flex items-center gap-1.5 font-mono text-[12px]">
             <span className="text-ink-faint">Status</span>
-            <select
-              className={cn(
-                'h-[26px] rounded-md border border-border bg-panel px-2 py-0.5 text-[12px] font-semibold',
-                STATUS_TEXT[c.status],
-              )}
+            <Select
+              aria-label="Case status"
+              size="sm"
               value={c.status}
-              onChange={(e) => patch({ status: e.target.value as Status })}
+              onValueChange={(value) => patch({ status: value as Status })}
               data-edit-field="status"
-            >
-              {/* color each option so the open menu shows each status in its own color,
-                  rather than inheriting the select's current-status color */}
-              <option value="draft" className="text-blocked">
-                Draft
-              </option>
-              <option value="active" className="text-pass">
-                Active
-              </option>
-              <option value="deprecated" className="text-ink-3">
-                Deprecated
-              </option>
-            </select>
+              options={[
+                { value: 'draft', label: 'Draft', tone: 'warning' },
+                { value: 'active', label: 'Active', tone: 'success' },
+                { value: 'deprecated', label: 'Deprecated', tone: 'muted' },
+              ]}
+            />
           </div>
           <span className="mx-0.5 my-1.5 w-px self-stretch bg-border" />
           <div className="inline-flex min-w-0 flex-1 items-center gap-1.5 font-ui text-[12px] font-medium" data-edit-field="tags">

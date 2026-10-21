@@ -43,14 +43,8 @@ export function WorkspaceModal() {
       </ModalHeader>
       <ModalBody style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <Field label="Workspace">
-          <Select value={wsId} onChange={(e) => onSelect(e.target.value)}>
-            {workspaces.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-                {w.path ? ` — ${w.path}` : ' — repo root'}
-              </option>
-            ))}
-          </Select>
+          <Select aria-label="Workspace" value={wsId} onValueChange={onSelect}
+            options={workspaces.map((w) => ({ value: w.id, label: `${w.name} — ${w.path || 'repo root'}` }))} />
         </Field>
         <Field label="Name">
           <Input value={name} placeholder="Workspace name" onChange={(e) => setName(e.target.value)} />

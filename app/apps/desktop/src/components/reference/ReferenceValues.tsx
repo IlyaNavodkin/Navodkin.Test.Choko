@@ -65,25 +65,18 @@ function ValueControl({
     case 'boolean':
       return (
         <Select
+          aria-label={`${row.key || 'Argument'} value`}
           disabled={disabled}
           value={row.value === true ? 'true' : 'false'}
-          onChange={(e) => onEdit({ value: e.target.value === 'true' })}
-        >
-          <option value="true">true</option>
-          <option value="false">false</option>
-        </Select>
+          onValueChange={(value) => onEdit({ value: value === 'true' })}
+          options={[{ value: 'true', label: 'true' }, { value: 'false', label: 'false' }]}
+        />
       );
     case 'enum': {
       const options = (row.options ?? []).filter(Boolean);
       return (
-        <Select disabled={disabled} value={String(row.value ?? '')} onChange={(e) => onEdit({ value: e.target.value })}>
-          <option value="">{options.length ? 'Choose…' : 'Add options first'}</option>
-          {options.map((o) => (
-            <option key={o} value={o}>
-              {o}
-            </option>
-          ))}
-        </Select>
+        <Select aria-label={`${row.key || 'Argument'} value`} disabled={disabled} value={String(row.value ?? '')} onValueChange={(value) => onEdit({ value })}
+          options={[{ value: '', label: options.length ? 'Choose…' : 'Add options first' }, ...options.map((o) => ({ value: o, label: o }))]} />
       );
     }
     case 'number':
@@ -154,21 +147,17 @@ export function ReferenceValues({ values, recordId, disabled, issueFor, onAdd, o
                   onChange={(e) => onEdit(i, { key: e.target.value })}
                 />
                 <Select
+                  aria-label={`${row.key || 'Argument'} type`}
                   disabled={disabled}
                   className="w-[106px]"
                   value={row.type}
-                  onChange={(e) => {
-                    const type = e.target.value as ArgValueType;
+                  onValueChange={(value) => {
+                    const type = value as ArgValueType;
                     // Switching type re-seeds the value so the row is never left in a foreign shape.
                     onEdit(i, { type, value: type === 'boolean' ? false : type === 'number' ? 0 : '', options: type === 'enum' ? (row.options ?? []) : undefined });
                   }}
-                >
-                  {ARG_VALUE_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {TYPE_LABEL[t]}
-                    </option>
-                  ))}
-                </Select>
+                  options={ARG_VALUE_TYPES.map((t) => ({ value: t, label: TYPE_LABEL[t] }))}
+                />
                 <div className="min-w-0 flex-1">
                   <ValueControl row={row} disabled={disabled} onEdit={(patch) => onEdit(i, patch)} />
                 </div>

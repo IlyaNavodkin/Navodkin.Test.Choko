@@ -20,6 +20,8 @@ coverage/
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+playwright-report/
+test-results/
 .nwdev-automation/
 .commandcode/
 # Skill is installed under .agents/skills with project adaptations.

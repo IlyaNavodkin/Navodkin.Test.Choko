@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState, type KeyboardEvent } from 'react';
-import { Button, RES } from '@/components/ui';
+import { Button, RES, Select } from '@/components/ui';
 import { HoverPopover } from '@/components/ui/hover-popover';
 import { I } from '@/components/icons';
 import { cn } from '@/lib/utils';
@@ -65,9 +65,8 @@ export function ActivityGraph({ runs, year, selectedDate, onYearChange, onSelect
       <span className="text-[12px] text-ink-3">{total} result{total === 1 ? '' : 's'} recorded in {year}</span>
       <div className="ml-auto flex items-center gap-1">
         <Button icon size="sm" variant="ghost" aria-label="Previous activity year" title="Previous year" disabled={year <= 1900} onClick={() => changeYear(year - 1)}>{I.back({ size: 14 })}</Button>
-        <select aria-label="Activity year" value={year} onChange={(e) => changeYear(Number(e.target.value))} className="rounded-md border border-border bg-panel px-2 py-1 text-[13px] font-medium">
-          {years.map((y) => <option key={y} value={y}>{y}</option>)}
-        </select>
+        <Select size="sm" aria-label="Activity year" value={String(year)} onValueChange={(value) => changeYear(Number(value))}
+          options={years.map((y) => ({ value: String(y), label: String(y) }))} />
         <Button icon size="sm" variant="ghost" aria-label="Next activity year" title="Next year" disabled={year >= currentYear} onClick={() => changeYear(year + 1)}>{I.chevron({ size: 14 })}</Button>
         {year !== currentYear && <Button size="sm" variant="ghost" onClick={() => changeYear(currentYear)}>Current year</Button>}
       </div>

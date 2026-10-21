@@ -33,12 +33,12 @@ export function AutomationConfiguration({ entry, bindings, cases, docs, onCase, 
       <section className="flex flex-col gap-2">
         <label className="text-[13px] font-semibold" htmlFor={`case-${entry.automationId}`}>Test case</label>
         <p className="text-[12px] text-ink-3">One autotest covers one Case. Several autotests can cover the same Case.</p>
-        <Select id={`case-${entry.automationId}`} aria-label="Test case" className="w-full" value={selectedCaseId} disabled={busy} onChange={(e) => onCase(e.target.value || null)}>
-          <option value="">Not linked to a case</option>
-          {legacy && <option value="__legacy__" disabled>Multiple legacy links — choose one Case</option>}
-          {unavailableCase && <option value={selectedCaseId} disabled>Missing Case · {selectedCaseId}</option>}
-          {cases.map((c) => <option key={c.id} value={c.id}>{c.displayId} — {c.title}</option>)}
-        </Select>
+        <Select id={`case-${entry.automationId}`} aria-label="Test case" className="w-full" value={selectedCaseId} disabled={busy} onValueChange={(value) => onCase(value || null)} options={[
+          { value: '', label: 'Not linked to a case' },
+          ...(legacy ? [{ value: '__legacy__', label: 'Multiple legacy links — choose one Case', disabled: true }] : []),
+          ...(unavailableCase ? [{ value: selectedCaseId, label: `Missing Case · ${selectedCaseId}`, disabled: true }] : []),
+          ...cases.map((c) => ({ value: c.id, label: `${c.displayId} — ${c.title}` })),
+        ]} />
         {legacy && <p className="text-[12px] text-blocked">Existing links are kept until you select a replacement.</p>}
       </section>
 
@@ -48,14 +48,14 @@ export function AutomationConfiguration({ entry, bindings, cases, docs, onCase, 
           <Button size="sm" variant="ghost" onClick={() => onOpenReference(selectedSetId || undefined)}>{I.link({ size: 12 })} Reference book</Button>
         </div>
         <p className="text-[12px] text-ink-3">Choose an environment set from the Reference book. Values stay linked to their source.</p>
-        <Select id={`arguments-${entry.automationId}`} aria-label="Argument set" className="w-full" value={selectedSetId} disabled={busy || !selectedCaseIds.length || legacy} onChange={(e) => onArgumentSet(e.target.value || null)}>
-          <option value="">No reference set</option>
-          {unavailableSet && <option value={selectedSetId} disabled>Unavailable set · {selectedDoc?.entry.title ?? selectedSetId}</option>}
-          {sets.map((doc) => {
+        <Select id={`arguments-${entry.automationId}`} aria-label="Argument set" className="w-full" value={selectedSetId} disabled={busy || !selectedCaseIds.length || legacy} onValueChange={(value) => onArgumentSet(value || null)} options={[
+          { value: '', label: 'No reference set' },
+          ...(unavailableSet ? [{ value: selectedSetId, label: `Unavailable set · ${selectedDoc?.entry.title ?? selectedSetId}`, disabled: true }] : []),
+          ...sets.map((doc) => {
             const problems = planReferenceArguments(entry, doc).problems;
-            return <option key={doc.id} value={doc.id} disabled={!!problems.length}>{doc.entry.title}{problems.length ? ' · incompatible inputs' : ''}</option>;
-          })}
-        </Select>
+            return { value: doc.id, label: `${doc.entry.title}${problems.length ? ' · incompatible inputs' : ''}`, disabled: !!problems.length };
+          }),
+        ]} />
         {!selectedCaseIds.length && <p className="text-[11px] text-ink-3">Choose a Case to configure its launch arguments.</p>}
         {stale && <div className="rounded-md bg-blocked-soft p-3 text-[12px] text-blocked"><p>This set has changed since it was linked. Review the current values, then refresh the link before running.</p><Button size="sm" className="mt-2" disabled={busy} onClick={() => onArgumentSet(selectedDoc.id)}>Refresh linked values</Button></div>}
         {!sets.length && <p className="text-[12px] text-ink-3">Create an arguments set in the Reference book, then select it here.</p>}

@@ -226,19 +226,14 @@ export function CreateRunModal() {
           </Field>
           <Field label="Arguments set — optional">
             <Select
+              aria-label="Run arguments set"
               value={argsId}
-              onChange={(e) => {
-                setArgsId(e.target.value);
+              onValueChange={(value) => {
+                setArgsId(value);
                 setFailure(null);
               }}
-            >
-              <option value="">None</option>
-              {argSets.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.entry.title || d.id} · {(d.entry.values ?? []).length} values
-                </option>
-              ))}
-            </Select>
+              options={[{ value: '', label: 'None' }, ...argSets.map((d) => ({ value: d.id, label: `${d.entry.title || d.id} · ${(d.entry.values ?? []).length} values` }))]}
+            />
             <div className="pt-1.5 text-[11.5px] text-ink-faint">
               {argSets.length === 0 ? (
                 <>No argument sets yet — add one in the Reference section. A run without a set is fine.</>
@@ -263,11 +258,7 @@ export function CreateRunModal() {
               {allTags.length > 0 && (
                 <span className="ml-auto flex items-center gap-1.5">
                   {I.tag({ size: 13 })}
-                  <Select className="w-auto" value={tag} onChange={(e) => setTag(e.target.value)}>
-                    {allTags.map((t) => (
-                      <option key={t}>{t}</option>
-                    ))}
-                  </Select>
+                  <Select aria-label="Case tag" size="sm" className="w-auto" value={tag} onValueChange={setTag} options={allTags.map((t) => ({ value: t, label: t }))} />
                   <Button variant="ghost" size="sm" onClick={addTag}>
                     {I.plus({ size: 12 })} Add tag
                   </Button>

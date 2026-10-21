@@ -46,6 +46,27 @@ paths (`base: './'`) so it loads from `file://`.
 
 ## Architecture
 
+### Shared selects
+
+All single-choice pickers use `components/ui/select.tsx`: a controlled Radix Select
+with `value`, `onValueChange`, and typed `options: { value, label, disabled?, tone? }[]`.
+Use `size="sm"` in compact toolbars and the default size in forms. Supply an
+accessible label with `aria-label` or `aria-labelledby`. Empty string is a supported
+explicit option, such as None; values are encoded internally to avoid Radix's empty
+item restriction. Selected labels render immediately, including server rendering.
+
+The list uses the brand panel, rose highlight, burgundy checkmark and Onest type.
+Semantic status dots supplement labels. Disabled and invalid controls have shared
+states; long lists scroll and position within the viewport. Arrow keys, Home/End,
+typeahead and Escape follow Radix behavior, with focus restored to the trigger.
+The Select version is pinned to the existing Dialog/Menu release family so their
+focus scopes and dismissal layers share one context.
+
+Run the interaction checks with `pnpm exec playwright install chromium`, then
+`pnpm test:ui`. These headless tests use disposable HTTP mockup data. Optionally set
+`CHIOKO_BROWSER_PATH` to an existing Chrome executable. They cover keyboard/focus,
+Undo, empty values, disabled items, long lists, nested dialogs and calendar years.
+
 ```
 src/
 ├── main.tsx                  # React root + app.css import

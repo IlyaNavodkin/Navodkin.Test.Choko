@@ -5,7 +5,7 @@ export type { InputProps } from './input';
 export { Textarea } from './textarea';
 export type { TextareaProps } from './textarea';
 export { Select } from './select';
-export type { SelectProps } from './select';
+export type { SelectProps, SelectOption } from './select';
 export { Tag } from './tag';
 export type { TagProps } from './tag';
 export { StatusPill } from './status-pill';

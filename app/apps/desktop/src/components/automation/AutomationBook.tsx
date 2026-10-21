@@ -30,7 +30,7 @@ export function AutomationListView({ entries, selectedId, query, filter, project
         <div className="flex flex-wrap gap-1.5">
           {FILTERS.map((f) => <button key={f.id} type="button" className={cn('rounded-full border border-border bg-panel px-2 py-1 text-[11px] text-ink-3 hover:bg-raise', filter === f.id && 'border-accent-line bg-accent-soft text-accent-ink')} onClick={() => onFilter(f.id)}>{f.label}{f.id === 'archived' && archived ? ` (${archived})` : ''}</button>)}
         </div>
-        {projects.length > 1 && <Select aria-label="Playwright project" value={project} onChange={(e) => onProject(e.target.value)}><option value="">All projects</option>{projects.map((p) => <option key={p} value={p}>{p}</option>)}</Select>}
+        {projects.length > 1 && <Select aria-label="Playwright project" value={project} onValueChange={onProject} options={[{ value: '', label: 'All projects' }, ...projects.map((p) => ({ value: p, label: p }))]} />}
       </div>
       <AutomationTree key={`${query}:${filter}:${project}`} entries={shown} selectedKey={selectedId} onSelect={(entry) => onSelect(automationEntryKey(entry))} />
     </div>

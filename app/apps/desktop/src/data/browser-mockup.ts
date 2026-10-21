@@ -50,7 +50,8 @@ export function initBrowserMockup(): void {
   installAutomationDemo();
   const view = new URLSearchParams(window.location.search).get('view');
   const store = useAppStore.getState();
-  if (view === 'suite') store.openSuite('generators');
+  if (view === 'projects') store.goHome();
+  else if (view === 'suite') store.openSuite('generators');
   else if (view === 'runs') store.openRunsList();
   else if (view === 'run') store.openRun(runs[0].id);
   else if (view === 'run-autotests') store.openRunAutomation(runs[0].id);

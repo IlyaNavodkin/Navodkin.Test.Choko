@@ -17,6 +17,7 @@ import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } fr
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nwbuild from 'nw-builder';
+import { ensureBundledGit } from './bundle-git.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)); // apps/desktop/scripts
 const desktopRoot = join(here, '..');
@@ -47,6 +48,7 @@ if (!existsSync(join(distDir, 'index.html'))) {
 }
 
 console.log(`\n▶ Packaging Chioko ${version} (NW.js ${nwVersion}, win-x64)\n`);
+const bundledGit = await ensureBundledGit(cacheDir);
 
 // ── 1. stage ───────────────────────────────────────────────────────────────
 rmSync(stagingDir, { recursive: true, force: true });
@@ -123,6 +125,8 @@ await nwbuild({
 });
 
 const exePath = join(outDir, 'Chioko.exe');
+// External executables must sit next to Chioko.exe, outside the app's NW archive.
+cpSync(bundledGit, join(outDir, 'git'), { recursive: true });
 if (!existsSync(exePath)) {
   console.error(`✗ nw-builder did not produce ${exePath}`);
   process.exit(1);

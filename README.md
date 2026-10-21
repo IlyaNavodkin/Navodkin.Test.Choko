@@ -7,7 +7,19 @@ Playwright autotests. It uses React, TypeScript and NW.js in a pnpm workspace.
 
 ## Run locally
 
-Use Node.js 22 or newer and pnpm 11.
+For a Windows release, extract the whole ZIP and launch `Chioko.exe`. Keep its
+supporting files and `git/` folder together; Git is included in the distribution.
+Choose **Создать проект**, enter a name and parent folder. Chioko creates a local
+Git repository, `.ch/` settings and the first workspace, then offers to create the
+first test case. No GitHub account or command line is required.
+
+Use **Открыть проект** to select an existing repository root or ordinary folder.
+For a folder without Chioko settings, confirm **Добавить Chioko в проект**.
+Existing documents are preserved. Recent projects stay on the start screen;
+**File → Projects…** returns there. A project is the whole repository; workspaces
+organize its test cases into areas. Remote synchronization and autotests are optional.
+
+For development from source, use Node.js 22 or newer, pnpm 11 and Git.
 
 ```powershell
 cd app

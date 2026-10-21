@@ -98,7 +98,7 @@ export function nwWindow(): NwWindow | null {
 
 /** The per-app data directory (NW.js `nw.App.dataPath`), for app-level state like recents. */
 export function appDataPath(): string | null {
-  return window.nw?.App?.dataPath ?? null;
+  return typeof window === 'undefined' ? null : window.nw?.App?.dataPath ?? null;
 }
 
 let screenInited = false;

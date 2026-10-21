@@ -88,12 +88,7 @@ function Workbench() {
 }
 
 export function App() {
-  // On launch, reopen the most recently used repository so the user lands back where they
-  // left off (the launcher only shows when there is no recent repo, or outside the desktop app).
-  const autoReopen = useAppStore((s) => s.autoReopen);
-  useEffect(() => {
-    void autoReopen();
-  }, [autoReopen]);
+  // The launcher loads recent projects; opening a project is an explicit user action.
 
   // An unsaved reference-book draft lives in memory only, so closing the window would lose
   // it silently — ask first (the browser/NW.js shows its own confirm for a non-null return).

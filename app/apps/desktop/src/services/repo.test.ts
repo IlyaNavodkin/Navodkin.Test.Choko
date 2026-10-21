@@ -121,9 +121,10 @@ describe('openRepo / loadWorkspace / loadRepo', () => {
     expect('runsDir' in workspaces[0]).toBe(false);
   });
 
-  it('throws for a non-repo path', async () => {
+  it('offers project setup for an ordinary folder without writing to it', async () => {
     const tmp = await mkRepo('cw-norepo-');
-    await expect(openRepo(tmp)).rejects.toThrow(/Not a Git repository/);
+    expect((await openRepo(tmp)).needsInit).toBe(true);
+    expect(await node.fsp().readdir(tmp)).toEqual([]);
     await node.fsp().rm(tmp, { recursive: true, force: true });
   });
 

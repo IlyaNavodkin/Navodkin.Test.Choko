@@ -9,6 +9,7 @@ export interface ModalProps {
   maxWidth?: number;
   /** Allow Escape / backdrop click to close (default true). */
   dismissable?: boolean;
+  title?: string;
 }
 
 /**
@@ -17,7 +18,7 @@ export interface ModalProps {
  * while gaining a focus trap + Escape handling. Clicking the backdrop closes it
  * (unless `dismissable={false}`).
  */
-export function Modal({ onClose, children, className, maxWidth, dismissable = true }: ModalProps) {
+export function Modal({ onClose, children, className, maxWidth, dismissable = true, title = 'Dialog' }: ModalProps) {
   const onOpenChange = (open: boolean) => {
     if (!open) onClose?.();
   };
@@ -37,7 +38,7 @@ export function Modal({ onClose, children, className, maxWidth, dismissable = tr
             className,
           )}
         >
-          <Dialog.Title className="sr-only">Dialog</Dialog.Title>
+          <Dialog.Title className="sr-only">{title}</Dialog.Title>
           {children}
         </Dialog.Content>
       </Dialog.Overlay>
@@ -71,7 +72,7 @@ export function ModalBody({
 
 export function ModalFooter({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-end gap-[9px] border-t border-border bg-panel-2 px-[18px] py-[13px]">
+    <div className="flex flex-wrap items-center justify-end gap-[9px] border-t border-border bg-panel-2 px-[18px] py-[13px]">
       {children}
     </div>
   );

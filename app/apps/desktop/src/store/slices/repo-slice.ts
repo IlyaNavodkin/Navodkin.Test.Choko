@@ -2,10 +2,10 @@ import { isNwjs, pickDirectory } from '@/lib/nwjs';
 import { flushPersist, schedulePersist } from '@/services/persist';
 import { addRecent, listRecents } from '@/services/recents';
 import { reconcileOnOpen } from '@/services/automation/lifecycle';
+import { createProject as createProjectSvc, initializeProject } from '@/services/project';
 import {
   derivePrefix,
   ensureWikiSafeFolder,
-  initRepo as initRepoSvc,
   loadRepo,
   openRepo as openRepoSvc,
   syncFolderNote,
@@ -30,6 +30,7 @@ type RepoSlice = Pick<
   | 'autoReopen'
   | 'openRepo'
   | 'initRepo'
+  | 'createProject'
   | 'goHome'
   | 'setWorkspace'
   | 'updateWorkspace'
@@ -171,13 +172,28 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
       if (!target) return;
       set({ loading: true, error: null });
       try {
-        await initRepoSvc(target);
+        await initializeProject(target);
         set({ needsInit: false });
         await get().openRepo(target); // re-open the now-initialized repo
-        get().toast('Initialized .ch/');
+        if (!get().error) get().toast('Проект готов к работе');
       } catch (e) {
         set({ loading: false, error: e instanceof Error ? e.message : String(e) });
         get().toast('Could not initialize repository');
+      }
+    },
+
+    createProject: async (args) => {
+      if (!get().guardRefLeave('новый проект', () => void get().createProject(args))) return false;
+      set({ loading: true, error: null });
+      try {
+        const target = await createProjectSvc(args);
+        await get().openRepo(target);
+        if (get().error) return false;
+        get().toast('Проект создан');
+        return true;
+      } catch (error) {
+        set({ loading: false, error: error instanceof Error ? error.message : String(error) });
+        return false;
       }
     },
 

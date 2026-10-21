@@ -5,6 +5,22 @@ disk, Git as the data store._ Built with **NW.js + React + TypeScript** (Vite).
 
 ## Running
 
+### First launch of a Windows release
+
+Extract the entire release ZIP and run `Chioko.exe`. The included `git/` directory
+provides Git without a separate installation. Do not move the executable alone.
+
+On the start screen, choose **Создать проект**, provide its name and a parent
+folder, then create the first case. Chioko initializes local Git and `.ch/` with
+a root workspace automatically. GitHub is optional. **Открыть проект** accepts
+an existing repository root or ordinary folder and offers to add Chioko settings
+without replacing existing documents. Recent projects are shown on this screen;
+return through **File → Projects…**. Startup never opens the last project silently.
+
+### Development
+
+Install Git when running from source. The bundled Git is added by `pnpm package:win`.
+
 From the **repo root**:
 
 ```bash

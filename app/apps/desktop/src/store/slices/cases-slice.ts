@@ -158,7 +158,7 @@ export function createCasesSlice(set: StoreSet, get: StoreGet, internals: StoreI
       const { cases, tree, workspace } = get();
       const idx = buildSuiteIndex(tree);
       // default target: the active workspace's root folder (cases always live in a workspace)
-      const suite = parentSuiteId ?? (workspace ? slug(workspace.path) : tree.find((n) => n.type === 'suite')?.id);
+      const suite = parentSuiteId ?? workspace?.id ?? tree.find((n) => n.type === 'suite')?.id;
       if (!suite) return;
       const ws = workspaceOfPath(idx.path[suite] ?? '') ?? workspace;
       if (!ws) return;

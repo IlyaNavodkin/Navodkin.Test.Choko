@@ -45,6 +45,26 @@ function nodeRequire(): NodeRequire {
 }
 
 const moduleCache = new Map<string, unknown>();
+let gitFactory: typeof SimpleGitFactory | undefined;
+
+function runtimeGit(): typeof SimpleGitFactory {
+  if (gitFactory) return gitFactory;
+  const factory = load<typeof SimpleGitFactory>('simple-git');
+  const runtime = (globalThis as { process?: { platform?: string; execPath?: string } }).process;
+  if (runtime?.platform === 'win32' && runtime.execPath) {
+    const path = load<PathMod>('node:path');
+    const binary = path.join(path.dirname(runtime.execPath), 'git', 'cmd', 'git.exe');
+    if (load<FsMod>('node:fs').existsSync(binary)) {
+      gitFactory = new Proxy(factory, { apply: (target, receiver, args) => {
+        const instance = Reflect.apply(target, receiver, args) as ReturnType<typeof SimpleGitFactory>;
+        return instance.customBinary(binary);
+      } });
+      return gitFactory;
+    }
+  }
+  gitFactory = factory;
+  return factory;
+}
 
 function load<T>(name: string): T {
   if (!moduleCache.has(name)) {
@@ -71,7 +91,7 @@ export const node = {
   /** `createRequire` — resolve a project's installed CLI/package without bundling it. */
   module: () => load<ModuleMod>('node:module'),
   /** The `simpleGit` factory: `node.simpleGit()(repoPath)` → a SimpleGit instance. */
-  simpleGit: () => load<typeof SimpleGitFactory>('simple-git'),
+  simpleGit: runtimeGit,
   /** gray-matter's callable parser/serializer. */
   matter: () => load<typeof matterFn>('gray-matter'),
   papa: () => load<typeof papa>('papaparse'),

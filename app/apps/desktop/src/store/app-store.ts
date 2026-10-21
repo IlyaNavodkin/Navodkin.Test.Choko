@@ -75,6 +75,7 @@ export interface AppState {
   /** Opened a `.ch/` repo with zero workspaces — invite creating the first. */
   emptyRepo: boolean;
   initRepo: () => Promise<void>;
+  createProject: (args: import('@/services/project').CreateProjectArgs) => Promise<boolean>;
 
   /* navigation / selection */
   screen: Screen;

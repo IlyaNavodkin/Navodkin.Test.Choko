@@ -150,8 +150,11 @@ export async function openRepo(repoPath: string): Promise<OpenedRepo> {
 
   const git = node.simpleGit()(repoPath);
   if (!(await git.checkIsRepo())) {
-    throw new Error(`Not a Git repository: ${repoPath}`);
+    if (!(await isDir(repoPath))) throw new Error(`Project folder does not exist: ${repoPath}`);
+    return { repoPath, workspaces: [], branch: 'main', warnings: [], needsInit: true };
   }
+  const gitRoot = await node.fsp().realpath((await git.revparse(['--show-toplevel'])).trim());
+  if (path.relative(gitRoot, await node.fsp().realpath(repoPath)) !== '') throw new Error('Выберите корневую папку проекта, а не вложенную папку.');
   const branch = (await git.branchLocal()).current || 'main';
 
   if (await migrateChiokoData(repoPath)) warnings.push({ code: 'migrated', message: 'Moved project data and references to .ch/. Review and commit the migration.' });

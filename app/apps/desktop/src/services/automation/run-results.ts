@@ -5,6 +5,7 @@ import { sha256Hex } from '@/services/hash';
 import { readMaybe, writeFileAt, makeDir } from '@/services/repo-fs';
 import { executionRel, readExecutionManifest, stableStringify } from './storage';
 import { parsePlaywrightReport, summarizeResults, walkSpecs } from './report';
+import { collectAttemptOutput, type TestAttemptOutput } from './test-output';
 
 /** A run-level summary line for the "run finished" toast (states, never per-test). */
 export function summarizeExecutions(
@@ -26,7 +27,7 @@ export function summarizeExecutions(
 // Automation results in a run (spec "Run from a test run and save results", "Explicit apply to
 // summary").
 //
-// Executions live in `.casewright/automation/executions/<id>/`; an explicit "save to run" copies
+// Executions live in `.ch/automation/executions/<id>/`; an explicit "save to run" copies
 // the manifest/report into `<run>/automation/<id>/` (a sidecar the run loader ignores). Applying
 // results to the run's *summary* is a separate, explicit, revision-checked action: automated results
 // never overwrite manual checks/notes on their own.
@@ -58,6 +59,8 @@ export interface RunAutomationResult {
   attempts: number;
   duration: number;
   error?: string;
+  /** Reporter-attributed streams, kept separately for every retry. Absent in legacy reports. */
+  attemptOutput?: TestAttemptOutput[];
 }
 
 export interface RunAutomationLoad {
@@ -103,6 +106,7 @@ export function mapReportToRun(run: Run, manifest: ExecutionManifest, report: Pl
         flaky: summary.flaky,
         attempts: summary.attempts,
         duration: summary.duration,
+        attemptOutput: collectAttemptOutput(summary.results),
         ...(summary.results.at(-1)?.error?.message ? { error: summary.results.at(-1)!.error!.message } : {}),
       });
     }

@@ -47,7 +47,7 @@ export function Modal({ onClose, children, className, maxWidth, dismissable = tr
 
 export function ModalHeader({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center gap-2.5 border-b border-border px-[18px] py-[15px] [&_h3]:m-0 [&_h3]:text-[14.5px] [&_h3]:font-semibold">
+    <div className="flex items-center gap-2.5 border-b border-border px-[18px] py-[15px] [&_h3]:m-0 [&_h3]:text-[16px] [&_h3]:font-bold">
       {children}
     </div>
   );

@@ -10,14 +10,14 @@ import { readMaybe, resolveRepoWritePath, writeFileAtomic } from './repo-fs';
 //
 // One frozen Markdown file per (run, case), plus a sibling evidence folder:
 //
-//   .casewright/defects/<run-stem>/<display-id>.md
-//   .casewright/defects/<run-stem>/<display-id>.evidence/001-screenshot.png
+//   .ch/defects/<run-stem>/<display-id>.md
+//   .ch/defects/<run-stem>/<display-id>.evidence/001-screenshot.png
 //
 // The file is the snapshot: reopening it never reads the live case again. Writes go through
 // the guarded repo helpers so a defect can never land outside the repository.
 // ---------------------------------------------------------------------------
 
-export const DEFECTS_DIR = '.casewright/defects';
+export const DEFECTS_DIR = '.ch/defects';
 
 /**
  * Default environment line for a new snapshot: the app/runtime versions plus any HTTP(S)
@@ -25,7 +25,7 @@ export const DEFECTS_DIR = '.casewright/defects';
  */
 export function environmentFor(kase?: Case): string {
   const parts: string[] = [];
-  if (typeof __APP_VERSION__ === 'string' && __APP_VERSION__) parts.push(`Casewright ${__APP_VERSION__}`);
+  if (typeof __APP_VERSION__ === 'string' && __APP_VERSION__) parts.push(`Chioko ${__APP_VERSION__}`);
   try {
     const os = node.os();
     parts.push(`${os.type()} ${os.release()}`);

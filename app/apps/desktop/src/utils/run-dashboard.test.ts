@@ -22,7 +22,7 @@ const row = (result: Result, executed_at: string, case_id = 'c1', display_id = '
 const mkRun = (over: Partial<Run>): Run => ({
   id: 'r1',
   name: 'Run',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-07-01',
   testDate: '2026-07-01',
   status: 'open',

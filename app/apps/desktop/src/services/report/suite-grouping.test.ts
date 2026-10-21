@@ -27,7 +27,7 @@ const mkRow = (case_id: string, result: RunRow['result']): RunRow => ({
   notes: '',
   checks: {},
   failNotes: {},
-  file: `.casewright/runs/r1/${case_id}.md`,
+  file: `.ch/runs/r1/${case_id}.md`,
 });
 
 const tree: TreeNode[] = [
@@ -38,9 +38,9 @@ const tree: TreeNode[] = [
 const cases = [mkCase('c1', 's1'), mkCase('c2', 's1'), mkCase('c3', 's2')];
 
 const baseRun: Run = {
-  id: '.casewright/runs/r1',
+  id: '.ch/runs/r1',
   name: 'r1',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-06-10',
   status: 'open',
   scope: 'repo',

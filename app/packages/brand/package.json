@@ -1,5 +1,5 @@
 {
-  "name": "@casewright/brand",
+  "name": "@chioko/brand",
   "version": "0.1.0",
   "private": true,
   "description": "Shared Chioko brand: warm ivory surfaces, burgundy accents, mascot, semantic status colors and typography.",
@@ -7,13 +7,17 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./tokens.css",
+    "./fonts.css": "./fonts.css",
     "./chioko-mascot.png": "./chioko-mascot.png",
     "./logo.svg": "./logo.svg",
     "./logo-mark.svg": "./logo-mark.svg",
-    "./logo-mark-cutout.svg": "./logo-mark-cutout.svg"
+    "./logo-mark-cutout.svg": "./logo-mark-cutout.svg",
+    "./fonts/*": "./fonts/*"
   },
   "files": [
     "tokens.css",
+    "fonts.css",
+    "fonts",
     "chioko-mascot.png",
     "BRAND.md",
     "logo.svg",

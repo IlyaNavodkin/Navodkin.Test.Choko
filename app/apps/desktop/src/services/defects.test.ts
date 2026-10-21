@@ -12,7 +12,7 @@ afterEach(async () => {
 });
 
 const repo = async (): Promise<string> => {
-  const dir = await mkdtemp(join(tmpdir(), 'casewright-defect-'));
+  const dir = await mkdtemp(join(tmpdir(), 'chioko-defect-'));
   cleanup.push(dir);
   return dir;
 };
@@ -42,13 +42,13 @@ const row: RunRow = {
   notes: '',
   checks: { 'step:0': 'fail' },
   failNotes: { 'step:0': 'the field rejects 1' },
-  file: '.casewright/runs/r1/001-RND-0002.md',
+  file: '.ch/runs/r1/001-RND-0002.md',
 };
 
 const run: Run = {
-  id: '.casewright/runs/r1',
+  id: '.ch/runs/r1',
   name: 'Regression',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-10-20',
   testDate: '2026-10-20',
   status: 'open',
@@ -68,7 +68,7 @@ describe('defect snapshots', () => {
       environment: 'Chrome 141 · Windows 11',
     });
     const rel = await saveDefect(dir, run, row, draft);
-    expect(rel).toBe('.casewright/defects/r1/RND-0002.md');
+    expect(rel).toBe('.ch/defects/r1/RND-0002.md');
 
     const raw = await readFile(join(dir, rel), 'utf8');
     expect(raw).toContain('schema_version: 1');
@@ -87,11 +87,11 @@ describe('defect snapshots', () => {
     await writeFile(source, 'not-really-a-png');
 
     const e = await addEvidenceFile(dir, run, row, source);
-    expect(e.path).toBe('.casewright/defects/r1/RND-0002.evidence/001-shot.png');
+    expect(e.path).toBe('.ch/defects/r1/RND-0002.evidence/001-shot.png');
     expect((await stat(join(dir, e.path))).isFile()).toBe(true);
   });
 
   it('names the defect file from the run + display id', () => {
-    expect(defectRel(run, row)).toBe('.casewright/defects/r1/RND-0002.md');
+    expect(defectRel(run, row)).toBe('.ch/defects/r1/RND-0002.md');
   });
 });

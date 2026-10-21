@@ -99,7 +99,7 @@ export function SetupControl({ items, onChange, baseRel, onInsertLink }: SetupCo
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-[9px]">
         <span className="grid place-items-center text-ink-3">{I.list({ size: 15 })}</span>
-        <span className="text-[13px] font-semibold tracking-[0.01em] text-ink">Setup</span>
+        <span className="font-heading text-[16px] font-bold text-ink">Setup</span>
         <span className="font-mono text-[11px] text-ink-faint">## Setup</span>
         <span className="flex-1" />
         <Button variant="ghost" size="sm" onClick={() => setPreview((p) => !p)}>

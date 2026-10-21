@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CASEWRIGHT_GITIGNORE, serializeConfigYaml } from './config';
+import { CHIOKO_GITIGNORE, serializeConfigYaml } from './config';
 
 describe('serializeConfigYaml', () => {
   it('emits version and an optional name', () => {
@@ -25,8 +25,8 @@ describe('serializeConfigYaml', () => {
   });
 });
 
-describe('CASEWRIGHT_GITIGNORE', () => {
+describe('CHIOKO_GITIGNORE', () => {
   it('ignores cache/', () => {
-    expect(CASEWRIGHT_GITIGNORE).toMatch(/^cache\/$/m);
+    expect(CHIOKO_GITIGNORE).toMatch(/^cache\/$/m);
   });
 });

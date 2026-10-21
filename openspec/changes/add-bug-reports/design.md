@@ -2,7 +2,7 @@
 
 ## Context
 
-См. proposal.md. Прогоны — папки `.casewright/runs/<stem>/` с `_run.md` и пофайловыми sidecar'ами `NNN-<id>.md`; строка прогона уже несёт `checks`, `failNotes`, `itemText` (снапшот текста шагов) и notes (`types/index.ts`, `services/format/run.ts`). Окружение прогона фиксируется набором аргументов справочника (change `add-reference-book`). Вложения редактора — ассеты `.casewright/assets` (change `add-rich-text-and-images`). Рендер описаний — `utils/markdown.tsx`; PDF собирается как self-contained HTML (`services/report/run-report-html.ts`).
+См. proposal.md. Прогоны — папки `.ch/runs/<stem>/` с `_run.md` и пофайловыми sidecar'ами `NNN-<id>.md`; строка прогона уже несёт `checks`, `failNotes`, `itemText` (снапшот текста шагов) и notes (`types/index.ts`, `services/format/run.ts`). Окружение прогона фиксируется набором аргументов справочника (change `add-reference-book`). Вложения редактора — ассеты `.ch/assets` (change `add-rich-text-and-images`). Рендер описаний — `utils/markdown.tsx`; PDF собирается как self-contained HTML (`services/report/run-report-html.ts`).
 
 ## Goals / Non-Goals
 
@@ -13,7 +13,7 @@
 ## Decisions
 
 1. **Модель.** `BugReport`: `id` (uuid), `title`, `severity` (low/medium/high/critical), `status` (`draft | ready | exported`), `caseId`, `runId`, `runRowCaseId`, `tester`, `testDate`, `branch`, `commit`, `environment` (имя набора аргументов + resolved values + revision), `steps` (снапшот: текст шага, состояние проверки, fail-комментарий), `expected`, `actual`, `notes`, `attachments[]` (`name`, `sha256`, `mime`, `size`), `jiraKey?`, `createdAt`, `updatedAt`.
-2. **Хранение.** `.casewright/bugs/<uuid>/report.md` (front matter + секции Markdown) и `.casewright/bugs/<uuid>/attachments/`. Файлы не зависят от формата прогонов; удаление кейса или прогона не удаляет дефект — ссылка становится неразрешённой и диагностируется.
+2. **Хранение.** `.ch/bugs/<uuid>/report.md` (front matter + секции Markdown) и `.ch/bugs/<uuid>/attachments/`. Файлы не зависят от формата прогонов; удаление кейса или прогона не удаляет дефект — ссылка становится неразрешённой и диагностируется.
 3. **Создание из прогона.** Действие доступно на строке кейса (для fail/blocked — заметно, для остальных — по меню). Автозаполнение берёт **снапшот** прогона (`itemText`, `checks`, `failNotes`, `notes`, tester, executed_at, test date, окружение прогона, branch/commit из Git-статуса). Если кейс удалён — данные всё равно заполняются из снапшота. Повторное создание с той же пары `runId + caseId` предлагает открыть существующий дефект.
 4. **Вложения.** Копируются в папку дефекта с сохранением sha256; поддерживаются png/jpeg/gif/webp с лимитом на файл; GIF показывается анимированным. Отсутствующий или изменённый файл диагностируется. Вложения никогда не исполняются и не открываются автоматически.
 5. **Копирование для Jira (MVP).** Собирается Jira wiki markup: заголовок, окружение (имя набора, ключевые значения, branch/commit, test date), шаги с отметками и комментариями, expected/actual, ссылка на прогон (имя прогона, displayId, путь репозитория). Копирование — через `nw.Clipboard` с текстом; отдельные действия: «скопировать изображение в буфер» (для одного файла), «открыть папку вложений», «скопировать список файлов». Best-effort режим HTML-копирования с data-URI картинками допускается как дополнительное действие и проверяется вручную в Jira; если трекер не принимает картинки из буфера, пользователь прикладывает их из открытой папки.
@@ -30,7 +30,7 @@
 
 ## Migration Plan
 
-Порядок: формат и fs-сервис → список/редактор → создание из прогона → вложения → Jira-копирование → отчёты. Откат — удаление `.casewright/bugs`; кейсы и прогоны не меняются.
+Порядок: формат и fs-сервис → список/редактор → создание из прогона → вложения → Jira-копирование → отчёты. Откат — удаление `.ch/bugs`; кейсы и прогоны не меняются.
 
 ## References
 

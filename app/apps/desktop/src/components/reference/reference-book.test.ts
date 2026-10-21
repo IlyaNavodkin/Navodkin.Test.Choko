@@ -18,7 +18,7 @@ const link = (patch: Partial<ReferenceEntry> = {}): ReferenceEntry => ({
 
 const doc = (entry: ReferenceEntry, patch: Partial<ReferenceDoc> = {}): ReferenceDoc => ({
   id: entry.id,
-  rel: `.casewright/glossary/${entry.id}.md`,
+  rel: `.ch/glossary/${entry.id}.md`,
   entry,
   extra: {},
   eol: '\n',
@@ -83,7 +83,7 @@ describe('catalog view', () => {
   it('invites creating the first record and names the storage folder', () => {
     const out = view();
     expect(out).toContain('Nothing in the reference book yet');
-    expect(out).toContain('.casewright/glossary/');
+    expect(out).toContain('.ch/glossary/');
     expect(out).toContain('New link');
     expect(out).toContain('New arguments set');
     expect(out).not.toContain('Search the reference book');
@@ -117,9 +117,9 @@ describe('catalog view', () => {
 
   it('shows catalog-level problems (an unreadable folder)', () => {
     const refIssues = [
-      { code: 'glossary-read', message: '.casewright exists but is not a directory; the reference book cannot be read.' },
+      { code: 'glossary-read', message: '.ch exists but is not a directory; the reference book cannot be read.' },
     ];
-    expect(view({ refIssues })).toContain('.casewright exists but is not a directory');
+    expect(view({ refIssues })).toContain('.ch exists but is not a directory');
   });
 });
 

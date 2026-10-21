@@ -96,7 +96,7 @@ async function seedRepo(files: Record<string, string> = {}): Promise<string> {
   const repo = await mkRepo();
   const c = kase();
   const seed: Record<string, string> = {
-    '.casewright/config.yaml': serializeConfigYaml({ version: 1, name: 'Snapshot fixture', workspaces: ['Areas'] }),
+    '.ch/config.yaml': serializeConfigYaml({ version: 1, name: 'Snapshot fixture', workspaces: ['Areas'] }),
     [`Areas/Alpha/${caseFileName(c)}`]: serializeCase(c),
     [glossaryRel(LINK_ID)]: linkEntry(),
     [glossaryRel(ARGS_ID)]: argsEntry,
@@ -132,9 +132,9 @@ async function waitForFile(abs: string, ms = 8000): Promise<string> {
 const store = () => useAppStore.getState();
 const currentCaseId = (): string => store().cases[0].id;
 
-/** The run folders that exist under `.casewright/runs/` (empty when the folder is absent). */
+/** The run folders that exist under `.ch/runs/` (empty when the folder is absent). */
 const runFolders = async (repo: string): Promise<string[]> =>
-  (await readdir(join(repo, '.casewright', 'runs'), { withFileTypes: true }).catch(() => []))
+  (await readdir(join(repo, '.ch', 'runs'), { withFileTypes: true }).catch(() => []))
     .filter((e) => e.isDirectory())
     .map((e) => e.name);
 

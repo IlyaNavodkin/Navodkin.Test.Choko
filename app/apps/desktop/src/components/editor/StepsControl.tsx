@@ -77,7 +77,7 @@ export function StepsControl({ steps, onChange }: StepsControlProps) {
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-[9px]">
         <span className="grid place-items-center text-ink-3">{I.list({ size: 15 })}</span>
-        <span className="text-[13px] font-semibold tracking-[0.01em] text-ink">Steps</span>
+        <span className="font-heading text-[16px] font-bold text-ink">Steps</span>
         <span className="font-mono text-[11px] text-ink-faint">## Steps</span>
         <span className="flex-1" />
         {!preview && <span className="text-[11px] text-ink-3">Tab to nest · drag ↔ to re-parent</span>}

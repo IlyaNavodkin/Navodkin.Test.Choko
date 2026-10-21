@@ -7,7 +7,7 @@ import { markdownInlineToHtml, markdownToHtml } from './markdown-html';
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
 const OTHER = '11111111-2222-4333-8444-555555555555';
-const HREF = `../../.casewright/glossary/${ID}.md`;
+const HREF = `../../.ch/glossary/${ID}.md`;
 
 const html = (src: string): string => renderToStaticMarkup(createElement(Fragment, null, renderInline(src)));
 const blockHtml = (src: string): string => renderToStaticMarkup(createElement(Fragment, null, renderMarkdown(src)));
@@ -29,8 +29,11 @@ describe('reference links in rendered prose', () => {
     expect(out).toContain('Payments runbook'); // the record's current name
     expect(out).toContain('How to debug a stuck payment.');
     expect(out).not.toContain('<a ');
-    expect(out).not.toContain('.casewright/glossary'); // the path never reaches the reader
+    expect(out).not.toContain('.ch/glossary'); // the path never reaches the reader
     expect(out).toContain('for the steps.');
+    expect(out).toContain('<span><button'); // valid phrasing content inside a paragraph
+    expect(out).toContain('aria-haspopup="dialog"');
+    expect(out).not.toContain('title='); // the Read card replaces the native hover tooltip
   });
 
   it('opens the record card when clicked, and never navigates the app', () => {
@@ -57,7 +60,8 @@ describe('reference links in rendered prose', () => {
     install([{ id: ID, title: 'Old runbook', archived: true }]);
     const out = html(`See [x](${HREF}).`);
     expect(out).toContain('Old runbook');
-    expect(out).toMatch(/title="[^"]*archived record/);
+    expect(out).toContain('archived record');
+    expect(out).not.toMatch(/title=/);
   });
 
   it('still renders ordinary external links as links', () => {
@@ -69,16 +73,16 @@ describe('reference links in rendered prose', () => {
 
   it('leaves links inside code alone (fenced and inline)', () => {
     install([{ id: ID, title: 'Payments runbook' }]);
-    expect(blockHtml('```\n[x](../../.casewright/glossary/' + ID + '.md)\n```')).toContain('.casewright/glossary');
-    const inline = html('use `[x](../../.casewright/glossary/' + ID + '.md)`');
+    expect(blockHtml('```\n[x](../../.ch/glossary/' + ID + '.md)\n```')).toContain('.ch/glossary');
+    const inline = html('use `[x](../../.ch/glossary/' + ID + '.md)`');
     expect(inline).toContain('<code');
-    expect(inline).toContain('.casewright/glossary');
+    expect(inline).toContain('.ch/glossary');
   });
 
   it('resolves the same id whatever the relative depth is', () => {
     install([{ id: ID, title: 'Payments runbook' }, { id: OTHER, title: 'Stage values', archived: false }]);
-    expect(html(`[a](../../.casewright/glossary/${OTHER}.md)`)).toContain('Stage values');
-    expect(html(`[a](./.casewright/glossary/${OTHER}.md)`)).toContain('Stage values');
+    expect(html(`[a](../../.ch/glossary/${OTHER}.md)`)).toContain('Stage values');
+    expect(html(`[a](./.ch/glossary/${OTHER}.md)`)).toContain('Stage values');
   });
 });
 
@@ -94,12 +98,12 @@ describe('reference links in report HTML', () => {
   it('marks an archived record and an unresolved link', () => {
     install([{ id: ID, title: 'Old runbook', archived: true }]);
     expect(markdownInlineToHtml(`[x](${HREF})`)).toContain('<span class="ref-chip ref-archived">Old runbook</span>');
-    expect(markdownInlineToHtml(`[gone](../../.casewright/glossary/${OTHER}.md)`)).toContain('<span class="ref-missing"');
+    expect(markdownInlineToHtml(`[gone](../../.ch/glossary/${OTHER}.md)`)).toContain('<span class="ref-missing"');
   });
 
   it('works inside block markdown and never inside code', () => {
     install([{ id: ID, title: 'Payments runbook' }]);
     expect(markdownToHtml(`## Step\n\nSee [x](${HREF}).`)).toContain('<span class="ref-chip">Payments runbook</span>');
-    expect(markdownToHtml('```\n[x](' + HREF + ')\n```')).toContain('.casewright/glossary');
+    expect(markdownToHtml('```\n[x](' + HREF + ')\n```')).toContain('.ch/glossary');
   });
 });

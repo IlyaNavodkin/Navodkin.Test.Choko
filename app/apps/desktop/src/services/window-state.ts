@@ -141,9 +141,8 @@ export async function restoreWindowState(win: NwWindow): Promise<WindowState | n
   const fitted = clampToScreens(saved, screenWorkAreas());
   win.resizeTo(fitted.width, fitted.height);
   win.moveTo(fitted.x, fitted.y);
-  // Set the restore bounds first (above), then maximize — so un-maximizing returns
-  // to the fitted size rather than a default.
-  if (saved.maximized) win.maximize();
+  // Maximization belongs to the visible-window startup, after show(). Calling it
+  // here can reveal an intentionally hidden automation window.
   return { ...fitted, maximized: saved.maximized };
 }
 
@@ -157,6 +156,7 @@ export async function restoreWindowState(win: NwWindow): Promise<WindowState | n
  * flag and restore bounds are correct before the first move/resize event arrives.
  */
 export function trackWindowState(win: NwWindow, initial: WindowState | null): void {
+  let minimized = false;
   normal = initial
     ? { x: initial.x, y: initial.y, width: initial.width, height: initial.height }
     : { x: win.x, y: win.y, width: win.width, height: win.height };
@@ -166,7 +166,7 @@ export function trackWindowState(win: NwWindow, initial: WindowState | null): vo
   // flag has settled — avoids races where a resize event arrives before `maximize`
   // and would otherwise capture the maximized geometry as the "normal" bounds.
   const captureNormal = () => {
-    if (!maximized) normal = { x: win.x, y: win.y, width: win.width, height: win.height };
+    if (!maximized && !minimized) normal = { x: win.x, y: win.y, width: win.width, height: win.height };
   };
   const persist = () =>
     schedulePersist(PERSIST_KEY, () => {
@@ -175,6 +175,7 @@ export function trackWindowState(win: NwWindow, initial: WindowState | null): vo
     });
 
   const onMaximize = () => {
+    minimized = false;
     maximized = true;
     persist();
   };
@@ -182,11 +183,19 @@ export function trackWindowState(win: NwWindow, initial: WindowState | null): vo
     maximized = false;
     persist();
   };
+  const onMinimize = () => { minimized = true; };
+  const onRestore = () => {
+    // Modern NW.js uses restore for both unmaximize and returning from the taskbar.
+    if (minimized) { minimized = false; persist(); }
+    else onUnmaximize();
+  };
 
   win.on('resize', persist);
   win.on('move', persist);
   win.on('maximize', onMaximize);
   win.on('unmaximize', onUnmaximize);
+  win.on('minimize', onMinimize);
+  win.on('restore', onRestore);
 
   // A NW.js 'close' listener would suppress the default close, so capture the final
   // state on the page's own unload instead. Synchronous — the process is exiting.

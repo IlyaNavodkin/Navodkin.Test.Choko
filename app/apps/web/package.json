@@ -1,10 +1,10 @@
 {
-  "name": "@casewright/web",
+  "name": "@chioko/web",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Casewright marketing site — static, built with Astro, deployed to GitHub Pages.",
-  "homepage": "https://casewright.dev",
+  "description": "Chioko marketing site \u0432\u0402\u201d static, built with Astro, deployed to GitHub Pages.",
+  "homepage": "https://github.com/IlyaNavodkin/Navodkin.Test.Chioko",
   "license": "MIT",
   "scripts": {
     "dev": "astro dev",
@@ -13,7 +13,7 @@
     "lint": "astro check"
   },
   "dependencies": {
-    "@casewright/brand": "workspace:*",
+    "@chioko/brand": "workspace:*",
     "astro": "^6.4.4"
   },
   "devDependencies": {

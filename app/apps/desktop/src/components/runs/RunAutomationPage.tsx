@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { I } from '@/components/icons';
 import { Button, Input, Tag } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { useApp } from '@/store/app-store';
+import { useApp, useAppStore } from '@/store/app-store';
 import { automationEntryKey, runAutomationEntries } from '@/utils/automation-workflow';
 import { AutomationTree } from '@/components/automation/AutomationTree';
 import { AutomationStatus, automationResultLookup } from './automation-status';
@@ -16,7 +16,7 @@ export function RunAutomationPage() {
   const run = ctx.runs.find((r) => r.id === ctx.sel.runId);
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<ResultFilter>('all');
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const selectedKey = ctx.sel.automationKey ?? null;
   if (!run) return <div className="p-8 text-ink-3">Run not found.</div>;
 
   const view = ctx.runAutomation[run.id];
@@ -49,7 +49,7 @@ export function RunAutomationPage() {
           <button type="button" className="mb-1 flex items-center gap-1 text-[11px] text-ink-3 hover:text-accent" onClick={() => ctx.openRun(run.id)}>
             {I.chevron({ size: 11, style: { transform: 'rotate(180deg)' } })}{run.name}
           </button>
-          <h2 className="text-[20px] font-semibold">Autotests <span className="ml-2 text-[13px] font-normal text-ink-3">{entries.length} tests in this run</span></h2>
+          <h2 className="text-[24px] font-extrabold">Autotests <span className="ml-2 font-ui text-[13px] font-normal text-ink-3">{entries.length} tests in this run</span></h2>
         </div>
         <Button size="sm" disabled={busy} onClick={() => void ctx.importAutomationReport(run.id)}>Import report</Button>
         {import.meta.env.MODE === 'mockup' && <Tag>Demo · simulated launches</Tag>}
@@ -79,7 +79,7 @@ export function RunAutomationPage() {
             </div>
           </div>
           <AutomationTree key={`${filter}:${query}`} entries={shown} selectedKey={selected ? automationEntryKey(selected) : null}
-            onSelect={(e) => setSelectedKey(automationEntryKey(e))}
+            onSelect={(e) => useAppStore.setState((s) => ({ sel: { ...s.sel, automationKey: automationEntryKey(e) } }))}
             renderMeta={(e) => <AutomationStatus status={statusOf(e)?.status} running={busy && activeKeys.has(automationEntryKey(e))} />} />
           <p className="border-t border-border px-4 py-3 text-[11px] leading-relaxed text-ink-3">
             Only autotests linked to this run’s Cases. Run all ignores the search and status filters.

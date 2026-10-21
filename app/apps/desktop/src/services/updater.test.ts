@@ -34,12 +34,12 @@ function mockFetchOnce(body: unknown, ok = true, status = 200) {
 
 const release = (over: Partial<Record<string, unknown>> = {}) => ({
   tag_name: 'v0.2.0',
-  html_url: 'https://github.com/jimbuck/casewright/releases/tag/v0.2.0',
+  html_url: 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/releases/tag/v0.2.0',
   draft: false,
   prerelease: false,
   assets: [
-    { name: 'Casewright-Setup-0.2.0.exe', browser_download_url: 'https://example/Casewright-Setup-0.2.0.exe' },
-    { name: 'Casewright-0.2.0-win-x64.zip', browser_download_url: 'https://example/Casewright-0.2.0-win-x64.zip' },
+    { name: 'Chioko-Setup-0.2.0.exe', browser_download_url: 'https://example/Chioko-Setup-0.2.0.exe' },
+    { name: 'Chioko-0.2.0-win-x64.zip', browser_download_url: 'https://example/Chioko-0.2.0-win-x64.zip' },
   ],
   ...over,
 });
@@ -55,8 +55,8 @@ describe('fetchLatestUpdate', () => {
     const info = await fetchLatestUpdate('0.1.0');
     expect(info).toEqual({
       version: '0.2.0',
-      setupUrl: 'https://example/Casewright-Setup-0.2.0.exe',
-      htmlUrl: 'https://github.com/jimbuck/casewright/releases/tag/v0.2.0',
+      setupUrl: 'https://example/Chioko-Setup-0.2.0.exe',
+      htmlUrl: 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/releases/tag/v0.2.0',
     });
   });
 
@@ -77,7 +77,7 @@ describe('fetchLatestUpdate', () => {
   it('reports a null setupUrl when no installer asset is published', async () => {
     mockFetchOnce(
       release({
-        assets: [{ name: 'Casewright-0.2.0-win-x64.zip', browser_download_url: 'https://example/portable.zip' }],
+        assets: [{ name: 'Chioko-0.2.0-win-x64.zip', browser_download_url: 'https://example/portable.zip' }],
       }),
     );
     const info = await fetchLatestUpdate('0.1.0');
@@ -98,18 +98,18 @@ describe('isInstalledBuild', () => {
   });
 
   it('is true when an Inno uninstaller sits next to the exe', async () => {
-    mockExePath = 'D:\\Somewhere\\Portable\\Casewright.exe';
+    mockExePath = 'D:\\Somewhere\\Portable\\Chioko.exe';
     uninstallerExists = true;
     expect(await isInstalledBuild()).toBe(true);
   });
 
   it('is true when running from the per-user install directory', async () => {
-    mockExePath = 'C:\\Users\\tester\\AppData\\Local\\Programs\\Casewright\\Casewright.exe';
+    mockExePath = 'C:\\Users\\tester\\AppData\\Local\\Programs\\Chioko\\Chioko.exe';
     expect(await isInstalledBuild()).toBe(true);
   });
 
   it('is false for a portable unzip outside the install dir', async () => {
-    mockExePath = 'D:\\Downloads\\casewright-portable\\Casewright.exe';
+    mockExePath = 'D:\\Downloads\\chioko-portable\\Chioko.exe';
     expect(await isInstalledBuild()).toBe(false);
   });
 

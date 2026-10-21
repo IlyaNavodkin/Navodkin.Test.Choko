@@ -46,7 +46,7 @@ const discovered = (over: Partial<DiscoveredTest> = {}): DiscoveredTest => ({
 });
 
 describe('catalog', () => {
-  it('reads a repository without .casewright/ as an empty catalog and writes nothing', async () => {
+  it('reads a repository without .ch/ as an empty catalog and writes nothing', async () => {
     const repo = await mkRepo();
     const load = await loadCatalog(repo);
     expect(load.file.entries).toEqual([]);
@@ -75,7 +75,7 @@ describe('catalog', () => {
 
   it('reports a broken catalog file instead of throwing', async () => {
     const repo = await mkRepo();
-    await writeFile(join(repo, '.casewright'), 'not a directory');
+    await writeFile(join(repo, '.ch'), 'not a directory');
     const load = await loadCatalog(repo);
     expect(load.file.entries).toEqual([]);
     expect(load.issues).toEqual([]); // nothing there yet
@@ -84,7 +84,7 @@ describe('catalog', () => {
   it('skips an unreadable entry but keeps the rest', async () => {
     const repo = await mkRepo();
     const { mkdir } = await import('node:fs/promises');
-    await mkdir(join(repo, '.casewright', 'automation'), { recursive: true });
+    await mkdir(join(repo, '.ch', 'automation'), { recursive: true });
     await writeFile(
       join(repo, CATALOG_REL),
       JSON.stringify({ schemaVersion: 1, discoveredAt: '', playwrightVersion: '1.60.0', entries: [{ automationId: 'ok', project: 'p', title: 't' }, { project: 'p' }] }),
@@ -146,7 +146,7 @@ describe('bindings', () => {
     const repo = await mkRepo();
     expect((await loadBindings(repo)).file.bindings).toEqual([]);
     const { mkdir } = await import('node:fs/promises');
-    await mkdir(join(repo, '.casewright', 'automation'), { recursive: true });
+    await mkdir(join(repo, '.ch', 'automation'), { recursive: true });
     await writeFile(join(repo, BINDINGS_REL), '[]');
     const load = await loadBindings(repo);
     expect(load.file.bindings).toEqual([]);
@@ -187,7 +187,7 @@ describe('stale guard', () => {
   it('reports an unreadable automation file', async () => {
     const repo = await mkRepo();
     const { mkdir } = await import('node:fs/promises');
-    await mkdir(join(repo, '.casewright', 'automation'), { recursive: true });
+    await mkdir(join(repo, '.ch', 'automation'), { recursive: true });
     await writeFile(join(repo, CATALOG_REL), '{ nope');
     const load = await loadCatalog(repo);
     expect(load.issues[0].code).toBe('automation-catalog-read');

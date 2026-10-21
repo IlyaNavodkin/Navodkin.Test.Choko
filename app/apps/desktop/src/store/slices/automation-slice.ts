@@ -235,8 +235,9 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
 
     assignAutomationCase: async (entry, caseId) => {
       if (caseId && !get().cases.some((c) => c.id === caseId)) return;
-      const next = assignCaseBindings(get().automationBindings, entry, caseId, randomUuid());
       try {
+        const id = get().repoPath ? randomUuid() : globalThis.crypto.randomUUID();
+        const next = assignCaseBindings(get().automationBindings, entry, caseId, id);
         const saved = get().repoPath ? (await saveBindings(get().repoPath, next)).file.bindings : next;
         set({ automationBindings: saved, automationIssues: [] });
       } catch (e) {

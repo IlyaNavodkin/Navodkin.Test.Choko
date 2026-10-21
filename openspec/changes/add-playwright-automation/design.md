@@ -2,7 +2,7 @@
 
 ## Context
 
-См. proposal.md. Приложение — NW.js с Node в renderer'е (`lib/node.ts`), fs-слой `services/repo-fs.ts` с self-write, store-slice'ы и прогоны-папки `.casewright/runs/<stem>/` (снапшоты `itemText/checks/failNotes`). Внешний `node` нужен отдельно: `process.execPath` в NW.js указывает на бинарник NW.js, а не на Node, поэтому runner запускает системный Node.
+См. proposal.md. Приложение — NW.js с Node в renderer'е (`lib/node.ts`), fs-слой `services/repo-fs.ts` с self-write, store-slice'ы и прогоны-папки `.ch/runs/<stem>/` (снапшоты `itemText/checks/failNotes`). Внешний `node` нужен отдельно: `process.execPath` в NW.js указывает на бинарник NW.js, а не на Node, поэтому runner запускает системный Node.
 
 ## Goals / Non-Goals
 
@@ -14,7 +14,7 @@
 
 Запуск выполняет сам Playwright CLI проекта, а не self-made раннер:
 
-1. **Раннер.** Приложение (Node в renderer'е) разрешает CLI проекта через `createRequire(<repo>/.casewright/autotests/package.json).resolve('@playwright/test/cli')`, спавнит **внешний node** с argv-массивом (`shell: false`), `cwd` папки `.casewright/autotests` и подготовленным окружением. Проект автотестов определяется по наличию этой папки; путь к Node ищется в PATH, при неудаче — явный путь в настройках приложения; версия проверяется против требований установленного в проекте Playwright. Ни `npx`, ни `npm install`, ни скачивание браузеров приложение не выполняет.
+1. **Раннер.** Приложение (Node в renderer'е) разрешает CLI проекта через `createRequire(<repo>/.ch/autotests/package.json).resolve('@playwright/test/cli')`, спавнит **внешний node** с argv-массивом (`shell: false`), `cwd` папки `.ch/autotests` и подготовленным окружением. Проект автотестов определяется по наличию этой папки; путь к Node ищется в PATH, при неудаче — явный путь в настройках приложения; версия проверяется против требований установленного в проекте Playwright. Ни `npx`, ни `npm install`, ни скачивание браузеров приложение не выполняет.
 2. **Источник истины по статусу — официальный JSON-отчёт.** Каждый запуск получает уникальный выходной каталог исполнения; Playwright пишет туда JSON (`--reporter=json`, `PLAYWRIGHT_JSON_OUTPUT_NAME`), ассеты — в `--output`. Терминальное состояние определяется связкой «exit code + наличие и валидность отчёта + correlation по каталогу исполнения»: exit 0 без валидного отчёта — это `runner_error`, а не успех; exit ≠ 0 при unexpected-статусах — это упавшие проверки, а не ошибка раннера. Статусы `expected/unexpected/flaky/skipped`, attempts, retries, ошибки и вложения берутся из отчёта, а не из парсинга stdout.
 3. **Версии.** Парсер отчёта объявляет поддерживаемый диапазон версий Playwright, определяет фактическую версию CLI и при выходе за диапазон показывает понятную диагностику вместо тихой ошибки; формат читается терпимо, лишние поля не роняют разбор.
 4. **Прогресс.** JSON пишется в конце, поэтому промежуточный прогресс берётся из stdout официального `line`-репортера и каталога `--output` — **только для отображения** (см. «Наблюдаемость исполнения»). Сводка и статус никогда не вычисляются из прогресса.
@@ -80,7 +80,7 @@
    });
    ```
    Ключ — tuple `[caseId, automationId, project, variantId]` (`default` при отсутствии). Отсутствующий/дублирующийся ключ или тег блокирует запуск с диагностикой.
-2. **Хранилище.** `.casewright/automation/catalog.json` (автотесты), `bindings.json`, `profiles.json` — машинные данные с детерминированной сериализацией; executions — `.casewright/automation/executions/<executionId>/` (manifest, report, логи, вложения). Результаты, сохранённые в прогон, кладутся в `<run>/automation/<executionId>/` как sidecar'ы, которые загрузчик прогонов игнорирует (он читает только `_run.md` и `*.md`).
+2. **Хранилище.** `.ch/automation/catalog.json` (автотесты), `bindings.json`, `profiles.json` — машинные данные с детерминированной сериализацией; executions — `.ch/automation/executions/<executionId>/` (manifest, report, логи, вложения). Результаты, сохранённые в прогон, кладутся в `<run>/automation/<executionId>/` как sidecar'ы, которые загрузчик прогонов игнорирует (он читает только `_run.md` и `*.md`).
 3. **Доверие.** Discovery и запуск — только по явному действию для доверенного профиля (cwd, config, projects, timeout, retries, workers). Профиль хранится в app-data; изменение конфигурации отзывает доверие. Пользователь явно предупреждается, что config и тестовый код исполняются с его правами без sandbox.
 4. **Аргументы.** Автотест объявляет определения аргументов (тип, required, default, enum, min/max). Значения разрешаются с приоритетом `schema default → autotest → binding → run override`; значением может быть литерал или ссылка на ключ записи «Аргументы» справочника (`entryId`, `key`). Перед запуском показывается preview итоговых значений и источников; снимок (resolved value + revision) сохраняется в execution и в отчёт. Архивная/изменённая/отсутствующая запись — ошибка до старта.
 5. **Запуск из прогона.** Один тест с двумя наборами аргументов даёт два invocation с разными id. Автоматический результат показывается отдельно от ручного и не перезаписывает checks/notes/снапшоты; «применить к сводке» — явное действие с проверкой revision. Повтор упавших — новый execution с `parentExecutionId`.
@@ -98,7 +98,7 @@
 
 ## Migration Plan
 
-Порядок: раннер+JSON-отчёт → discovery/selection → каталог/привязки/аргументы → интеграция в прогон → отчёты → импорт → приёмка. Существующие репозитории не меняются до первой явной привязки; откат — удаление `.casewright/automation` и run-sidecar'ов automation.
+Порядок: раннер+JSON-отчёт → discovery/selection → каталог/привязки/аргументы → интеграция в прогон → отчёты → импорт → приёмка. Существующие репозитории не меняются до первой явной привязки; откат — удаление `.ch/automation` и run-sidecar'ов automation.
 
 ## References
 

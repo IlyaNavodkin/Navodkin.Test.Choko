@@ -9,6 +9,7 @@ import { loadBindings, loadCatalog } from '@/services/automation/catalog';
 import { serializeReferenceEntry } from '@/services/format/reference-book';
 import { readGlossaryEntry } from '@/services/reference-book';
 import { resolveArguments } from '@/services/automation/arguments';
+import { node } from '@/lib/node';
 
 let repo = '';
 const entry: CatalogEntry = { automationId: 'count', title: 'Count values', project: 'chromium', variantId: null,
@@ -16,13 +17,23 @@ const entry: CatalogEntry = { automationId: 'count', title: 'Count values', proj
   expectedStatus: 'passed', arguments: [], archived: false, revision: 'r1' };
 const store = () => useAppStore.getState();
 beforeEach(async () => {
-  repo = await mkdtemp(join(tmpdir(), 'casewright-automation-ui-'));
+  repo = await mkdtemp(join(tmpdir(), 'chioko-automation-ui-'));
   useAppStore.setState({ repoPath: repo, cases: structuredClone(cases), runs: structuredClone(runs),
     automationCatalog: [structuredClone(entry)], automationBindings: [], automationIssues: [], runAutomation: {}, refs: [] });
 });
 afterEach(async () => { await rm(repo, { recursive: true, force: true }); });
 
 describe('automation workflow persistence', () => {
+  it('assigns a Case in the browser mockup without requiring Node crypto', async () => {
+    useAppStore.setState({ repoPath: '' });
+    const crypto = vi.spyOn(node, 'crypto').mockImplementation(() => { throw new Error('Node unavailable'); });
+    try {
+      await store().assignAutomationCase(entry, cases[0].id);
+      expect(store().automationBindings[0]?.caseId).toBe(cases[0].id);
+      expect(store().automationIssues).toEqual([]);
+      expect(crypto).not.toHaveBeenCalled();
+    } finally { crypto.mockRestore(); }
+  });
   it('persists a new Case selection and replaces only the selected test’s legacy links', async () => {
     await store().assignAutomationCase(entry, cases[0].id);
     const first = store().automationBindings[0];
@@ -36,8 +47,8 @@ describe('automation workflow persistence', () => {
 
   it('persists typed reference pointers, resolves false/zero, and retains them after rebinding', async () => {
     const id = '00000000-0000-4000-8000-000000000001';
-    await mkdir(join(repo, '.casewright', 'glossary'), { recursive: true });
-    await writeFile(join(repo, '.casewright', 'glossary', `${id}.md`), serializeReferenceEntry({ id, kind: 'arguments', title: 'Stage', aliases: [], archived: false, description: '', values: [{ key: 'retries', type: 'number', value: 0 }, { key: 'headless', type: 'boolean', value: false }] }));
+    await mkdir(join(repo, '.ch', 'glossary'), { recursive: true });
+    await writeFile(join(repo, '.ch', 'glossary', `${id}.md`), serializeReferenceEntry({ id, kind: 'arguments', title: 'Stage', aliases: [], archived: false, description: '', values: [{ key: 'retries', type: 'number', value: 0 }, { key: 'headless', type: 'boolean', value: false }] }));
     const doc = (await readGlossaryEntry(repo, id))!;
     useAppStore.setState({ refs: [doc] });
     await store().assignAutomationCase(entry, cases[0].id);

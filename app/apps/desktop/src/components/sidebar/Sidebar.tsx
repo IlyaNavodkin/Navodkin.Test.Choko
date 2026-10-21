@@ -3,6 +3,7 @@ import { I } from '@/components/icons';
 import { Button, Input, RowContextMenu, type MenuItem } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useApp } from '@/store/app-store';
+import { openRepositoryFolder } from '@/services/repository-folder';
 import type { Case, Status, SuiteNode, TreeNode } from '@/types';
 
 interface FlatRow {
@@ -60,7 +61,12 @@ export function Sidebar({ hidden = false, onHide }: { hidden?: boolean; onHide: 
     regenerateDisplayIds,
     casePath,
     toast,
+    repoPath,
   } = useApp();
+
+  const openRepoFolder = () => {
+    void openRepositoryFolder(repoPath).catch((error: unknown) => toast(error instanceof Error ? error.message : String(error)));
+  };
 
   const [q, setQ] = useState('');
   const [status, setStatus] = useState<Status | null>(null);
@@ -284,7 +290,7 @@ export function Sidebar({ hidden = false, onHide }: { hidden?: boolean; onHide: 
         { icon: I.sync, label: 'Clean up display IDs', on: () => void regenerateDisplayIds(node.id) },
         { sep: true },
         { icon: I.link, label: 'Copy workspace path', sub: node.path, on: () => toast('Copied ' + node.path) },
-        { icon: I.folderOpen, label: 'Reveal in File Explorer', desktop: true, on: () => toast('nw.Shell.showItemInFolder — ' + node.name) },
+        { icon: I.folderOpen, label: 'Open Git repository folder', sub: repoPath, desktop: true, on: openRepoFolder },
       ];
     }
     return [
@@ -421,7 +427,7 @@ export function Sidebar({ hidden = false, onHide }: { hidden?: boolean; onHide: 
                 {node.name}
               </span>
             )}
-            <span className="ml-auto hidden shrink-0 items-center gap-0.5 group-hover:flex">
+            <span className="ml-auto hidden shrink-0 items-center gap-0.5 group-hover:flex group-focus-within:flex">
               <button
                 className="flex h-[22px] items-center gap-0.5 rounded-sm border-0 bg-transparent px-1 text-ink-3 hover:bg-accent-soft hover:text-accent-ink"
                 title="Add case"

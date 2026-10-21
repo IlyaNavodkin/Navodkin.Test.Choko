@@ -116,6 +116,8 @@ export interface PlaywrightTestResult {
   errors?: PlaywrightTestError[];
   attachments?: PlaywrightAttachment[];
   steps?: PlaywrightTestStep[];
+  stdout?: ({ text: string } | { buffer: string })[];
+  stderr?: ({ text: string } | { buffer: string })[];
 }
 
 export interface PlaywrightAnnotation {

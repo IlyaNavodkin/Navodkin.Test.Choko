@@ -22,7 +22,7 @@ import { RepoPathError, resolveRepoWritePath, writeFileAtomic } from '@/services
 import { AUTOMATION_DIR, stableStringify } from './storage';
 
 // ---------------------------------------------------------------------------
-// Automation store fs layer (`.casewright/automation/`): catalog, bindings, profiles.
+// Automation store fs layer (`.ch/automation/`): catalog, bindings, profiles.
 //
 // Rules mirror the reference book:
 //   · opening a repository writes nothing — missing files are an empty store;

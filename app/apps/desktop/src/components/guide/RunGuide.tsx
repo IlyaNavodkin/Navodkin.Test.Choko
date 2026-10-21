@@ -145,7 +145,7 @@ export function RunGuide() {
         <div className="mx-auto flex max-w-[720px] flex-col gap-4 px-[26px] pb-20 pt-[26px]">
           <div className="pb-1.5">
             <div className="font-mono text-[12px] font-semibold text-accent-ink">{row.display_id}</div>
-            <h2 className="mb-3 mt-1 text-[23px] font-semibold leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
+            <h2 className="mb-3 mt-1 text-[24px] font-extrabold leading-[1.25] tracking-[-0.01em] [text-wrap:pretty]">
               {kase ? kase.title : row.title}
             </h2>
             <div className="flex items-center gap-2.5">

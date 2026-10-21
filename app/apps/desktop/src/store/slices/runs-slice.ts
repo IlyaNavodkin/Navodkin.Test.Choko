@@ -25,8 +25,8 @@ import type { AppState, StoreCtx, StoreGet, StoreSet } from '../app-store';
 // case) are persisted here; the write helpers are runs-exclusive.
 // ---------------------------------------------------------------------------
 
-/** Repo-level runs live flat under `.casewright/runs/` (PRD §4 req 16). */
-const RUNS_REL = '.casewright/runs';
+/** Repo-level runs live flat under `.ch/runs/` (PRD §4 req 16). */
+const RUNS_REL = '.ch/runs';
 
 /** Sidecar file names of the frozen reference snapshot (extension data, ignored by the loader). */
 const GLOSSARY_SNAPSHOT_FILE = 'glossary.json';

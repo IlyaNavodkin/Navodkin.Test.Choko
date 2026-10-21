@@ -13,11 +13,11 @@ index 3f2a1b0..9c4d5e6 100644
  ---
 `;
 
-const CREATE = `diff --git a/.casewright/runs/r1/_run.md b/.casewright/runs/r1/_run.md
+const CREATE = `diff --git a/.ch/runs/r1/_run.md b/.ch/runs/r1/_run.md
 new file mode 100644
 index 0000000..abc1234
 --- /dev/null
-+++ b/.casewright/runs/r1/_run.md
++++ b/.ch/runs/r1/_run.md
 @@ -0,0 +1,2 @@
 +---
 +name: Sprint 14
@@ -46,7 +46,7 @@ describe('parsePatch', () => {
 
   it('flags created and deleted files and keeps the real path across /dev/null sides', () => {
     const [created] = parsePatch(CREATE);
-    expect(created).toMatchObject({ path: '.casewright/runs/r1/_run.md', created: true, deleted: false });
+    expect(created).toMatchObject({ path: '.ch/runs/r1/_run.md', created: true, deleted: false });
     expect(created.lines.filter((l) => l.t === 'add')).toHaveLength(2);
 
     const [deleted] = parsePatch(DELETE);
@@ -56,7 +56,7 @@ describe('parsePatch', () => {
 
   it('splits a multi-file patch into one entry per file', () => {
     const files = parsePatch(MODIFY + CREATE + DELETE);
-    expect(files.map((f) => f.path)).toEqual(['suite/case.md', '.casewright/runs/r1/_run.md', 'old.md']);
+    expect(files.map((f) => f.path)).toEqual(['suite/case.md', '.ch/runs/r1/_run.md', 'old.md']);
   });
 
   it('returns an empty list for empty or headerless input', () => {

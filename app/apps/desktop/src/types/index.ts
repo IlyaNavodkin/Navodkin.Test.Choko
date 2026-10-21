@@ -5,7 +5,7 @@ import type { RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
 export type { RunArgumentsSnapshot, RunGlossaryEntry, RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
 
 /* ============================================================
-   Casewright — domain model
+   Chioko — domain model
    ============================================================ */
 
 export type Status = 'active' | 'draft' | 'deprecated';
@@ -116,7 +116,7 @@ export interface RunRow {
 export interface Run {
   id: string;
   name: string;
-  /** Repo-level folder path, `.casewright/runs/<stem>`. */
+  /** Repo-level folder path, `.ch/runs/<stem>`. */
   file: string;
   created: string;
   /** The run's default test date (ISO `YYYY-MM-DD`) for `{{today}}` resolution; seeded to the creation date. */
@@ -162,7 +162,7 @@ export type CreateRunResult =
   | { ok: false; reason: 'snapshot'; issues: RunSnapshotMiss[] }
   | { ok: false; reason: 'io'; message: string };
 
-/* ---- reference book (`.casewright/glossary/`) ---- */
+/* ---- reference book (`.ch/glossary/`) ---- */
 export type RefKindFilter = 'all' | 'link' | 'arguments';
 /** Automation catalog filter (see utils/automation-catalog.ts). */
 export type AutomationFilter = 'all' | 'runnable' | 'archived';
@@ -231,12 +231,23 @@ export interface Change {
 }
 
 /* ---- ui selection + ephemera ---- */
+export interface RunRowFilter {
+  result?: Result;
+  /** Date the current verdict was recorded, rather than the run's test date. */
+  date?: string;
+}
+
 export interface Selection {
   kind: 'case' | 'run' | 'suite';
   id?: string;
   runId?: string | null;
   suiteId?: string | null;
   guideIndex?: number;
+  /** Selected leaf in a run's Autotests page; restored by navigation history. */
+  automationKey?: string | null;
+  runFilter?: RunRowFilter;
+  activityYear?: number;
+  activityDate?: string | null;
 }
 
 export type View = 'editor' | 'runs' | 'run' | 'runAutomation' | 'guide' | 'suite' | 'glossary' | 'automation';

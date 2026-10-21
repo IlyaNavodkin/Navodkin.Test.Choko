@@ -9,7 +9,7 @@ import { ProgressTracker, type ProgressSnapshot } from './progress';
 // The Playwright runner (design §Решение по запуску, §Наблюдаемость исполнения).
 //
 // We spawn the *autotest project's* Playwright CLI with the *external* Node — an argv array with
-// `shell: false`, cwd at `.casewright/autotests/`, and a prepared environment. The JSON report is
+// `shell: false`, cwd at `.ch/autotests/`, and a prepared environment. The JSON report is
 // the sole source of truth for status; stdout (`line` reporter) only feeds display progress. A clean
 // exit with no report is `runner_error`, never a success.
 // ---------------------------------------------------------------------------

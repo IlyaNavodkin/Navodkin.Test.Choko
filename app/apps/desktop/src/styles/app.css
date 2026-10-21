@@ -1,18 +1,15 @@
 /* ============================================================
    Chioko — Tailwind v4 entry stylesheet
 
-   Order matters: the Google Fonts @import MUST come first (an @import
-   after the Tailwind import is dropped by the CSS parser), then Tailwind,
-   then the shared brand tokens and the @theme bridge
+   Tailwind, then shared brand tokens (including local font faces),
+   then the @theme bridge
    that exposes the vars to Tailwind utilities (bg-panel, text-ink, …).
 
    Palette, typography and geometry come from packages/brand/tokens.css.
    ============================================================ */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
-
 @import 'tailwindcss';
 
-@import '@casewright/brand/tokens.css';
+@import '@chioko/brand/tokens.css';
 /* `inline` keeps utility colors connected to the live palette. */
 @theme inline {
   /* surfaces */
@@ -60,10 +57,12 @@
   --color-del-bg: var(--del-bg);
 
   /* type roles (literal stacks — keys differ from brand var names to avoid
-     a self-referential var() cycle; utilities: font-ui / font-mono / font-read) */
-  --font-ui: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+     a self-referential var() cycle) */
+  --font-ui: 'Onest', system-ui, -apple-system, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
-  --font-read: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-read: 'Onest', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Rubik', 'Onest', system-ui, sans-serif;
+  --font-brand: 'Nunito Sans', 'Onest', system-ui, sans-serif;
 
   /* radii (5 / 8 / 12 px → rounded-sm / rounded-md / rounded-lg) */
   --radius-sm: var(--r-sm);
@@ -83,7 +82,7 @@
     font-family: var(--font-ui);
     background: var(--panel);
     color: var(--ink);
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.45;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
@@ -93,6 +92,14 @@
   }
   button {
     cursor: pointer;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
   }
   ::selection {
     background: var(--select);

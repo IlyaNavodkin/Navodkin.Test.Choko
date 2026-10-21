@@ -15,7 +15,7 @@ import type { AppState, StoreGet, StoreSet } from '../app-store';
 import type { RefPickerRequest } from '@/types';
 
 // ---------------------------------------------------------------------------
-// Reference book (`.casewright/glossary/`): the catalog, the search/filter state, and the
+// Reference book (`.ch/glossary/`): the catalog, the search/filter state, and the
 // editor's draft — which is deliberately NOT written to disk until the user saves it.
 //
 // Spec obligations that live here:
@@ -148,7 +148,7 @@ export function createReferenceSlice(set: StoreSet, get: StoreGet): ReferenceSli
     refShowArchived: false,
 
     /**
-     * (Re)read the catalog. Read-only: an absent `.casewright/` yields an empty catalog and
+     * (Re)read the catalog. Read-only: an absent `.ch/` yields an empty catalog and
      * nothing is created. A dirty draft is never replaced by what is on disk.
      */
     loadRefs: async () => {

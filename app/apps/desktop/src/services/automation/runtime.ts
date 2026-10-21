@@ -7,9 +7,9 @@ import { AUTOTESTS_DIR, findAutomationProject } from './project';
 //
 // The app never ships Node and never installs anything: `process.execPath` under NW.js is the
 // NW.js binary, so a real system `node` is required. The CLI is located *inside the autotest
-// project's own dependency tree* (`createRequire(<repo>/.casewright/autotests/package.json)`), so
+// project's own dependency tree* (`createRequire(<repo>/.ch/autotests/package.json)`), so
 // Playwright — and its browser provisioning — stay the project's responsibility. The project folder
-// itself (`.casewright/autotests/`) is the marker: no folder means no autotests. Nothing here spawns
+// itself (`.ch/autotests/`) is the marker: no folder means no autotests. Nothing here spawns
 // a shell.
 // ---------------------------------------------------------------------------
 
@@ -143,7 +143,7 @@ export async function resolveNodeRuntime(opts: ResolveNodeOptions = {}): Promise
 
 /**
  * Locate the autotest project's own `@playwright/test` CLI and read its version. The project is
- * detected by the `.casewright/autotests/` folder; a missing folder, missing dependency or an
+ * detected by the `.ch/autotests/` folder; a missing folder, missing dependency or an
  * unsupported Playwright version produces a clear diagnostic (we never install anything).
  */
 export async function resolveProjectPlaywright(repoPath: string): Promise<ProjectPlaywright> {

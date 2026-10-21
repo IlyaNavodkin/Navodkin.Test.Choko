@@ -1,18 +1,18 @@
 import { node } from '@/lib/node';
 
 // ---------------------------------------------------------------------------
-// `.casewright/` layout + pure path/string helpers shared across the repo
+// `.ch/` layout + pure path/string helpers shared across the repo
 // service modules. No fs writes here — just constants and path math.
 //
-// The repo is identified by `.casewright/`; `config.yaml` lists the workspace
+// The repo is identified by `.ch/`; `config.yaml` lists the workspace
 // folders; each workspace/suite folder may have an optional sibling "folder
 // note" (`<folder>.md`) for its name/prefix/description; runs are centralized
-// in `.casewright/runs/`.
+// in `.ch/runs/`.
 // ---------------------------------------------------------------------------
 
-export const CASEWRIGHT_DIR = '.casewright';
-export const CONFIG_REL = '.casewright/config.yaml';
-export const RUNS_REL = '.casewright/runs';
+export const CHIOKO_DIR = '.ch';
+export const CONFIG_REL = '.ch/config.yaml';
+export const RUNS_REL = '.ch/runs';
 export const WORKSPACE_MARKER = 'casewright.yaml'; // legacy workspace marker — read only (migration + fallback)
 export const LEGACY_SUITE_FILE = '_suite.md'; // legacy suite metadata — read only (migration + fallback)
 export const ORDER_FILE = '.order'; // Azure DevOps wiki ordering file (one child key per line)

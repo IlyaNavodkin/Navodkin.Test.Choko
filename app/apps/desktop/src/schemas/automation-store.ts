@@ -8,7 +8,7 @@ import type {
 } from './automation';
 
 // ---------------------------------------------------------------------------
-// Automation storage model (`.casewright/automation/{catalog,bindings,profiles}.json`).
+// Automation storage model (`.ch/automation/{catalog,bindings,profiles}.json`).
 //
 // These are *machine* files with deterministic serialization (see services/automation/catalog.ts):
 // stable key order, one record per line-ish shape, small diffs. Everything is read tolerantly —

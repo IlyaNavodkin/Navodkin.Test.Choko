@@ -5,9 +5,19 @@
  *
  * Like the builders themselves, this stays free of React, NW.js, and Node so it's directly
  * unit-testable and renders identically in the print window. The CSS defines its OWN
- * `:root` custom properties (the app's `var(--…)` tokens don't exist in the print window),
- * inlining the literal oklch values from `@casewright/brand`.
+ * `:root` custom properties and embedded fonts from `@chioko/brand`, so a standalone
+ * print window shares the app's design without external requests.
  */
+import brandTokens from '@chioko/brand/tokens.css?raw';
+import brandFontCss from '@chioko/brand/fonts.css?raw';
+import onestLatin from '@chioko/brand/fonts/onest-400-600-latin.woff2?inline';
+import onestCyrillic from '@chioko/brand/fonts/onest-400-600-cyrillic.woff2?inline';
+import rubikLatin from '@chioko/brand/fonts/rubik-700-800-latin.woff2?inline';
+import rubikCyrillic from '@chioko/brand/fonts/rubik-700-800-cyrillic.woff2?inline';
+import monoLatin from '@chioko/brand/fonts/ibm-plex-mono-400-latin.woff2?inline';
+import monoCyrillic from '@chioko/brand/fonts/ibm-plex-mono-400-cyrillic.woff2?inline';
+import nunitoLatin from '@chioko/brand/fonts/nunito-sans-900-latin.woff2?inline';
+import nunitoCyrillic from '@chioko/brand/fonts/nunito-sans-900-cyrillic.woff2?inline';
 import type { Result } from '@/types';
 
 export const RESULT_META: Record<Result, { label: string; color: string }> = {
@@ -81,19 +91,20 @@ export function barSegments(counts: Record<Result, number>, showNumbers: boolean
 }
 
 /** Base stylesheet every report shares; builders append their own report-specific rules. */
+const FONT_DATA: Record<string, string> = {
+  'onest-400-600-latin.woff2': onestLatin, 'onest-400-600-cyrillic.woff2': onestCyrillic,
+  'rubik-700-800-latin.woff2': rubikLatin, 'rubik-700-800-cyrillic.woff2': rubikCyrillic,
+  'ibm-plex-mono-400-latin.woff2': monoLatin, 'ibm-plex-mono-400-cyrillic.woff2': monoCyrillic,
+  'nunito-sans-900-latin.woff2': nunitoLatin, 'nunito-sans-900-cyrillic.woff2': nunitoCyrillic,
+};
+// Preserve the brand's Unicode ranges; embed the Russian/English faces for offline file:// previews and PDFs.
+const REPORT_FONTS = (brandFontCss.match(/@font-face\s*\{[^}]*\}/g) ?? []).flatMap(face => {
+  const file = face.match(/url\(\.\/fonts\/([^)]*)\)/)?.[1];
+  return file && FONT_DATA[file] ? [face.replace(/url\([^)]*\)/, `url("${FONT_DATA[file]}")`)] : [];
+}).join('\n');
 export const REPORT_STYLE = `
-:root{
-  /* White document: page + panel fills are pure white (traditional look, less ink). Only
-     --sunken keeps a faint neutral tint so inline code / chips stay distinguishable. */
-  --bg:oklch(1 0 0);--panel:oklch(1 0 0);--panel-2:oklch(1 0 0);
-  --sunken:oklch(0.965 0 0);--border:oklch(0.905 0.005 75);--border-2:oklch(0.855 0.006 72);
-  --ink:oklch(0.28 0.012 60);--ink-2:oklch(0.46 0.010 60);--ink-3:oklch(0.60 0.008 62);--ink-faint:oklch(0.72 0.006 64);
-  --accent:oklch(0.55 0.13 283);--accent-soft:oklch(0.952 0.028 283);--accent-ink:oklch(0.46 0.12 283);
-  --pass:oklch(0.58 0.12 152);--fail:oklch(0.56 0.19 27);--blocked:oklch(0.62 0.16 52);
-  --inprogress:oklch(0.58 0.13 250);--skipped:oklch(0.60 0.008 65);--notrun:oklch(0.90 0.003 80);
-  --font-ui:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
-  --font-mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
-}
+${REPORT_FONTS}
+${brandTokens.replace(/@import[^;]+;/g, '')}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{font-family:var(--font-ui);color:var(--ink);background:#fff;font-size:13px;line-height:1.5;
@@ -102,8 +113,8 @@ body{font-family:var(--font-ui);color:var(--ink);background:#fff;font-size:13px;
 .report{max-width:840px;margin:0 auto;}
 .mono{font-family:var(--font-mono);}
 .muted{color:var(--ink-3);}
-h1{font-size:23px;font-weight:600;margin:2px 0 0;letter-spacing:-0.01em;}
-h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-2);
+h1{font-family:var(--font-heading);font-size:23px;font-weight:600;margin:2px 0 0;letter-spacing:-0.01em;}
+h2{font-family:var(--font-heading);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-2);
   margin:0 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border);break-after:avoid;}
 section{margin-top:22px;}
 .dot{display:inline-block;width:9px;height:9px;border-radius:3px;flex:0 0 auto;}
@@ -157,22 +168,22 @@ section{margin-top:22px;}
 /* Preview-only chrome: a sticky toolbar with a "Save PDF" button. The toolbar is hidden
    when printing so the saved PDF is identical to the non-preview report. */
 export const PREVIEW_STYLE = `
-.cw-preview{padding-top:56px;background:var(--bg);}
-.cw-toolbar{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;
+.ch-preview{padding-top:56px;background:var(--bg);}
+.ch-toolbar{position:fixed;top:0;left:0;right:0;height:56px;display:flex;align-items:center;
   justify-content:space-between;gap:12px;padding:0 18px;background:var(--panel);
   border-bottom:1px solid var(--border);box-shadow:0 1px 4px oklch(0 0 0 / 0.06);z-index:10;}
-.cw-toolbar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);}
-.cw-toolbar-actions{display:flex;align-items:center;gap:14px;min-width:0;}
-.cw-status{font-size:11.5px;color:var(--ink-3);max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cw-status.err{color:var(--fail);font-weight:600;}
-.cw-save{font-family:var(--font-ui);font-size:13px;font-weight:600;color:oklch(1 0 0 / 0.96);
+.ch-toolbar-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--ink-3);}
+.ch-toolbar-actions{display:flex;align-items:center;gap:14px;min-width:0;}
+.ch-status{font-size:11.5px;color:var(--ink-3);max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ch-status.err{color:var(--fail);font-weight:600;}
+.ch-save{font-family:var(--font-ui);font-size:13px;font-weight:600;color:var(--accent-fg);
   background:var(--accent);border:0;border-radius:7px;padding:8px 16px;cursor:pointer;flex:0 0 auto;}
-.cw-save:hover:not(:disabled){filter:brightness(1.06);}
-.cw-save:disabled{opacity:0.6;cursor:default;}
-.cw-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:var(--ink-2);
+.ch-save:hover:not(:disabled){background:var(--accent-press);}
+.ch-save:disabled{opacity:0.6;cursor:default;}
+.ch-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:var(--ink-2);
   cursor:pointer;user-select:none;flex:0 0 auto;}
-.cw-toggle input{accent-color:var(--accent);width:14px;height:14px;margin:0;cursor:pointer;}
-@media print{.cw-toolbar{display:none!important;}.cw-preview{padding-top:0!important;background:#fff!important;}}
+.ch-toggle input{accent-color:var(--accent);width:14px;height:14px;margin:0;cursor:pointer;}
+@media print{.ch-toolbar{display:none!important;}.ch-preview{padding-top:0!important;background:#fff!important;}}
 `;
 
 /** A filesystem-safe default filename (with `.pdf`) from a report/run name. */
@@ -187,7 +198,7 @@ export function defaultPdfName(name: string): string {
 /** Options for {@link renderToolbar}. */
 export interface ToolbarOptions {
   /**
-   * Show an "Include notes" checkbox (default unchecked). Checking it adds `cw-with-notes`
+   * Show an "Include notes" checkbox (default unchecked). Checking it adds `ch-with-notes`
    * to `<body>` — reports opt their notes markup in via that class, and because Save PDF
    * prints the live DOM, the saved file matches whatever the checkbox says.
    */
@@ -197,18 +208,18 @@ export interface ToolbarOptions {
 export function renderToolbar(opts: ToolbarOptions = {}): string {
   const toggle = opts.notesToggle
     ? `
-      <label class="cw-toggle" title="Add the run's notes and per-case failure detail to the report">
-        <input type="checkbox" id="cw-notes-toggle" />
+      <label class="ch-toggle" title="Add the run's notes and per-case failure detail to the report">
+        <input type="checkbox" id="ch-notes-toggle" />
         Include notes
       </label>`
     : '';
   return `
-  <div class="cw-toolbar">
-    <span class="cw-toolbar-title">Report preview</span>
-    <div class="cw-toolbar-actions">
-      <span class="cw-status" id="cw-status"></span>
+  <div class="ch-toolbar">
+    <span class="ch-toolbar-title">Chioko · Report preview</span>
+    <div class="ch-toolbar-actions">
+      <span class="ch-status" id="ch-status"></span>
       ${toggle}
-      <button type="button" id="cw-save" class="cw-save">Save PDF…</button>
+      <button type="button" id="ch-save" class="ch-save">Save PDF…</button>
     </div>
   </div>`;
 }
@@ -231,8 +242,8 @@ export function renderPreviewScript(pdfName: string): string {
   (function () {
     var TAG = '[pdf:preview]';
     var DEFAULT_NAME = ${defaultName};
-    var btn = document.getElementById('cw-save');
-    var statusEl = document.getElementById('cw-status');
+    var btn = document.getElementById('ch-save');
+    var statusEl = document.getElementById('ch-status');
     var nw = window.nw;
 
     function log() {
@@ -241,7 +252,7 @@ export function renderPreviewScript(pdfName: string): string {
     function setStatus(msg, isErr) {
       if (!statusEl) return;
       statusEl.textContent = msg || '';
-      statusEl.className = 'cw-status' + (isErr ? ' err' : '');
+      statusEl.className = 'ch-status' + (isErr ? ' err' : '');
     }
     function getRequire() {
       if (typeof require === 'function') return require;
@@ -252,16 +263,16 @@ export function renderPreviewScript(pdfName: string): string {
     // "Include notes" toggle (only rendered when the report has notes content): flips the
     // body class the notes sections key their visibility off. Wired before the NW.js guard
     // so it also works when the preview is opened in a plain browser.
-    var notesToggle = document.getElementById('cw-notes-toggle');
+    var notesToggle = document.getElementById('ch-notes-toggle');
     if (notesToggle) {
       notesToggle.addEventListener('change', function () {
-        document.body.classList.toggle('cw-with-notes', notesToggle.checked);
+        document.body.classList.toggle('ch-with-notes', notesToggle.checked);
         log('include notes:', notesToggle.checked);
       });
     }
 
     log('script loaded — nw =', !!nw, '· require =', typeof getRequire());
-    if (!btn) { log('no #cw-save button in DOM'); return; }
+    if (!btn) { log('no #ch-save button in DOM'); return; }
     if (!nw) {
       btn.disabled = true;
       btn.textContent = 'Save unavailable';

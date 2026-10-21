@@ -12,7 +12,7 @@ export function randomId(len = 11): string {
 
 /**
  * A random RFC 4122 v4 uuid — the identity and file name of product-data records
- * (`.casewright/glossary/<uuid>.md`, later `.casewright/bugs/<uuid>/`). Unlike
+ * (`.ch/glossary/<uuid>.md`, later `.ch/bugs/<uuid>/`). Unlike
  * {@link randomId} (short, human-facing, could collide) these are never displayed and
  * never derived from a title, so a rename can't move a file or break a link.
  */

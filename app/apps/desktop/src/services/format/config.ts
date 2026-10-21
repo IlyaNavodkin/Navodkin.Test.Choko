@@ -2,13 +2,13 @@ import type { ConfigYaml } from '@/schemas';
 import { yamlScalar } from './workspace';
 
 /**
- * The `.casewright/.gitignore` body. Keeps transient subdirectories (at minimum
+ * The `.ch/.gitignore` body. Keeps transient subdirectories (at minimum
  * `cache/`) out of Git while `config.yaml` and `runs/` are committed (PRD §4 req 4, 5).
  */
-export const CASEWRIGHT_GITIGNORE = `# Casewright transient data — safe to delete, never committed.\ncache/\n`;
+export const CHIOKO_GITIGNORE = `# Chioko transient data — safe to delete, never committed.\ncache/\n`;
 
 /**
- * Serialize `.casewright/config.yaml`: repo-wide config plus the `workspaces:` list that
+ * Serialize `.ch/config.yaml`: repo-wide config plus the `workspaces:` list that
  * declares which folders are workspaces. `displayIdPrefix`/`description` carry the root
  * workspace's metadata when the root is itself a workspace.
  */

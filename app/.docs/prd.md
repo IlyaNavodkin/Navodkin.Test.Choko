@@ -1,18 +1,18 @@
 ---
-title: Casewright — Product Requirements
+title: Chioko — Product Requirements
 status: draft
 version: 0.7
 date: 2026-06-01
 ---
 
-# Casewright — PRD (v1)
+# Chioko — PRD (v1)
 
-> **Casewright** — a local editor for crafting and version-controlling manual test cases as
+> **Chioko** — a local editor for crafting and version-controlling manual test cases as
 > markdown, with Git as the entire data store.
 
 ## 1. Summary
 
-**Casewright** is a locally run desktop application for authoring and managing manual test cases as
+**Chioko** is a locally run desktop application for authoring and managing manual test cases as
 **markdown files with YAML front matter and a structured body**, organized into suites via
 folders, with **test runs recorded as CSV files**. You open a **Git repository**; a
 **root config** (turborepo-style) declares where the **workspaces** live inside it. Everything
@@ -70,7 +70,7 @@ declares where the workspaces live — modeled on how Turborepo declares package
 monorepo.
 
 ```jsonc
-// casewright.json — at the repo root
+// chioko.json — at the repo root
 {
   "workspaces": [
     "qa/*",                 // glob: every folder under qa/ is a workspace
@@ -233,7 +233,7 @@ The CSV remains the primary store of results. *(In v1.)*
 
 ```
 <repo-root>/
-├─ casewright.json                 # root config: declares workspace locations
+├─ chioko.json                 # root config: declares workspace locations
 ├─ areas/
 │  ├─ payments/                 # a workspace
 │  │  ├─ workspace.yaml         # optional workspace config
@@ -356,7 +356,7 @@ buttons, and resolves conflicts as plain "keep mine / keep theirs / edit" choice
 ## 8. Design direction & inspiration
 
 High-level only; the detailed token system is deferred to design. The name sets the tone:
-*wright* means a maker, so Casewright should feel like a **maker's tool — calm, precise, and
+*wright* means a maker, so Chioko should feel like a **maker's tool — calm, precise, and
 durable, never flashy**. The substrate (markdown, Git, plain files) reinforces that.
 
 **Direction: an engineering workbench, warmed by editorial calm.** A clean, efficient,
@@ -395,7 +395,7 @@ shadcn/ui, the system stays close to those tokens with warm-neutral and accent o
 - **Client state:** **Zustand** (one store per window) for selection, dirty tracking, active
   workspace, and Git status.
 - **Type safety / validation:** **Zod** schemas are the single source of truth for the shapes the
-  app reads and writes — root config (`casewright.json`), `workspace.yaml`, case front matter, and CSV
+  app reads and writes — root config (`chioko.json`), `workspace.yaml`, case front matter, and CSV
   rows. Parsing validates against these schemas; failures become non-blocking lint warnings rather
   than crashes, and the inferred types flow through the codebase.
 - **Git:** **simple-git** (system `git` binary) — inherits the system credential helper and

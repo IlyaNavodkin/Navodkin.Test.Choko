@@ -1,7 +1,7 @@
 {
-  "name": "casewright-fixture-autotests",
+  "name": "chioko-fixture-autotests",
   "private": true,
-  "description": "Demo Playwright project for the Casewright fixture (lives in .casewright/autotests).",
+  "description": "Demo Playwright project for the Chioko fixture (lives in .ch/autotests).",
   "scripts": {
     "test": "playwright test",
     "list": "playwright test --list"

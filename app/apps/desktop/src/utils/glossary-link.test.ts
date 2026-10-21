@@ -12,24 +12,24 @@ import {
 } from './glossary-link';
 
 const ID = '0f8fad5b-d9cb-469f-a165-70867728950e';
-const FILE = `.casewright/glossary/${ID}.md`;
+const FILE = `.ch/glossary/${ID}.md`;
 
 describe('glossaryHrefId', () => {
   it('reads the id out of a relative link to a record file', () => {
-    expect(glossaryHrefId(`.casewright/glossary/${ID}.md`)).toBe(ID);
-    expect(glossaryHrefId(`../.casewright/glossary/${ID}.md`)).toBe(ID);
-    expect(glossaryHrefId(`../../../.casewright/glossary/${ID}.md`)).toBe(ID);
-    expect(glossaryHrefId(`  ./.casewright/glossary/${ID}.md  `)).toBe(ID);
+    expect(glossaryHrefId(`.ch/glossary/${ID}.md`)).toBe(ID);
+    expect(glossaryHrefId(`../.ch/glossary/${ID}.md`)).toBe(ID);
+    expect(glossaryHrefId(`../../../.ch/glossary/${ID}.md`)).toBe(ID);
+    expect(glossaryHrefId(`  ./.ch/glossary/${ID}.md  `)).toBe(ID);
   });
 
   it('refuses anything that is not a relative glossary file link', () => {
     expect(glossaryHrefId(`${ID}.md`)).toBeNull();
     expect(glossaryHrefId(`/abs${FILE}`)).toBeNull();
-    expect(glossaryHrefId(`sub/.casewright/glossary/${ID}.md`)).toBeNull();
-    expect(glossaryHrefId(`https://example.com/.casewright/glossary/${ID}.md`)).toBeNull();
+    expect(glossaryHrefId(`sub/.ch/glossary/${ID}.md`)).toBeNull();
+    expect(glossaryHrefId(`https://example.com/.ch/glossary/${ID}.md`)).toBeNull();
     expect(glossaryHrefId(`../../notes.md`)).toBeNull();
-    expect(glossaryHrefId(`.casewright/glossary/../secrets.md`)).toBeNull();
-    expect(glossaryHrefId(`.casewright/glossary/nested/${ID}.md`)).toBeNull();
+    expect(glossaryHrefId(`.ch/glossary/../secrets.md`)).toBeNull();
+    expect(glossaryHrefId(`.ch/glossary/nested/${ID}.md`)).toBeNull();
     expect(glossaryHrefId('')).toBeNull();
   });
 });
@@ -108,7 +108,7 @@ describe('rewriteGlossaryHrefs', () => {
 
 describe('rebaseCaseLinks', () => {
   const ID2 = '11111111-2222-4333-8444-555555555555';
-  const before = `[A](../.casewright/glossary/${ID}.md)`;
+  const before = `[A](../.ch/glossary/${ID}.md)`;
   const kase = {
     objective: `See ${before} and [docs](https://example.com).`,
     systems: [`${before} system`],
@@ -120,13 +120,13 @@ describe('rebaseCaseLinks', () => {
   it('re-anchors every link-bearing field to the new location', () => {
     const next = rebaseCaseLinks(kase, 'A/B/case.md');
     expect(next).not.toBe(kase);
-    expect(next.objective).toBe(`See [A](../../.casewright/glossary/${ID}.md) and [docs](https://example.com).`);
-    expect(next.systems[0]).toBe(`[A](../../.casewright/glossary/${ID}.md) system`);
-    expect(next.setup[0].body).toBe(`Do [A](../../.casewright/glossary/${ID}.md).`);
+    expect(next.objective).toBe(`See [A](../../.ch/glossary/${ID}.md) and [docs](https://example.com).`);
+    expect(next.systems[0]).toBe(`[A](../../.ch/glossary/${ID}.md) system`);
+    expect(next.setup[0].body).toBe(`Do [A](../../.ch/glossary/${ID}.md).`);
     expect(next.setup[1]).toBe(kase.setup[1]); // an untouched row keeps its identity
-    expect(next.steps[0].text).toBe(`[A](../../.casewright/glossary/${ID}.md) then stop`);
+    expect(next.steps[0].text).toBe(`[A](../../.ch/glossary/${ID}.md) then stop`);
     expect(next.steps[1]).toBe(kase.steps[1]);
-    expect(next.expected[0]).toBe(`[A](../../.casewright/glossary/${ID}.md)`);
+    expect(next.expected[0]).toBe(`[A](../../.ch/glossary/${ID}.md)`);
   });
 
   it('returns the very same object when nothing needs to change', () => {
@@ -145,10 +145,10 @@ describe('rebaseCaseLinks', () => {
   });
 
   it('keeps labels and other record links intact while re-anchoring', () => {
-    const text = `[One](../.casewright/glossary/${ID}.md) [Two](../.casewright/glossary/${ID2}.md)`;
+    const text = `[One](../.ch/glossary/${ID}.md) [Two](../.ch/glossary/${ID2}.md)`;
     const next = rebaseCaseLinks({ objective: text, systems: [], setup: [], steps: [], expected: [] }, 'X/Y/c.md');
     expect(next.objective).toBe(
-      `[One](../../.casewright/glossary/${ID}.md) [Two](../../.casewright/glossary/${ID2}.md)`,
+      `[One](../../.ch/glossary/${ID}.md) [Two](../../.ch/glossary/${ID2}.md)`,
     );
   });
 });
@@ -161,7 +161,7 @@ describe('glossaryIdsIn', () => {
       '```',
       `[skipped](${FILE})`,
       '```',
-      `B [two](../.casewright/glossary/${other}.md) and \`[inline](${FILE})\``,
+      `B [two](../.ch/glossary/${other}.md) and \`[inline](${FILE})\``,
       'C [docs](https://example.com)',
     ].join('\n');
     expect(glossaryIdsIn(text)).toEqual([ID, other]);

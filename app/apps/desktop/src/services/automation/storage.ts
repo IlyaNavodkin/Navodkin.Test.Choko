@@ -6,13 +6,13 @@ import {
 } from '@/schemas/automation';
 
 // ---------------------------------------------------------------------------
-// Execution storage (`.casewright/automation/executions/<id>/`): the manifest is written *before*
+// Execution storage (`.ch/automation/executions/<id>/`): the manifest is written *before*
 // the process starts and rewritten with the terminal state, so a crash still leaves a record that
 // can be reconciled on the next open (spec "Observable execution lifecycle"). The report and logs
 // sit beside it. This module never touches run data — results are copied into a run explicitly.
 // ---------------------------------------------------------------------------
 
-export const AUTOMATION_DIR = '.casewright/automation';
+export const AUTOMATION_DIR = '.ch/automation';
 export const EXECUTIONS_DIR = `${AUTOMATION_DIR}/executions`;
 
 export const executionRel = (executionId: string): string => `${EXECUTIONS_DIR}/${executionId}`;

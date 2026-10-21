@@ -8,7 +8,7 @@
 import { version } from '../../../package.json';
 
 /** Canonical project links. */
-export const REPO_URL = 'https://github.com/jimbuck/casewright';
+export const REPO_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko';
 export const DOWNLOAD_URL = `${REPO_URL}/releases`;
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 
@@ -16,7 +16,7 @@ export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 export const VERSION = version;
 
 /**
- * Prefix an internal path with the configured base - `/` locally, `/casewright/`
+ * Prefix an internal path with the configured base - `/` locally, `/chioko/`
  * on GitHub Pages - so links resolve in both. `withBase()` returns the site root.
  */
 export function withBase(path = ''): string {

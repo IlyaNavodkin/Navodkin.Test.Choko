@@ -6,9 +6,9 @@ import { openExternal, runtimeVersions } from '@/lib/nwjs';
 import { repoInfo, type RepoInfo } from '@/services/git';
 import { useApp } from '@/store/app-store';
 
-export const GITHUB_URL = 'https://github.com/jimbuck/casewright';
-export const WEBSITE_URL = 'https://casewright.dev/';
-export const DOCS_URL = `${WEBSITE_URL}docs`;
+export const GITHUB_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko';
+export const WEBSITE_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/';
+export const DOCS_URL = `${GITHUB_URL}#readme`;
 
 const baseName = (p: string): string => p.replace(/[/\\]+$/, '').split(/[/\\]/).pop() || 'repository';
 
@@ -91,7 +91,7 @@ export function AboutModal() {
     <Modal onClose={close} maxWidth={520}>
       <ModalHeader>
         <Logo size={38} />
-        <h3>Chioko</h3>
+        <h3 className="font-brand text-[28px]! font-black! tracking-[-0.03em] text-accent">Chioko</h3>
         <Tag className="ml-auto font-mono">v{__APP_VERSION__}</Tag>
       </ModalHeader>
       <ModalBody className="flex flex-col gap-4">

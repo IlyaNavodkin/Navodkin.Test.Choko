@@ -31,7 +31,7 @@ type Tab = (typeof TABS)[number];
 /**
  * Defect-snapshot composer. Prefills from the run row + case, lets the tester correct the
  * summary/environment/expected/actual, attach evidence, and freezes the result into
- * `.casewright/defects/<run>/<case>.md` on save/copy.
+ * `.ch/defects/<run>/<case>.md` on save/copy.
  */
 export function DefectReportModal({ run, row, idx, kase, onClose }: Props) {
   const ctx = useApp();
@@ -296,6 +296,7 @@ export function DefectReportModal({ run, row, idx, kase, onClose }: Props) {
               </Field>
               <Field label="Actual result">
                 <Textarea rows={4} value={draft.actual} onChange={(e) => update({ actual: e.target.value })} />
+                <p className="mt-1 text-[11px] text-ink-3">Prefilled from failed checklist items and your notes. Describe what you observed; edit before sharing.</p>
               </Field>
             </div>
 

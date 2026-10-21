@@ -1,4 +1,6 @@
 /* Chioko — shared brand tokens. See BRAND.md for usage and color roles. */
+@import './fonts.css';
+
 :root {
   color-scheme: light;
 
@@ -50,9 +52,11 @@
   --del: #c72b36;
   --del-bg: #fbe8e9;
 
-  --font-ui: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-ui: "Onest", system-ui, -apple-system, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
-  --font-read: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --font-read: "Onest", system-ui, -apple-system, sans-serif;
+  --font-heading: "Rubik", "Onest", system-ui, sans-serif;
+  --font-brand: "Nunito Sans", "Onest", system-ui, sans-serif;
 
   --r-sm: 5px;
   --r: 8px;

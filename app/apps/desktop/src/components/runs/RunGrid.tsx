@@ -12,6 +12,9 @@ import { RunCaseCard } from './RunCaseCard';
 import { RunAutomationPanel } from './RunAutomationPanel';
 import { latestAutomationResults } from '@/utils/automation-workflow';
 import { DefectReportModal } from '@/components/guide/DefectReportModal';
+import { HoverPopover } from '@/components/ui/hover-popover';
+import { RunResultBar } from './RunResultBar';
+import { filterRunRows } from '@/utils/run-activity';
 
 /** A tester/reviewer approval control: shows the stamp when set, else a name + approve button. */
 function ApprovalCard({
@@ -205,6 +208,10 @@ export function RunGrid() {
 
   const summary = buildRunSummary(run, ctx.cases);
   const { counts: t, executed, passRate } = summary;
+  const filter = ctx.sel.runFilter ?? {};
+  const filtering = !!(filter.result || filter.date);
+  const visibleRows = filterRunRows(run, filter);
+  const toggleResultFilter = (result: Result) => ctx.openRun(run.id, { ...filter, result: filter.result === result ? undefined : result });
 
   // ---- resizable detail panel (left-edge handle; width persists) ----
   // Drag the left edge to resize; dragging left widens the panel (delta is inverted vs. the
@@ -265,12 +272,12 @@ export function RunGrid() {
 
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="flex flex-none items-center gap-[14px] overflow-hidden border-b border-border bg-panel-2 px-[26px] py-[14px]">
+      <div className="flex flex-none flex-wrap items-center gap-[14px] border-b border-border bg-panel-2 px-[26px] py-[14px]">
         <Button icon variant="ghost" onClick={ctx.openRunsList} title="Back to runs">
           {I.back({ size: 16 })}
         </Button>
-        <div>
-          <div className="text-[16px] font-semibold">
+        <div className="min-w-0 flex-1">
+          <div className="font-heading text-[24px] font-extrabold">
             {run.name}{' '}
             <span className={cn('rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.05em]', RUN_STATUS[run.status])}>
               {run.status}
@@ -278,27 +285,12 @@ export function RunGrid() {
           </div>
           <div className="font-mono text-[11.5px] text-ink-faint">{run.file}</div>
         </div>
-        <div className="ml-auto flex items-center gap-[14px]">
-          <div
-            // Drop the segmented bar on narrow windows so the action buttons never get clipped;
-            // the pass-rate % beside it still conveys completion.
-            className="hidden h-[30px] w-[220px] overflow-hidden rounded-md border border-border xl:flex"
-            title={`${t.pass} pass · ${t.fail} fail · ${t.blocked} blocked · ${t.in_progress} in progress · ${t.skipped} skipped · ${t.not_run} not run`}
-          >
-            {SEGS.map((s) =>
-              t[s] ? (
-                <i
-                  key={s}
-                  className="flex h-full items-center justify-center font-mono text-[11px] font-bold transition-[flex-grow] duration-300"
-                  // not_run is near-white, so its count needs dark ink rather than the white used on the saturated fills.
-                  style={{ flexGrow: t[s], background: RES[s].color, color: s === 'not_run' ? 'var(--ink-2)' : 'oklch(1 0 0 / 0.92)' }}
-                >
-                  {t[s]}
-                </i>
-              ) : null,
-            )}
-          </div>
-          <div className="text-right">
+        <div className="ml-auto flex max-w-full flex-wrap items-center gap-3">
+          <RunResultBar counts={t} total={run.rows.length} selected={filter.result} onSelect={toggleResultFilter} />
+          <HoverPopover content={<div><div className="font-semibold">Pass rate · entire run</div>
+            <p className="mt-1">{t.pass} passed / {executed} recorded cases = {passRate}%.</p>
+            <p className="mt-1 text-ink-3">Not-run cases are excluded from this percentage.</p></div>}>
+          <div className="text-right" tabIndex={0}>
             <div
               className="text-[22px] font-bold leading-none tracking-[-0.01em]"
               style={{ color: passRate >= 80 ? 'var(--pass)' : passRate >= 50 ? 'var(--blocked)' : 'var(--fail)' }}
@@ -307,6 +299,7 @@ export function RunGrid() {
             </div>
             <div className="text-[10.5px] uppercase tracking-[0.05em] text-ink-faint">pass rate</div>
           </div>
+          </HoverPopover>
           <Button variant="ghost" onClick={() => ctx.exportRunToPdf(run.id)} title="Export this run as a PDF report">
             {I.download({ size: 13 })} Export PDF
           </Button>
@@ -325,6 +318,13 @@ export function RunGrid() {
         </div>
       </div>
 
+      {filtering && <div className="flex flex-none flex-wrap items-center gap-3 border-b border-accent-line bg-accent-soft px-[26px] py-2 text-[12px] text-accent-ink">
+        <span aria-live="polite">Showing {visibleRows.length} of {run.rows.length} cases</span>
+        {filter.date && <span>Recorded on {filter.date}</span>}
+        {filter.result && <span>{RES[filter.result].glyph} {RES[filter.result].label}</span>}
+        <Button size="sm" variant="ghost" className="ml-auto" onClick={() => ctx.openRun(run.id)}>Reset filters</Button>
+      </div>}
+
       <div className="flex min-h-0 min-w-0 flex-1" ref={bodyRef}>
         {/* Drop is handled once, on this whole scroll area (incl. its padding + the empty space
             around the cards) so a drop that lands in a gap is still accepted. Cards only set the
@@ -338,7 +338,7 @@ export function RunGrid() {
               width, which changes as the detail panel is resized — not the window): 1 column when
               small (< 800px), 2 at medium (≥ 800px), 3 at large (≥ 1200px). */}
           <div className="grid grid-cols-1 items-stretch gap-3 @min-[800px]:grid-cols-2 @min-[1200px]:grid-cols-3">
-            {run.rows.map((row, i) => (
+            {visibleRows.map(({ row, index: i }) => (
               <div
                 key={row.case_id + i}
                 className={cn('group/card relative', drag === i && 'opacity-40')}
@@ -361,13 +361,14 @@ export function RunGrid() {
                   onRemove={() => void ctx.removeRunRow(run.id, i)}
                   onDragStart={() => setDrag(i)}
                   onDragEnd={endDrag}
+                  reorderable={!filtering}
                   automation={latestAutomationResults(ctx.runAutomation[run.id]?.results ?? []).filter((r) => r.caseRowIndex === i)}
                 />
               </div>
             ))}
-            {run.rows.length === 0 && (
+            {visibleRows.length === 0 && (
               <div className="col-span-full rounded-lg border border-dashed border-border-2 px-4 py-8 text-center text-[13px] text-ink-3">
-                No cases in this run.
+                {filtering ? 'No cases match these filters. Reset filters to show the entire run.' : 'No cases in this run.'}
               </div>
             )}
           </div>
@@ -422,7 +423,7 @@ export function RunGrid() {
           <section className="flex flex-col gap-2">
             <div className="flex items-baseline gap-2">
               <div className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-2">Summary</div>
-              <span className="text-[10.5px] text-ink-faint">generated from results</span>
+              <span className="text-[10.5px] text-ink-faint">entire run · all results</span>
             </div>
             <div className="flex flex-col gap-3 rounded-lg border border-border bg-panel p-[14px]">
               {summary.total === 0 ? (
@@ -442,10 +443,10 @@ export function RunGrid() {
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {SEGS.filter((s) => t[s]).map((s) => (
-                      <span key={s} className="inline-flex items-center gap-1.5 rounded-full bg-sunken px-2.5 py-1 text-[12px] text-ink-2">
+                      <button key={s} type="button" aria-pressed={filter.result === s} onClick={() => toggleResultFilter(s)} className="inline-flex items-center gap-1.5 rounded-full bg-sunken px-2.5 py-1 text-[12px] text-ink-2 hover:bg-accent-soft">
                         <span className="size-[9px] rounded-[3px]" style={{ background: RES[s].color }} />
                         <b className="font-semibold text-ink">{t[s]}</b> {RES[s].label}
-                      </span>
+                      </button>
                     ))}
                   </div>
                   {summary.attention.length > 0 ? (

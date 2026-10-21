@@ -25,10 +25,26 @@ a solid burgundy background and white text. Use pale rose for selected tree rows
 and tags. Keep green, red, amber, blue and gray for their semantic result states;
 pair them with text or glyphs. Do not give each module a different brand color.
 
-Use IBM Plex Sans for interface and reading text, IBM Plex Mono for IDs, paths
-and code. The wordmark is bold with slightly tight letter spacing. Corner radii
-are 5px for small controls, 8px for buttons and inputs, and 12px for editor cards.
-Use quiet borders and minimal shadows.
+Typography uses three roles, with matching Russian and English glyphs:
+
+| Role | Typeface / weight | Size |
+| --- | --- | --- |
+| Chioko wordmark | Nunito Sans Black 900 (`--font-brand`) | 28–32px |
+| Page and case titles | Rubik ExtraBold 800 (`--font-heading`) | 24–28px |
+| Section headings | Rubik Bold 700 (`--font-heading`) | 16–18px |
+| Interface and reading text | Onest Regular 400 (`--font-ui`, `--font-read`) | 14px |
+| Buttons and menus | Onest Medium 500 | 13–14px |
+| Captions and display IDs | Onest Medium 500 | 12px |
+| Code, file paths and terminal output | IBM Plex Mono 400–600 (`--font-mono`) | context-dependent |
+
+Use Onest SemiBold 600 for emphasis inside the interface. Nunito Sans is reserved
+for the Chioko wordmark; it is not the interface or heading font. All font faces
+are bundled as local WOFF2 assets in `fonts/`, with their OFL license files;
+desktop rendering makes no Google Fonts network requests. See `fonts/README.md`.
+
+The wordmark has slightly tight letter spacing. Corner radii are 5px for small
+controls, 8px for buttons and inputs, and 12px for editor cards. Use quiet borders
+and minimal shadows. Typography does not widen or add text labels to the icon rail.
 
 `chioko-mascot.png` is the original supplied artwork, preserved unchanged. The
 desktop `Logo` component uses `mix-blend-mode: multiply` to integrate its white
@@ -38,7 +54,7 @@ room. Module navigation uses a 56px icon rail with 40px buttons and a 36px masco
 Keep module names available through accessible labels and hover tooltips.
 
 Generate the Windows window/taskbar and executable icons with
-`pnpm --filter @casewright/desktop make-icon`. That script reads the same mascot.
-Internal package names, `.casewright` repository paths and release/update IDs
-retain their existing identifiers for compatibility. Legacy SVG exports remain
+`pnpm --filter @chioko/desktop make-icon`. That script reads the same mascot.
+Packages use `@chioko/*`, project data lives in `.ch/`, and release/update IDs
+point to the private Chioko repository. Legacy SVG exports remain
 available for existing consumers; the desktop uses the Chioko PNG export.

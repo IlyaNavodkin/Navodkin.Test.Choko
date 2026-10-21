@@ -284,7 +284,7 @@ export function CreateRunModal() {
           </Field>
           <div className="flex-none text-[12.5px] text-ink-3">
             {I.layers({ size: 13 })} Seeds <b>{count}</b> {count === 1 ? 'case' : 'cases'} · keyed on stable{' '}
-            <span className="font-mono">case_id</span> · written as a folder under <span className="font-mono">.casewright/runs/</span>.
+            <span className="font-mono">case_id</span> · written as a folder under <span className="font-mono">.ch/runs/</span>.
           </div>
         </div>
         {/* Right — details of the case whose name was clicked. */}

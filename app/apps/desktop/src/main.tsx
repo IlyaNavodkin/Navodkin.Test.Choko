@@ -4,7 +4,7 @@ import '@/styles/app.css';
 
 import { App } from '@/components/App';
 import { nwWindow, type NwWindow } from '@/lib/nwjs';
-import { restoreWindowState, trackWindowState, type WindowState } from '@/services/window-state';
+import { startMainWindow } from '@/services/window-startup';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root container #root not found');
@@ -17,25 +17,10 @@ async function boot(win: NwWindow | null) {
     const { initBrowserMockup } = await import('@/data/browser-mockup');
     initBrowserMockup();
   }
-  let restored: WindowState | null = null;
-  if (win) {
-    try {
-      restored = await restoreWindowState(win);
-    } catch (err) {
-      console.error('[window-state] restore failed', err);
-    }
-  }
-  try {
-    createRoot(container!).render(<App />);
-  } finally {
-    // Always reveal the (now correctly-placed) window — in `finally` so a render
-    // error can never leave it stuck hidden — then begin persisting future changes.
-    if (win) {
-      win.show();
-      win.focus();
-      trackWindowState(win, restored);
-    }
-  }
+  const render = () => createRoot(container!).render(<App />);
+  if (!win) { render(); return; }
+  const background = import.meta.env.DEV && new URLSearchParams(window.location.search).get('automation') === '1';
+  await startMainWindow(win, { background, render });
 }
 
 void boot(nwWindow());

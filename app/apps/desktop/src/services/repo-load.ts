@@ -10,7 +10,7 @@ import { parseRunCase, parseRunDetails, type RunCaseItem } from './format/run';
 import { parseRunArgumentsSnapshot, parseRunGlossarySnapshot } from './format/run-snapshot';
 import { parseSuite } from './format/suite';
 import {
-  CASEWRIGHT_DIR,
+  CHIOKO_DIR,
   CONFIG_REL,
   LEGACY_SUITE_FILE,
   ORDER_FILE,
@@ -23,9 +23,10 @@ import {
 } from './repo-paths';
 import { isDir, readMaybe } from './repo-fs';
 import { migrateRepo } from './repo-migration';
+import { migrateChiokoData } from './chioko-migration';
 
 // ---------------------------------------------------------------------------
-// Read side of the repo service: open + validate `.casewright/`, discover
+// Read side of the repo service: open + validate `.ch/`, discover
 // workspaces, and load each workspace's tree/cases plus the repo-level runs.
 // ---------------------------------------------------------------------------
 
@@ -79,7 +80,7 @@ async function readFolderMeta(repoPath: string, folderRel: string, warnings: Lin
 }
 
 // ---------------------------------------------------------------------------
-// Open repo → validate `.casewright/` + discover workspaces
+// Open repo → validate `.ch/` + discover workspaces
 // ---------------------------------------------------------------------------
 
 export interface OpenedRepo {
@@ -87,12 +88,12 @@ export interface OpenedRepo {
   workspaces: Workspace[];
   branch: string;
   warnings: LintWarning[];
-  /** True when the worktree is a Git repo but has no `.casewright/` yet (offer to init). */
+  /** True when the worktree is a Git repo but has no `.ch/` yet (offer to init). */
   needsInit: boolean;
 }
 
 /**
- * The workspace folders, read from `.casewright/config.yaml`'s `workspaces:` list — the
+ * The workspace folders, read from `.ch/config.yaml`'s `workspaces:` list — the
  * single source of truth (no more tree-walking for markers). Normalizes `.`→`''` (root),
  * strips `./` and trailing slashes, and de-dupes while preserving declaration order.
  */
@@ -139,9 +140,9 @@ async function loadWorkspaceMeta(repoPath: string, wsPath: string, warnings: Lin
 }
 
 /**
- * Open a repository: validate the Git worktree **and** the `.casewright/` folder,
- * read `.casewright/config.yaml` tolerantly, and discover self-declaring workspaces
- * (PRD §4 req 1–14). A missing `.casewright/` is reported via `needsInit` (not thrown).
+ * Open a repository: validate the Git worktree **and** the `.ch/` folder,
+ * read `.ch/config.yaml` tolerantly, and discover self-declaring workspaces
+ * (PRD §4 req 1–14). A missing `.ch/` is reported via `needsInit` (not thrown).
  */
 export async function openRepo(repoPath: string): Promise<OpenedRepo> {
   const path = node.path();
@@ -153,8 +154,10 @@ export async function openRepo(repoPath: string): Promise<OpenedRepo> {
   }
   const branch = (await git.branchLocal()).current || 'main';
 
-  if (!(await isDir(path.join(repoPath, CASEWRIGHT_DIR)))) {
-    warnings.push({ code: 'needs-init', message: 'This repository has no .casewright/ folder yet.' });
+  if (await migrateChiokoData(repoPath)) warnings.push({ code: 'migrated', message: 'Moved project data and references to .ch/. Review and commit the migration.' });
+
+  if (!(await isDir(path.join(repoPath, CHIOKO_DIR)))) {
+    warnings.push({ code: 'needs-init', message: 'This repository has no .ch/ folder yet.' });
     return { repoPath, workspaces: [], branch, warnings, needsInit: true };
   }
 
@@ -165,7 +168,7 @@ export async function openRepo(repoPath: string): Promise<OpenedRepo> {
   const configRaw = await readMaybe(path.join(repoPath, CONFIG_REL));
   const configData = configRaw ? parseYamlDoc(configRaw) : {};
   if (configRaw && !ConfigYamlSchema.safeParse(configData).success) {
-    warnings.push({ code: 'config', message: '.casewright/config.yaml was invalid; using defaults.', file: CONFIG_REL });
+    warnings.push({ code: 'config', message: '.ch/config.yaml was invalid; using defaults.', file: CONFIG_REL });
   }
 
   const relPaths = discoverWorkspaces(configData);
@@ -180,7 +183,7 @@ export async function openRepo(repoPath: string): Promise<OpenedRepo> {
   workspaces.sort((a, b) => a.name.localeCompare(b.name) || a.path.localeCompare(b.path));
 
   if (!workspaces.length) {
-    warnings.push({ code: 'empty-repo', message: 'No workspaces found — add one to .casewright/config.yaml.' });
+    warnings.push({ code: 'empty-repo', message: 'No workspaces found — add one to .ch/config.yaml.' });
   }
 
   return { repoPath, workspaces, branch, warnings, needsInit: false };
@@ -252,7 +255,7 @@ function foldItems(
 }
 
 /**
- * Load all runs from `.casewright/runs/` once for the whole repo (PRD §4 req 16, 20).
+ * Load all runs from `.ch/runs/` once for the whole repo (PRD §4 req 16, 20).
  * A run is a folder: `_run.md` (details) plus one `NNN-<id>.md` sidecar per seeded case.
  * Runs are repo-level; rows may reference cases from any workspace.
  */
@@ -386,7 +389,7 @@ export async function loadWorkspace(repoPath: string, ws: Workspace): Promise<Lo
   const paths: Record<string, string> = {};
 
   // fullRel = the dir's full repo-relative path; cases at the workspace root belong
-  // to the workspace node (id = ws.id). Dot-folders (incl. `.casewright`) are skipped.
+  // to the workspace node (id = ws.id). Dot-folders (incl. `.ch`) are skipped.
   const walk = async (absDir: string, fullRel: string): Promise<TreeNode[]> => {
     const entries = await fsp.readdir(absDir, { withFileTypes: true });
     const dirNames = new Set(entries.filter((e) => e.isDirectory() && !e.name.startsWith('.')).map((e) => e.name));

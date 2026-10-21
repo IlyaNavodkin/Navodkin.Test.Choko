@@ -46,7 +46,7 @@ const data: WeeklyData = {
 };
 
 function buildModel(overrides: Partial<WeeklyReportModel> = {}): WeeklyReportModel {
-  return { ...data, repoName: 'casewright', generatedAt: '2026-07-03 09:30', ...overrides };
+  return { ...data, repoName: 'chioko', generatedAt: '2026-07-03 09:30', ...overrides };
 }
 
 describe('weekLabel', () => {
@@ -72,7 +72,7 @@ describe('buildWeeklyReportHtml', () => {
     const html = buildWeeklyReportHtml(buildModel());
     expect(html).toContain('Weekly test report');
     expect(html).toContain('Week of Jun 29 – Jul 5, 2026');
-    expect(html).toContain('casewright');
+    expect(html).toContain('chioko');
     expect(html).not.toContain('2026-06-29'); // raw ISO never shown
   });
 
@@ -120,11 +120,11 @@ describe('buildWeeklyReportHtml', () => {
 
   it('adds the Save-PDF toolbar and script only in preview mode', () => {
     const plain = buildWeeklyReportHtml(buildModel());
-    expect(plain).not.toContain('cw-toolbar');
+    expect(plain).not.toContain('ch-toolbar');
 
     const preview = buildWeeklyReportHtml(buildModel(), { preview: true });
-    expect(preview).toContain('class="cw-preview"');
-    expect(preview).toContain('id="cw-save"');
+    expect(preview).toContain('class="ch-preview"');
+    expect(preview).toContain('id="ch-save"');
     expect(preview).toContain('<script');
     expect(preview).toContain('"Weekly report 2026-06-29.pdf"'); // default filename
   });

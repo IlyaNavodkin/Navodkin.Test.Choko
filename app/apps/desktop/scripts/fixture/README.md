@@ -1,11 +1,11 @@
 # Autotests demo
 
-This is a tiny Playwright project inside `.casewright/autotests/` of the Casewright fixture
+This is a tiny Playwright project inside `.ch/autotests/` of the Chioko fixture
 repository. It exists so the **Autotests** section can be explored without pointing at a real
 product.
 
 The app detects the autotest project by this folder and runs discovery/execution with
-`.casewright/autotests/` as the working directory, so `package.json`,
+`.ch/autotests/` as the working directory, so `package.json`,
 `playwright.config.ts` and `node_modules` all live here.
 
 ## Install
@@ -13,7 +13,7 @@ The app detects the autotest project by this folder and runs discovery/execution
 From the fixture repository root:
 
 ```bash
-cd .casewright/autotests
+cd .ch/autotests
 npm install
 ```
 
@@ -30,7 +30,7 @@ itself), so this step is required once after the fixture is generated.
 
 The red test is intentional: it gives you something to triage, bind, run and turn into a defect.
 
-## Try it in Casewright
+## Try it in Chioko
 
 1. Open the **Autotests** section and tick **Trust this project**.
 2. Click **Discover tests** — the three demo tests appear in the catalog.

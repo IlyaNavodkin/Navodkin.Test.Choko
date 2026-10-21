@@ -2,19 +2,19 @@ import { GLOSSARY_DIR, isSafeEntryId } from '@/services/format/reference-book';
 
 // ---------------------------------------------------------------------------
 // The reference-book **link contract**: a plain Markdown link to a record's file,
-//   [Payments runbook](../../.casewright/glossary/<id>.md)
+//   [Payments runbook](../../.ch/glossary/<id>.md)
 // written relative to the file that contains it. Everything here is pure string/path
 // math so it can be used by the editors (insertion), the renderer (chips) and the
 // move/copy operations (path recomputation) without touching the filesystem.
 //
 // A link is recognized by its *shape* (a relative path ending in
-// `.casewright/glossary/<id>.md`) and resolved by its `id` against the repository's
+// `.ch/glossary/<id>.md`) and resolved by its `id` against the repository's
 // loaded catalog — the href is never used to open a file, so a hand-written path can
 // not make the app read something outside the glossary.
 // ---------------------------------------------------------------------------
 
 /** A relative href that points at a record file; group 1 is the record id. */
-export const GLOSSARY_HREF_RE = /^(?:\.{1,2}\/)*\.casewright\/glossary\/([A-Za-z0-9._-]+)\.md$/;
+export const GLOSSARY_HREF_RE = /^(?:\.{1,2}\/)*\.ch\/glossary\/([A-Za-z0-9._-]+)\.md$/;
 
 /** The record id a relative href points at, or `null` when it is not a glossary link. */
 export function glossaryHrefId(href: string): string | null {

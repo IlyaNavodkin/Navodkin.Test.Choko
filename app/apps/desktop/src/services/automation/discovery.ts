@@ -8,7 +8,7 @@ import { AutomationRuntimeError, type NodeRuntime, type ProjectPlaywright } from
 // ---------------------------------------------------------------------------
 // Discovery (`playwright test --list --reporter=json`) — spec "Autotest catalog from explicit
 // discovery". It runs only on an explicit user action for a trusted profile: this module is never
-// called when a repository/section is opened. The project is detected by `.casewright/autotests/`
+// called when a repository/section is opened. The project is detected by `.ch/autotests/`
 // and the CLI runs with that folder as its cwd. The JSON goes to stdout (no output-name override).
 // ---------------------------------------------------------------------------
 

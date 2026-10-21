@@ -42,7 +42,7 @@ describe('buildDiscoveryInvocation', () => {
     expect(inv.command).toBe('C:\\nodejs\\node.exe');
     expect(inv.args).toEqual([spec().playwright.cliPath, 'test', '--list', '--reporter=json']);
     expect(inv.options.shell).toBe(false);
-    expect(inv.options.cwd).toBe(join('C:\\repo', '.casewright', 'autotests'));
+    expect(inv.options.cwd).toBe(join('C:\\repo', '.ch', 'autotests'));
     expect((inv.options.env as Record<string, string>).PLAYWRIGHT_JSON_OUTPUT_NAME).toBeUndefined();
   });
 });

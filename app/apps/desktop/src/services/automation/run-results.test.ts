@@ -29,14 +29,14 @@ const row = (over: Partial<RunRow> = {}): RunRow => ({
   notes: '',
   checks: {},
   failNotes: {},
-  file: '.casewright/runs/r/001-RND-0001.md',
+  file: '.ch/runs/r/001-RND-0001.md',
   ...over,
 });
 
 const run = (over: Partial<Run> = {}): Run => ({
   id: 'r',
   name: 'Run',
-  file: '.casewright/runs/r',
+  file: '.ch/runs/r',
   created: '2026-10-19',
   status: 'open',
   scope: 'custom',
@@ -75,6 +75,22 @@ const report = (results: { status: string; duration?: number }[], project = 'chr
   }) as unknown as PlaywrightJsonReport;
 
 describe('mapReportToRun', () => {
+  it('does not mix output of tests in the same file, projects, or retry attempts', () => {
+    const payload: PlaywrightJsonReport = { suites: [{ title: 'sequence.spec.ts', file: 'sequence.spec.ts', specs: [
+      { title: 'first', ok: true, tags: ['@tt:first'], tests: [
+        { projectName: 'chromium', results: [{ status: 'failed', duration: 1, stdout: [{ text: 'first attempt' }] },
+          { status: 'passed', duration: 2, retry: 1, stdout: [{ text: 'first retry' }] }] },
+        { projectName: 'firefox', results: [{ status: 'passed', duration: 1, stdout: [{ text: 'first firefox' }] }] },
+      ] },
+      { title: 'second', ok: true, tags: ['@tt:second'], tests: [
+        { projectName: 'chromium', results: [{ status: 'passed', duration: 1, stdout: [{ text: 'second only' }] }] },
+      ] },
+    ] }] };
+    const mapped = mapReportToRun(run(), manifest(), payload);
+    expect(mapped.map((r) => r.attemptOutput?.map((a) => a.stdout))).toEqual([
+      ['first attempt', 'first retry'], ['first firefox'], ['second only'],
+    ]);
+  });
   it('maps by caseId to the run row', () => {
     const mapped = mapReportToRun(run(), manifest(), report([{ status: 'passed', duration: 4 }]));
     expect(mapped).toHaveLength(1);
@@ -145,7 +161,9 @@ describe('saveExecutionToRun / loadRunAutomation', () => {
     const execDir = join(repo, executionRel('e1'));
     await mkdir(execDir, { recursive: true });
     await writeExecutionManifest(repo, manifest());
-    await writeFile(join(execDir, 'report.json'), JSON.stringify(report([{ status: 'passed' }])));
+    const payload = report([{ status: 'passed' }]);
+    payload.suites[0].specs![0].tests[0].results[0].stdout = [{ text: 'saved test output' }];
+    await writeFile(join(execDir, 'report.json'), JSON.stringify(payload));
 
     await saveExecutionToRun(repo, r.file, 'e1');
     const saved = await readdir(join(repo, r.file, 'automation', 'e1'));
@@ -155,6 +173,7 @@ describe('saveExecutionToRun / loadRunAutomation', () => {
     expect(loaded.issues).toEqual([]);
     expect(loaded.results).toHaveLength(1);
     expect(loaded.results[0].status).toBe('passed');
+    expect(loaded.results[0].attemptOutput?.[0].stdout).toBe('saved test output');
   });
 
   it('returns empty for a run without automation results', async () => {

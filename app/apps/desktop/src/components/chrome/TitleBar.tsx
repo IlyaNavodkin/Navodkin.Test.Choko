@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react';
 import { I } from '@/components/icons';
 import { Menu, type MenuItem } from '@/components/ui';
-import { DOCS_URL } from '@/components/common/AboutModal';
-import { nwWindow, openExternal } from '@/lib/nwjs';
+import { nwWindow } from '@/lib/nwjs';
 import { isWindowMaximized } from '@/services/window-state';
 import { useApp } from '@/store/app-store';
 
@@ -46,7 +45,7 @@ export function TitleBar() {
     const win = nwWindow();
     if (!win) return;
     const onMax = () => setMaximized(true);
-    const onRestore = () => setMaximized(false);
+    const onRestore = () => setMaximized(isWindowMaximized());
     win.on('maximize', onMax);
     win.on('unmaximize', onRestore);
     win.on('restore', onRestore);
@@ -107,19 +106,13 @@ export function TitleBar() {
         { icon: I.commit, label: 'Commit…', on: () => ctx.setModal('commit') },
       ],
     },
-    {
-      label: 'Help',
-      items: [
-        { icon: I.eye, label: 'About Chioko', on: () => ctx.setModal('about') },
-        { icon: I.link, label: 'Documentation', on: () => openExternal(DOCS_URL) },
-      ],
-    },
   ];
 
   const title = screen === 'main' && ctx.workspace ? `${ctx.workspace.name} — Chioko` : 'Chioko';
 
   return (
     <div className="relative z-50 flex h-[34px] flex-none items-stretch select-none border-b border-border bg-panel-2 [-webkit-app-region:drag]">
+      <span className="flex items-center px-3 font-brand text-[16px] font-black text-accent-ink" onDoubleClick={toggleMax}>Chioko</span>
       {screen === 'main' && (
         <div className="flex items-stretch [-webkit-app-region:no-drag]">
           {menus.map((m) => (

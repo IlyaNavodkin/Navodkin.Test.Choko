@@ -7,14 +7,14 @@
 ## ADDED Requirements
 
 ### Requirement: Autotest project folder
-Система SHALL определять проект автотестов по наличию папки `.casewright/autotests/` и SHALL запускать discovery и execution с этой папкой как `cwd`, разрешая `@playwright/test` из её `package.json`/`node_modules`. Отсутствие папки SHALL означать «автотестов нет» и SHALL NOT заставлять приложение искать Playwright в корне репозитория.
+Система SHALL определять проект автотестов по наличию папки `.ch/autotests/` и SHALL запускать discovery и execution с этой папкой как `cwd`, разрешая `@playwright/test` из её `package.json`/`node_modules`. Отсутствие папки SHALL означать «автотестов нет» и SHALL NOT заставлять приложение искать Playwright в корне репозитория.
 
 #### Scenario: Project present
-- **WHEN** в репозитории есть `.casewright/autotests/`
+- **WHEN** в репозитории есть `.ch/autotests/`
 - **THEN** discovery и запуск используют её как корень Playwright-проекта, а каталог и результаты относятся к тестам внутри неё
 
 #### Scenario: Project missing
-- **WHEN** папки `.casewright/autotests/` нет
+- **WHEN** папки `.ch/autotests/` нет
 - **THEN** discovery показывает диагностику с ожидаемым путём и не запускает Playwright из корня репозитория
 
 ### Requirement: Autotest catalog from explicit discovery

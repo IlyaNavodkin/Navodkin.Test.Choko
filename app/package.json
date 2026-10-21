@@ -1,5 +1,5 @@
 {
-  "name": "casewright",
+  "name": "chioko",
   "version": "0.16.0",
   "private": true,
   "description": "A git-backed desktop application for writing and running test cases.",
@@ -12,10 +12,10 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "dev:desktop": "turbo run dev --filter=@casewright/desktop",
-    "dev:web": "turbo run dev --filter=@casewright/web",
+    "dev:desktop": "turbo run dev --filter=@chioko/desktop",
+    "dev:web": "turbo run dev --filter=@chioko/web",
     "build": "turbo run build",
-    "build:web": "turbo run build --filter=@casewright/web",
+    "build:web": "turbo run build --filter=@chioko/web",
     "lint": "turbo run lint",
     "clean": "turbo run clean"
   },

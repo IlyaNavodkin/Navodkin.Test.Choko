@@ -5,7 +5,7 @@
  * running build, hand back the matching installer asset. The store downloads it
  * in the background, then `runInstallerAndQuit` launches the silent installer
  * and quits so it can replace the locked `.exe` and relaunch (see the `[Run]`
- * entry in `build-resources/casewright.iss`).
+ * entry in `build-resources/chioko.iss`).
  *
  * Portable (unzipped) builds can't replace themselves while running, so we only
  * auto-apply for installed builds — `isInstalledBuild` distinguishes the two and
@@ -15,16 +15,16 @@ import { node } from '@/lib/node';
 import { execPath, quitApp } from '@/lib/nwjs';
 import { isNewer } from '@/utils/semver';
 
-const REPO = 'jimbuck/casewright';
+const REPO = 'IlyaNavodkin/Navodkin.Test.Chioko';
 const LATEST_RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest`;
 
-/** The Inno per-user install directory: %LocalAppData%\Programs\Casewright. */
-const INSTALL_SUBPATH = ['AppData', 'Local', 'Programs', 'Casewright'];
+/** The Inno per-user install directory: %LocalAppData%\Programs\Chioko. */
+const INSTALL_SUBPATH = ['AppData', 'Local', 'Programs', 'Chioko'];
 
 export interface UpdateInfo {
   /** Latest version, tag without the leading `v` (e.g. "0.2.0"). */
   version: string;
-  /** Download URL for the `Casewright-Setup-<v>.exe` asset, or null if absent. */
+  /** Download URL for the `Chioko-Setup-<v>.exe` asset, or null if absent. */
   setupUrl: string | null;
   /** The release page (shown to portable users who can't auto-apply). */
   htmlUrl: string;
@@ -53,7 +53,7 @@ export async function fetchLatestUpdate(currentVersion: string): Promise<UpdateI
   const version = rel.tag_name.replace(/^v/, '');
   if (!isNewer(version, currentVersion)) return null;
 
-  const setup = rel.assets.find((a) => /^Casewright-Setup-.*\.exe$/i.test(a.name));
+  const setup = rel.assets.find((a) => /^Chioko-Setup-.*\.exe$/i.test(a.name));
   return { version, setupUrl: setup?.browser_download_url ?? null, htmlUrl: rel.html_url };
 }
 
@@ -61,7 +61,7 @@ export async function fetchLatestUpdate(currentVersion: string): Promise<UpdateI
  * True when the running app is an installed (Inno) build that can self-update,
  * false for a portable unzip. Two independent signals; either one is conclusive:
  *   1. an `unins000.exe` next to the executable (deterministic for Inno installs)
- *   2. the executable lives under %LocalAppData%\Programs\Casewright
+ *   2. the executable lives under %LocalAppData%\Programs\Chioko
  */
 export async function isInstalledBuild(): Promise<boolean> {
   const exe = execPath();
@@ -95,7 +95,7 @@ export async function downloadInstaller(
 ): Promise<string> {
   const path = node.path();
   const fsp = node.fsp();
-  const dest = path.join(node.os().tmpdir(), `Casewright-Setup-${version}.exe`);
+  const dest = path.join(node.os().tmpdir(), `Chioko-Setup-${version}.exe`);
   const part = `${dest}.part`;
 
   const res = await fetch(url);

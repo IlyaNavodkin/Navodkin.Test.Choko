@@ -1,10 +1,10 @@
 import { node } from '@/lib/node';
 import { ConfigYamlSchema, type ConfigYaml } from '@/schemas';
 import { folderSlug } from '@/utils/ids';
-import { CASEWRIGHT_GITIGNORE, serializeConfigYaml } from './format/config';
+import { CHIOKO_GITIGNORE, serializeConfigYaml } from './format/config';
 import { serializeFolderNote, type FolderNoteMeta } from './format/folder-note';
 import {
-  CASEWRIGHT_DIR,
+  CHIOKO_DIR,
   CONFIG_REL,
   baseOf,
   folderNoteRel,
@@ -23,21 +23,21 @@ import { deletePath, isDir, readMaybe, renamePath, writeFileAt } from './repo-fs
 // ---------------------------------------------------------------------------
 
 /**
- * Scaffold `.casewright/` for a Git repo that doesn't have it yet (PRD §4 req 2, 4):
+ * Scaffold `.ch/` for a Git repo that doesn't have it yet (PRD §4 req 2, 4):
  * writes `config.yaml`, creates `runs/` (tracked via `.gitkeep`), and writes the
  * `.gitignore` that keeps `cache/` out of Git.
  */
 export async function initRepo(repoPath: string): Promise<void> {
   const path = node.path();
   const fsp = node.fsp();
-  const dir = path.join(repoPath, CASEWRIGHT_DIR);
+  const dir = path.join(repoPath, CHIOKO_DIR);
   await fsp.mkdir(path.join(dir, 'runs'), { recursive: true });
   await fsp.writeFile(path.join(dir, 'config.yaml'), serializeConfigYaml({ version: 1, name: path.basename(repoPath) }));
-  await fsp.writeFile(path.join(dir, '.gitignore'), CASEWRIGHT_GITIGNORE);
+  await fsp.writeFile(path.join(dir, '.gitignore'), CHIOKO_GITIGNORE);
   await fsp.writeFile(path.join(dir, 'runs', '.gitkeep'), '');
 }
 
-/** Read + parse `.casewright/config.yaml` tolerantly (defaults when missing/invalid). */
+/** Read + parse `.ch/config.yaml` tolerantly (defaults when missing/invalid). */
 export async function readConfig(repoPath: string): Promise<ConfigYaml> {
   const raw = await readMaybe(node.path().join(repoPath, CONFIG_REL));
   const parsed = ConfigYamlSchema.safeParse(raw ? parseYamlDoc(raw) : {});

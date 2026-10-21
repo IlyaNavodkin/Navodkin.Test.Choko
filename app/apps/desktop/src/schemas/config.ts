@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 /**
- * `.casewright/config.yaml` — the repo-wide config and the single source of truth for
+ * `.ch/config.yaml` — the repo-wide config and the single source of truth for
  * which folders are workspaces (`workspaces:` — a list of repo-relative paths, `.` = the
  * repo root). Parsing is tolerant: unknown keys are accepted and a malformed file coerces
  * to these defaults with a lint warning rather than failing the open. `displayIdPrefix`

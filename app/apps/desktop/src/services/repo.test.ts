@@ -32,11 +32,11 @@ const c2: ParsedCase = {
   expected: [],
 };
 
-/** Write a run folder (`_run.md` + one passing case sidecar) under `.casewright/runs/<folder>/`. */
+/** Write a run folder (`_run.md` + one passing case sidecar) under `.ch/runs/<folder>/`. */
 async function writeSmokeRun(repoPath: string, folder: string): Promise<void> {
   const fsp = node.fsp();
   const path = node.path();
-  const dir = path.join(repoPath, '.casewright', 'runs', folder);
+  const dir = path.join(repoPath, '.ch', 'runs', folder);
   await fsp.mkdir(dir, { recursive: true });
   await fsp.writeFile(
     path.join(dir, '_run.md'),
@@ -75,7 +75,7 @@ async function mkRepo(prefix: string): Promise<string> {
 async function gitInit(dir: string): Promise<void> {
   const git = node.simpleGit()(dir);
   await git.init();
-  await git.addConfig('user.email', 'test@casewright.dev', false, 'local');
+  await git.addConfig('user.email', 'test@chioko.dev', false, 'local');
   await git.addConfig('user.name', 'Test', false, 'local');
   await git.addConfig('commit.gpgsign', 'false', false, 'local');
   await git.add('.');
@@ -84,7 +84,7 @@ async function gitInit(dir: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Canonical repo: `.casewright/` + one declared workspace (areas/payments)
+// Canonical repo: `.ch/` + one declared workspace (areas/payments)
 // ---------------------------------------------------------------------------
 describe('openRepo / loadWorkspace / loadRepo', () => {
   let repoPath: string;
@@ -94,8 +94,8 @@ describe('openRepo / loadWorkspace / loadRepo', () => {
     const path = node.path();
     repoPath = await mkRepo('cw-repo-');
 
-    await fsp.mkdir(path.join(repoPath, '.casewright', 'runs'), { recursive: true });
-    await fsp.writeFile(path.join(repoPath, '.casewright', 'config.yaml'), 'version: 1\nname: QA\nworkspaces:\n  - areas/payments\n');
+    await fsp.mkdir(path.join(repoPath, '.ch', 'runs'), { recursive: true });
+    await fsp.writeFile(path.join(repoPath, '.ch', 'config.yaml'), 'version: 1\nname: QA\nworkspaces:\n  - areas/payments\n');
     await writeSmokeRun(repoPath, '2026-06-01-smoke');
 
     const ws = path.join(repoPath, 'areas', 'payments');
@@ -166,14 +166,14 @@ describe('openRepo / loadWorkspace / loadRepo', () => {
     }
     expect(cases).toHaveLength(2);
 
-    // runs come from .casewright/runs/ (repo-level folders), not per-workspace
+    // runs come from .ch/runs/ (repo-level folders), not per-workspace
     expect(runs).toHaveLength(1);
     expect(runs[0].rows[0].result).toBe('pass');
-    expect(runs[0].file).toBe('.casewright/runs/2026-06-01-smoke');
-    expect(runs[0].id).toBe('.casewright/runs/2026-06-01-smoke');
+    expect(runs[0].file).toBe('.ch/runs/2026-06-01-smoke');
+    expect(runs[0].id).toBe('.ch/runs/2026-06-01-smoke');
     // per-case checklist state and run-level approval are parsed from the folder
     expect(runs[0].rows[0].checks['step:0']).toBe('pass');
-    expect(runs[0].rows[0].file).toBe('.casewright/runs/2026-06-01-smoke/001-PAY-0001-first-case.md');
+    expect(runs[0].rows[0].file).toBe('.ch/runs/2026-06-01-smoke/001-PAY-0001-first-case.md');
     expect(runs[0].testerApproval).toEqual({ name: 'me', at: '2026-06-01 09:05' });
     expect(runs[0].summary).toBe('quick smoke');
   });
@@ -189,10 +189,10 @@ describe('workspace discovery from config', () => {
     const fsp = node.fsp();
     const path = node.path();
     repoPath = await mkRepo('cw-discover-');
-    await fsp.mkdir(path.join(repoPath, '.casewright'), { recursive: true });
+    await fsp.mkdir(path.join(repoPath, '.ch'), { recursive: true });
     // names chosen so alphabetical-by-name ≠ path order; `areas/ghost` is listed but absent
     await fsp.writeFile(
-      path.join(repoPath, '.casewright', 'config.yaml'),
+      path.join(repoPath, '.ch', 'config.yaml'),
       'version: 1\nworkspaces:\n  - areas/beta\n  - areas/alpha\n  - areas/ghost\n',
     );
     await fsp.mkdir(path.join(repoPath, 'areas', 'alpha'), { recursive: true });
@@ -229,8 +229,8 @@ describe('folder notes vs test cases', () => {
     const fsp = node.fsp();
     const path = node.path();
     repoPath = await mkRepo('cw-notes-');
-    await fsp.mkdir(path.join(repoPath, '.casewright'), { recursive: true });
-    await fsp.writeFile(path.join(repoPath, '.casewright', 'config.yaml'), 'version: 1\nworkspaces:\n  - areas/payments\n');
+    await fsp.mkdir(path.join(repoPath, '.ch'), { recursive: true });
+    await fsp.writeFile(path.join(repoPath, '.ch', 'config.yaml'), 'version: 1\nworkspaces:\n  - areas/payments\n');
 
     const ws = path.join(repoPath, 'areas', 'payments');
     await fsp.mkdir(path.join(ws, 'Auth'), { recursive: true });
@@ -272,11 +272,11 @@ describe('repo root as a single workspace', () => {
     const fsp = node.fsp();
     const path = node.path();
     repoPath = await mkRepo('cw-root-');
-    await fsp.mkdir(path.join(repoPath, '.casewright', 'runs'), { recursive: true });
+    await fsp.mkdir(path.join(repoPath, '.ch', 'runs'), { recursive: true });
     // The root workspace ('.') has no parent dir for a sibling note, so its metadata
     // (name/displayIdPrefix/description) lives in config.yaml itself.
     await fsp.writeFile(
-      path.join(repoPath, '.casewright', 'config.yaml'),
+      path.join(repoPath, '.ch', 'config.yaml'),
       'version: 1\nname: Root WS\ndisplayIdPrefix: RT\nworkspaces:\n  - .\n',
     );
     await writeSmokeRun(repoPath, '2026-06-02-smoke');
@@ -319,16 +319,16 @@ describe('repo root as a single workspace', () => {
     expect(rootCase.suite).not.toBe('');
 
     expect(runs).toHaveLength(1);
-    expect(runs[0].file).toBe('.casewright/runs/2026-06-02-smoke');
+    expect(runs[0].file).toBe('.ch/runs/2026-06-02-smoke');
     expect(runs[0].file.startsWith('./')).toBe(false);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Missing `.casewright/` → needsInit; present but empty → empty-repo warning
+// Missing `.ch/` → needsInit; present but empty → empty-repo warning
 // ---------------------------------------------------------------------------
-describe('missing and empty .casewright/', () => {
-  it('reports needsInit (without throwing) when .casewright/ is absent', async () => {
+describe('missing and empty .ch/', () => {
+  it('reports needsInit (without throwing) when .ch/ is absent', async () => {
     const repoPath = await mkRepo('cw-noinit-');
     await node.fsp().writeFile(node.path().join(repoPath, 'README.md'), 'x\n');
     await gitInit(repoPath);
@@ -341,10 +341,10 @@ describe('missing and empty .casewright/', () => {
     await node.fsp().rm(repoPath, { recursive: true, force: true });
   });
 
-  it('reports an empty-repo warning when .casewright/ exists but no workspaces are listed', async () => {
+  it('reports an empty-repo warning when .ch/ exists but no workspaces are listed', async () => {
     const repoPath = await mkRepo('cw-empty-');
-    await node.fsp().mkdir(node.path().join(repoPath, '.casewright'), { recursive: true });
-    await node.fsp().writeFile(node.path().join(repoPath, '.casewright', 'config.yaml'), 'version: 1\n');
+    await node.fsp().mkdir(node.path().join(repoPath, '.ch'), { recursive: true });
+    await node.fsp().writeFile(node.path().join(repoPath, '.ch', 'config.yaml'), 'version: 1\n');
     await gitInit(repoPath);
 
     const opened = await openRepo(repoPath);
@@ -369,10 +369,10 @@ describe('initRepo scaffold', () => {
 
     await initRepo(repoPath);
 
-    const config = await fsp.readFile(path.join(repoPath, '.casewright', 'config.yaml'), 'utf8');
+    const config = await fsp.readFile(path.join(repoPath, '.ch', 'config.yaml'), 'utf8');
     expect(config).toMatch(/version:\s*1/);
-    expect((await fsp.stat(path.join(repoPath, '.casewright', 'runs'))).isDirectory()).toBe(true);
-    const ignore = await fsp.readFile(path.join(repoPath, '.casewright', '.gitignore'), 'utf8');
+    expect((await fsp.stat(path.join(repoPath, '.ch', 'runs'))).isDirectory()).toBe(true);
+    const ignore = await fsp.readFile(path.join(repoPath, '.ch', '.gitignore'), 'utf8');
     expect(ignore).toMatch(/cache\//);
 
     // a freshly-initialized repo opens cleanly with no workspaces yet
@@ -393,8 +393,8 @@ describe('suite prefix override', () => {
     const fsp = node.fsp();
     const path = node.path();
     const repoPath = await mkRepo('cw-prefix-');
-    await fsp.mkdir(path.join(repoPath, '.casewright'), { recursive: true });
-    await fsp.writeFile(path.join(repoPath, '.casewright', 'config.yaml'), 'version: 1\nworkspaces:\n  - areas/payments\n');
+    await fsp.mkdir(path.join(repoPath, '.ch'), { recursive: true });
+    await fsp.writeFile(path.join(repoPath, '.ch', 'config.yaml'), 'version: 1\nworkspaces:\n  - areas/payments\n');
     const ws = path.join(repoPath, 'areas', 'payments');
     await fsp.mkdir(path.join(ws, 'Sessions'), { recursive: true });
     await fsp.writeFile(path.join(repoPath, 'areas', 'payments.md'), '---\nname: Payments\ndisplayIdPrefix: PAY\n---\n');
@@ -432,8 +432,8 @@ describe('migration (legacy → config + folder notes)', () => {
     const fsp = node.fsp();
     const path = node.path();
     const repoPath = await mkRepo('cw-migrate-');
-    await fsp.mkdir(path.join(repoPath, '.casewright'), { recursive: true });
-    await fsp.writeFile(path.join(repoPath, '.casewright', 'config.yaml'), 'version: 1\n'); // no workspaces yet
+    await fsp.mkdir(path.join(repoPath, '.ch'), { recursive: true });
+    await fsp.writeFile(path.join(repoPath, '.ch', 'config.yaml'), 'version: 1\n'); // no workspaces yet
 
     const ws = path.join(repoPath, 'areas', 'payments');
     await fsp.mkdir(path.join(ws, 'User Management'), { recursive: true }); // a space-named folder
@@ -449,7 +449,7 @@ describe('migration (legacy → config + folder notes)', () => {
     expect(opened.workspaces[0]).toMatchObject({ name: 'Payments QA', prefix: 'PAY' });
 
     // config.yaml now lists the workspace; the workspace folder note was written.
-    expect(await read(path.join(repoPath, '.casewright', 'config.yaml'))).toMatch(/workspaces:\n {2}- areas\/payments/);
+    expect(await read(path.join(repoPath, '.ch', 'config.yaml'))).toMatch(/workspaces:\n {2}- areas\/payments/);
     const wsNote = await read(path.join(repoPath, 'areas', 'payments.md'));
     expect(wsNote).toMatch(/name: Payments QA/);
     expect(wsNote).toMatch(/displayIdPrefix: PAY/);
@@ -500,7 +500,7 @@ describe('toRepoRelative', () => {
   const path = node.path();
   // `path.resolve` yields a genuinely absolute, platform-native path (the contract the
   // helper documents), so these exercise real `path.isAbsolute`/root handling.
-  const repo = path.resolve('home', 'user', 'casewright');
+  const repo = path.resolve('home', 'user', 'chioko');
 
   it('returns "" for the repo root itself', () => {
     expect(toRepoRelative(repo, repo)).toBe('');
@@ -557,8 +557,8 @@ describe('write primitives', () => {
   });
 
   it('creates a directory and deletes a path', async () => {
-    await makeDir(dir, '.casewright/runs');
-    expect(await exists('.casewright/runs')).toBe(true);
+    await makeDir(dir, '.ch/runs');
+    expect(await exists('.ch/runs')).toBe(true);
     await deletePath(dir, 'areas/payments/Billing/PAY-0001-first.md');
     expect(await exists('areas/payments/Billing/PAY-0001-first.md')).toBe(false);
   });
@@ -586,9 +586,9 @@ describe('.order ordering', () => {
     const fsp = node.fsp();
     const path = node.path();
     repoPath = await mkRepo('cw-order-');
-    await fsp.mkdir(path.join(repoPath, '.casewright', 'runs'), { recursive: true });
+    await fsp.mkdir(path.join(repoPath, '.ch', 'runs'), { recursive: true });
     await fsp.writeFile(
-      path.join(repoPath, '.casewright', 'config.yaml'),
+      path.join(repoPath, '.ch', 'config.yaml'),
       'version: 1\nname: Root\ndisplayIdPrefix: CW\nworkspaces:\n  - .\n',
     );
     // Two root cases + a subfolder. Default (byName) order = cases then dirs: apple, bravo, Zebra.
@@ -642,7 +642,7 @@ describe('.order ordering', () => {
 // ---------------------------------------------------------------------------
 describe('loadRuns ordering (.order)', () => {
   let repoPath: string;
-  const runDirAbs = () => node.path().join(repoPath, '.casewright', 'runs', '2026-06-01-ordered');
+  const runDirAbs = () => node.path().join(repoPath, '.ch', 'runs', '2026-06-01-ordered');
 
   const writeRunCase = async (file: string, displayId: string, title: string) => {
     await node.fsp().writeFile(

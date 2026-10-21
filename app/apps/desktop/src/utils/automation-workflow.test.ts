@@ -13,7 +13,7 @@ const binding = (over: Partial<AutomationBinding> = {}): AutomationBinding => ({
   enabled: true, arguments: { count: { kind: 'literal', value: 0 } }, archived: false, ...over,
 });
 const doc = (over: Partial<ReferenceDoc['entry']> = {}): ReferenceDoc => ({
-  id: 'stage', rel: '.casewright/glossary/stage.md', revision: 'rev-stage', readonly: false, issues: [], extra: {}, eol: '\n',
+  id: 'stage', rel: '.ch/glossary/stage.md', revision: 'rev-stage', readonly: false, issues: [], extra: {}, eol: '\n',
   entry: { id: 'stage', kind: 'arguments', title: 'Stage', aliases: [], archived: false, description: '',
     values: [{ key: 'count', type: 'number', value: 0 }, { key: 'enabled', type: 'boolean', value: false }], ...over },
 });

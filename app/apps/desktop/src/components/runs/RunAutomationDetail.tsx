@@ -5,6 +5,7 @@ import type { RunAutomationResult } from '@/services/automation/run-results';
 import type { Run, RunAutomationView } from '@/types';
 import { useApp } from '@/store/app-store';
 import { AutomationStatus } from './automation-status';
+import { TestOutput } from './TestOutput';
 
 export function RunAutomationDetail({ entry, binding, result, run, view }: {
   entry: CatalogEntry;
@@ -25,7 +26,7 @@ export function RunAutomationDetail({ entry, binding, result, run, view }: {
       <Tag>{entry.project || 'default project'}</Tag>
       <AutomationStatus status={result?.status} running={running} />
     </div>
-    <h3 className="mt-3 text-[21px] font-semibold leading-snug">{entry.title}</h3>
+    <h3 className="mt-3 text-[24px] font-extrabold leading-snug">{entry.title}</h3>
     <p className="mt-2 break-all font-mono text-[11px] text-ink-3">{entry.file}{entry.line ? `:${entry.line}` : ''}</p>
     <div className="mt-5 flex flex-wrap items-center gap-2">
       <Button variant="primary" size="sm" disabled={!!view?.busy || !binding}
@@ -46,7 +47,7 @@ export function RunAutomationDetail({ entry, binding, result, run, view }: {
           {result.flaky && <Tag>Flaky</Tag>}
         </div>
         <p className="mt-2 break-all font-mono text-[10px] text-ink-3">{result.executionId}</p>
-        {result.error && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-fail-soft p-3 text-[12px] text-fail">{result.error}</pre>}
+        {result.error && !result.attemptOutput?.length && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-fail-soft p-3 text-[12px] text-fail">{result.error}</pre>}
         {!!execution?.arguments?.length && <details className="mt-3 rounded border border-border p-3">
           <summary className="cursor-pointer text-[11px] font-medium">Arguments used in this execution · snapshot</summary>
           <dl className="mt-2 divide-y divide-border">
@@ -57,7 +58,11 @@ export function RunAutomationDetail({ entry, binding, result, run, view }: {
             </div>)}
           </dl>
         </details>}
-        {execution?.logTail && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-sunken p-3 font-mono text-[11px]">{execution.logTail}</pre>}
+        <TestOutput key={`${result.executionId}:${entry.automationId}:${entry.project}`} result={result} />
+        {execution?.logTail && <details className="mt-3 rounded border border-border p-3">
+          <summary className="cursor-pointer text-[11px] text-ink-3">Shared runner log · may include other tests</summary>
+          <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded bg-sunken p-3 font-mono text-[11px]">{execution.logTail}</pre>
+        </details>}
       </> : <p className="mt-2 text-[12px] text-ink-3">This test has not been run here. Run it individually, run all, or import a report from your terminal or VS Code.</p>}
     </section>
 

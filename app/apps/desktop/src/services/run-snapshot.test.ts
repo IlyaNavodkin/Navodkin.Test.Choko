@@ -61,7 +61,7 @@ const argsEntry = (patch: Partial<ReferenceEntry> = {}): ReferenceEntry => ({
   ...patch,
 });
 
-const linkMd = (id: string, label = 'Payments runbook') => `[${label}](../../.casewright/glossary/${id}.md)`;
+const linkMd = (id: string, label = 'Payments runbook') => `[${label}](../../.ch/glossary/${id}.md)`;
 
 const kase = (objective: string, patch: Partial<Case> = {}): Case => ({
   id: 'case0000001',

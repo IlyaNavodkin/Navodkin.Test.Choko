@@ -1,4 +1,4 @@
-import mascot from '@casewright/brand/chioko-mascot.png';
+import mascot from '@chioko/brand/chioko-mascot.png';
 
 /**
  * The supplied Chioko mascot, shared with the application icon.

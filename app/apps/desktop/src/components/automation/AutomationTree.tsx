@@ -25,7 +25,7 @@ export function AutomationTree({ entries, selectedKey, onSelect, renderMeta }: {
     return (
       <button key={node.path} type="button" aria-pressed={active} onClick={() => onSelect(node.entry)} title={`${node.entry.file ?? ''}\n${node.name} · ${node.entry.project}`}
         className={cn('my-0.5 flex w-full items-start gap-2 rounded-md border border-transparent px-2 py-2 text-left text-[12px] text-ink-2 hover:bg-raise focus-visible:outline-2 focus-visible:outline-accent', active && 'border-accent-line bg-accent-soft text-accent-ink')}>
-        <span className="mt-0.5 shrink-0 text-ink-faint">{I.play({ size: 12 })}</span>
+        <span className="mt-0.5 shrink-0 text-ink-3">{I.test({ size: 15 })}</span>
         <span className="min-w-0 flex-1">
           <span className="block leading-[1.45]">{node.name}</span>
           <span className="mt-0.5 block text-[10px] text-ink-3">{node.entry.project || 'default project'}{node.entry.variantId ? ` · ${node.entry.variantId}` : ''}</span>

@@ -3,6 +3,7 @@ import { sha256Hex } from '@/services/hash';
 import { parsePlaywrightReport, walkSpecs } from './report';
 import type { RunAutomationResult } from './run-results';
 import type { AutomationBinding } from '@/schemas/automation-store';
+import { collectAttemptOutput, type TestAttemptOutput } from './test-output';
 
 // ---------------------------------------------------------------------------
 // Importing a completed Playwright report from CI or a manual run (design §Решение 8).
@@ -26,6 +27,8 @@ export interface ImportTest {
   duration: number;
   flaky: boolean;
   attempts: number;
+  attemptOutput?: TestAttemptOutput[];
+  error?: string;
 }
 
 export interface ImportPreview {
@@ -118,6 +121,8 @@ export function parsePlaywrightImport(json: string): { ok: true; tests: ImportTe
         duration: results.reduce((n, r) => n + (r.duration ?? 0), 0),
         flaky: status === 'passed' && results.slice(0, -1).some((r) => r.status === 'failed' || r.status === 'timedOut'),
         attempts: results.length,
+        attemptOutput: collectAttemptOutput(results),
+        ...(final?.error?.message ? { error: final.error.message } : {}),
       });
     }
   }
@@ -216,6 +221,8 @@ export function importedResults(preview: ImportPreview, run: Run, executionId: s
     flaky: test.flaky,
     attempts: test.attempts,
     duration: test.duration,
+    ...(test.attemptOutput ? { attemptOutput: test.attemptOutput } : {}),
+    ...(test.error ? { error: test.error } : {}),
   }));
 }
 

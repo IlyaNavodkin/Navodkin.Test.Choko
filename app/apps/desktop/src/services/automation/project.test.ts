@@ -16,15 +16,15 @@ async function mkRepo(): Promise<string> {
 }
 
 describe('autotest project detection', () => {
-  it('uses .casewright/autotests as the project root', async () => {
+  it('uses .ch/autotests as the project root', async () => {
     const repo = await mkRepo();
-    expect(AUTOTESTS_DIR).toBe('.casewright/autotests');
-    expect(automationProjectPath(repo)).toBe(join(repo, '.casewright', 'autotests'));
+    expect(AUTOTESTS_DIR).toBe('.ch/autotests');
+    expect(automationProjectPath(repo)).toBe(join(repo, '.ch', 'autotests'));
 
     const missing = await findAutomationProject(repo);
-    expect(missing).toMatchObject({ rel: '.casewright/autotests', exists: false });
+    expect(missing).toMatchObject({ rel: '.ch/autotests', exists: false });
 
-    await mkdir(join(repo, '.casewright', 'autotests'), { recursive: true });
+    await mkdir(join(repo, '.ch', 'autotests'), { recursive: true });
     const found = await findAutomationProject(repo);
     expect(found.exists).toBe(true);
     expect(found.dir).toBe(automationProjectPath(repo));

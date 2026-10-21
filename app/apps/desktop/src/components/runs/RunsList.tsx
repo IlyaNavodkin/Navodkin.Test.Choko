@@ -2,11 +2,12 @@ import type { ReactNode } from 'react';
 import { I } from '@/components/icons';
 import { Button, RES, RowContextMenu, Tag } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { useApp } from '@/store/app-store';
+import { useApp, useAppStore } from '@/store/app-store';
 import { formatRunDate, runDateGroups } from '@/utils/dates';
 import { dashboardStats } from '@/utils/run-dashboard';
 import type { Result, Run } from '@/types';
 import { ActivityGraph } from './ActivityGraph';
+import { filterRunRows } from '@/utils/run-activity';
 
 type Tally = Record<Result, number>;
 const emptyTally = (): Tally => ({ pass: 0, fail: 0, blocked: 0, in_progress: 0, skipped: 0, not_run: 0 });
@@ -31,11 +32,12 @@ function StatTile({ value, label, sub, color }: { value: ReactNode; label: strin
 }
 
 /** One run's card in the recent-runs list (name + status, date, result distribution). */
-function RunCard({ run }: { run: Run }) {
+function RunCard({ run, activityDate }: { run: Run; activityDate: string | null }) {
   const ctx = useApp();
   const t = emptyTally();
-  run.rows.forEach((r) => (t[r.result] += 1));
-  const total = run.rows.length;
+  const rows = activityDate ? filterRunRows(run, { date: activityDate }).map(({ row }) => row) : run.rows;
+  rows.forEach((r) => (t[r.result] += 1));
+  const total = rows.length;
   return (
     <RowContextMenu
       items={[
@@ -46,28 +48,28 @@ function RunCard({ run }: { run: Run }) {
       ]}
     >
       <button
-        className="flex w-full items-center gap-4 rounded-lg border border-border bg-panel px-[18px] py-[15px] text-left transition hover:border-accent-line hover:shadow-[0_2px_8px_var(--shadow)]"
-        onClick={() => ctx.openRun(run.id)}
+        className="flex w-full min-w-0 flex-wrap items-center gap-4 rounded-lg border border-border bg-panel px-[18px] py-[15px] text-left transition hover:border-accent-line hover:shadow-[0_2px_8px_var(--shadow)]"
+        onClick={() => ctx.openRun(run.id, activityDate ? { date: activityDate } : undefined)}
       >
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-[9px] text-[14.5px] font-semibold">
+          <div className="flex flex-wrap items-center gap-[9px] break-words text-[14.5px] font-semibold">
             {run.name}
             <span className={cn('rounded-full px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-[0.05em]', RUN_STATUS[run.status])}>
               {run.status}
             </span>
           </div>
-          <div className="mt-[3px] font-mono text-[11.5px] text-ink-faint">
+          <div className="mt-[3px] break-all font-mono text-[11.5px] text-ink-faint">
             {formatRunDate(run.created)} · {run.file}
           </div>
         </div>
-        <div className="w-[260px] shrink-0 text-right">
+        <div className="ml-auto w-[min(100%,340px)] min-w-0 text-right">
           <div className="flex h-[7px] w-full overflow-hidden rounded-full bg-sunken">
             {SEGS.map((s) =>
               t[s] ? <i key={s} className="block h-full" style={{ width: (t[s] / total) * 100 + '%', background: RES[s].color }} /> : null,
             )}
           </div>
-          <div className="mt-1.5 whitespace-nowrap font-mono text-[11.5px] text-ink-3">
-            {total} cases · {t.pass} pass · {t.fail} fail{t.blocked ? ' · ' + t.blocked + ' blocked' : ''}
+          <div className="mt-1.5 break-words font-mono text-[11.5px] text-ink-3">
+            {total} {activityDate ? 'recorded this day' : 'cases'} · {t.pass} pass · {t.fail} fail{t.blocked ? ' · ' + t.blocked + ' blocked' : ''}
           </div>
         </div>
         <span className="grid place-items-center text-ink-faint">{I.chevron({ size: 16 })}</span>
@@ -79,6 +81,10 @@ function RunCard({ run }: { run: Run }) {
 export function RunsList() {
   const ctx = useApp();
   const { runs } = ctx;
+  const year = ctx.sel.activityYear ?? new Date().getFullYear();
+  const activityDate = ctx.sel.activityDate ?? null;
+  const shownRuns = activityDate ? runs.filter((run) => filterRunRows(run, { date: activityDate }).length > 0) : runs;
+  const selectDate = (date: string | null) => useAppStore.setState((s) => ({ sel: { ...s.sel, activityDate: date } }));
   const stats = dashboardStats(runs);
   const rateColor =
     stats.executedThisWeek === 0
@@ -90,11 +96,11 @@ export function RunsList() {
           : 'var(--fail)';
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex-1 overflow-auto px-[30px] py-[26px]">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="min-w-0 flex-1 overflow-auto px-[30px] py-[26px]">
         <div className="mb-[18px] flex items-center gap-3">
-          <h2 className="m-0 text-[18px] font-semibold">Test runs</h2>
-          <Tag>.casewright/runs/</Tag>
+          <h2 className="m-0 text-[24px] font-extrabold">Test runs</h2>
+          <Tag>.ch/runs/</Tag>
           <Button
             variant="ghost"
             className="ml-auto"
@@ -137,12 +143,14 @@ export function RunsList() {
             />
           </div>
 
-          <ActivityGraph runs={runs} />
+          <ActivityGraph runs={runs} year={year} selectedDate={activityDate} onSelectDate={selectDate}
+            onYearChange={(activityYear) => useAppStore.setState((s) => ({ sel: { ...s.sel, activityYear, activityDate: null } }))} />
 
           <section className="flex flex-col gap-3">
             <div className="flex items-baseline gap-2.5 px-0.5">
-              <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-2">Recent runs</span>
-              <span className="font-mono text-[10.5px] text-ink-faint">{runs.length}</span>
+              <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-2">{activityDate ? `Runs with results on ${activityDate}` : 'Recent runs'}</span>
+              <span className="font-mono text-[10.5px] text-ink-faint" aria-live="polite">{shownRuns.length}</span>
+              {activityDate && <Button size="sm" variant="ghost" onClick={() => selectDate(null)}>Reset date filter</Button>}
             </div>
             {runs.length === 0 ? (
               <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border-2 px-4 py-10 text-center">
@@ -151,16 +159,18 @@ export function RunsList() {
                   {I.plus({ size: 15 })} New run
                 </Button>
               </div>
+            ) : shownRuns.length === 0 ? (
+              <p className="rounded-lg border border-dashed border-border p-6 text-[13px] text-ink-3">No recorded results on {activityDate}. Choose another day or reset the date filter.</p>
             ) : (
               <div className="flex flex-col gap-6">
-                {runDateGroups(runs).map((group) => (
+                {runDateGroups(shownRuns).map((group) => (
                   <section key={group.label} className="flex flex-col gap-2.5">
                     <div className="flex items-center gap-2 px-0.5 text-[11px] font-bold uppercase tracking-[0.05em] text-ink-faint">
                       {group.label}
                       <span className="font-mono text-[10.5px]">{group.runs.length}</span>
                     </div>
                     {group.runs.map((run) => (
-                      <RunCard key={run.id} run={run} />
+                      <RunCard key={run.id} run={run} activityDate={activityDate} />
                     ))}
                   </section>
                 ))}

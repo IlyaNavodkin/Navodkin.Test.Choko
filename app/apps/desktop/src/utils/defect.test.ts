@@ -46,13 +46,13 @@ const row: RunRow = {
     'accept:0': 'No sequence generated.',
   },
   itemText: {},
-  file: '.casewright/runs/2026-10-20-regression/001-RND-0002-sequence-generator.md',
+  file: '.ch/runs/2026-10-20-regression/001-RND-0002-sequence-generator.md',
 };
 
 const run: Run = {
-  id: '.casewright/runs/2026-10-20-regression',
+  id: '.ch/runs/2026-10-20-regression',
   name: 'Regression — randomness suite',
-  file: '.casewright/runs/2026-10-20-regression',
+  file: '.ch/runs/2026-10-20-regression',
   created: '2026-10-20',
   testDate: '2026-10-20',
   status: 'open',
@@ -227,7 +227,7 @@ describe('renderDefectMarkdown', () => {
     expect(md).toContain('## Actual result');
     expect(md).toContain('## Evidence\n\n- 001.png (RND-0002.evidence/001.png)');
     expect(md).toContain('## Notes\n\nCannot continue past the validation error.');
-    expect(md).not.toContain('.casewright/runs');
+    expect(md).not.toContain('.ch/runs');
   });
 
   it('includes the automation failure and source label', () => {

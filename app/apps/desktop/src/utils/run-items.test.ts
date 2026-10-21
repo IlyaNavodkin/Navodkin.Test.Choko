@@ -31,13 +31,13 @@ const baseRow: RunRow = {
   checks: { 'setup:0': 'pass', 'step:0': 'pass', 'step:1': 'fail', 'accept:0': 'fail' },
   failNotes: { 'step:1': 'button 500s', 'accept:0': 'never arrived' },
   itemText: {},
-  file: '.casewright/runs/r1/001-PAY-0042-reset-password.md',
+  file: '.ch/runs/r1/001-PAY-0042-reset-password.md',
 };
 
 const run: Run = {
-  id: '.casewright/runs/r1',
+  id: '.ch/runs/r1',
   name: 'Sprint 13',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-06-09',
   status: 'open',
   scope: 'repo',
@@ -73,7 +73,7 @@ describe('buildDefectText', () => {
     expect(text).toContain('# PAY-0042 — Reset password');
     expect(text).toContain('**Objective:** Verify the self-service reset flow.');
     expect(text).toContain('**Run:** Sprint 13');
-    expect(text).not.toContain('.casewright/runs/r1'); // run folder path removed
+    expect(text).not.toContain('.ch/runs/r1'); // run folder path removed
     expect(text).toContain('## Steps to reproduce');
     expect(text).toContain('1. Open login'); // the lead-up (passing) step is now included
     expect(text).toContain('2. Click forgot password  ✗ button 500s');

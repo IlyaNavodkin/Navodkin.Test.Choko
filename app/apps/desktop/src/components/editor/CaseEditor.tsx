@@ -148,11 +148,16 @@ export function CaseEditor() {
       </div>
       <div className="flex-none border-b border-border px-[26px] pt-[14px]">
         <div className="flex items-center gap-2.5">
-          <input
-            className="-mx-[7px] -my-[3px] min-w-0 flex-1 rounded-md border border-transparent bg-transparent px-[7px] py-[3px] text-[21px] font-semibold tracking-[-0.01em] text-ink hover:bg-raise focus:border-accent focus:bg-panel focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
+          <textarea
+            rows={1}
+            aria-label="Case title"
+            className="-mx-[7px] -my-[3px] max-h-40 min-h-[38px] min-w-0 flex-1 resize-none rounded-md border border-transparent bg-transparent px-[7px] py-[3px] font-heading text-[24px] font-extrabold leading-[1.3] tracking-[-0.01em] text-ink [field-sizing:content] hover:bg-raise focus:border-accent focus:bg-panel focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:outline-none"
             value={c.title}
-            onChange={(e) => patch({ title: e.target.value })}
-            onKeyDown={editorKeyDown}
+            onChange={(e) => patch({ title: e.target.value.replace(/[\r\n]+/g, ' ') })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.nativeEvent.isComposing) e.preventDefault();
+              editorKeyDown(e);
+            }}
             placeholder="Untitled case"
             data-edit-field="title"
           />
@@ -164,7 +169,7 @@ export function CaseEditor() {
           </Button>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 pb-[13px] pt-2.5">
-          <div className="inline-flex items-center gap-1.5 font-mono text-[12px]">
+          <div className="inline-flex items-center gap-1.5 font-ui text-[12px] font-medium">
             <span className="text-ink-faint">ID</span>
             {idConflict ? (
               <input
@@ -215,7 +220,7 @@ export function CaseEditor() {
             </select>
           </div>
           <span className="mx-0.5 my-1.5 w-px self-stretch bg-border" />
-          <div className="inline-flex min-w-0 flex-1 items-center gap-1.5 font-mono text-[12px]" data-edit-field="tags">
+          <div className="inline-flex min-w-0 flex-1 items-center gap-1.5 font-ui text-[12px] font-medium" data-edit-field="tags">
             <span className="text-ink-faint">Tags</span>
             <TagEditor tags={c.tags} onChange={(t) => patch({ tags: t })} />
           </div>

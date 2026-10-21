@@ -77,7 +77,7 @@ interface NwGlobal {
     open(url: string, options: NwWinOpenOptions, cb: (win: NwWindow) => void): void;
   };
   App?: { dataPath: string; argv: string[]; quit?(): void };
-  Shell?: { openExternal(uri: string): void };
+  Shell?: { openExternal(uri: string): void; openItem?(filePath: string): void };
   Screen?: NwScreen;
   require?: NodeRequire;
 }

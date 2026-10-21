@@ -17,8 +17,8 @@ const buttonVariants = cva(
         danger: 'bg-panel text-fail border-border-2 hover:bg-fail-soft hover:border-fail',
       },
       size: {
-        default: 'h-7 gap-1.5 text-[12.5px] [&_svg]:size-3.5',
-        sm: 'h-6 gap-1 text-[12px] [&_svg]:size-[13px]',
+        default: 'h-7 gap-1.5 text-[13px] [&_svg]:size-3.5',
+        sm: 'h-6 gap-1 text-[13px] [&_svg]:size-[13px]',
       },
       icon: { true: 'p-0', false: '' },
     },

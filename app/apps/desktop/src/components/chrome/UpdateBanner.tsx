@@ -41,7 +41,7 @@ export function UpdateBanner() {
     return (
       <div className={base}>
         <span className="shrink-0">{I.link({ size: 14 })}</span>
-        <span className="flex-1">Casewright v{updateVersion} is available.</span>
+        <span className="flex-1">Chioko v{updateVersion} is available.</span>
         <Button size="sm" className="shrink-0" onClick={openReleasePage}>
           Open release page
         </Button>

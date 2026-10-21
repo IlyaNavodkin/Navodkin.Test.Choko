@@ -10,11 +10,11 @@ import {
   type ReferenceKind,
 } from '@/schemas/reference-book';
 import type { LintWarning } from '@/schemas';
-import { CASEWRIGHT_DIR } from '../repo-paths';
+import { CHIOKO_DIR } from '../repo-paths';
 import { yamlScalar } from './yaml-scalar';
 
 // ---------------------------------------------------------------------------
-// `.casewright/glossary/<uuid>.md` — one reference-book record per file: YAML front
+// `.ch/glossary/<uuid>.md` — one reference-book record per file: YAML front
 // matter (identity + kind-specific payload) plus a Markdown description body.
 //
 // Hand-editable and forward-compatible by design: the parser is tolerant and reports
@@ -27,7 +27,7 @@ import { yamlScalar } from './yaml-scalar';
 export const REFERENCE_SCHEMA_VERSION = 1;
 
 /** Product data root — reference book, image assets and bug reports live beside the repo config. */
-export const GLOSSARY_DIR = `${CASEWRIGHT_DIR}/glossary`;
+export const GLOSSARY_DIR = `${CHIOKO_DIR}/glossary`;
 
 /** Repo-relative path of the record file for `id` (the file's stem is the identity). */
 export const glossaryRel = (id: string): string => `${GLOSSARY_DIR}/${id}.md`;

@@ -64,6 +64,7 @@ export interface RunCaseCardProps {
   /** Native drag handlers for the in-card reorder handle. */
   onDragStart: () => void;
   onDragEnd: () => void;
+  reorderable?: boolean;
   /** Automated results mapped to this row (shown as a separate badge — never merged into the manual result). */
   automation?: { status: string; flaky: boolean; attempts: number }[];
 }
@@ -87,6 +88,7 @@ export function RunCaseCard({
   onRemove,
   onDragStart,
   onDragEnd,
+  reorderable = true,
   automation,
 }: RunCaseCardProps) {
   const failures = rowFailures(row, kase);
@@ -113,9 +115,9 @@ export function RunCaseCard({
           )}
           {row.executed_at && <span className="truncate font-mono text-[10.5px] text-ink-faint">{row.executed_at}</span>}
           <span className="ml-auto flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover/card:opacity-100">
-            <span className="cursor-grab text-ink-faint" title="Drag to reorder" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
+            {reorderable && <span className="cursor-grab text-ink-faint" title="Drag to reorder" draggable onDragStart={onDragStart} onDragEnd={onDragEnd}>
               {I.drag({ size: 14 })}
-            </span>
+            </span>}
             {(row.result === 'fail' || row.result === 'blocked') && (
               <button
                 className="text-ink-faint transition-colors hover:text-accent"

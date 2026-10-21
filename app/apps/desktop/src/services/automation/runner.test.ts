@@ -15,7 +15,7 @@ afterEach(async () => {
 async function mkRepo(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), 'testoritto-runner-'));
   cleanup.push(dir);
-  await mkdir(join(dir, '.casewright', 'autotests'), { recursive: true });
+  await mkdir(join(dir, '.ch', 'autotests'), { recursive: true });
   return dir;
 }
 
@@ -23,7 +23,7 @@ const baseSpec = (over: Partial<InvocationSpec> = {}): InvocationSpec => ({
   repoPath: 'C:\\repo',
   nodeCommand: 'C:\\nodejs\\node.exe',
   cliPath: 'C:\\repo\\node_modules\\@playwright\\test\\cli.js',
-  executionDir: 'C:\\repo\\.casewright\\automation\\executions\\e1',
+  executionDir: 'C:\\repo\\.ch\\automation\\executions\\e1',
   args: ['--grep', '@tt:login'],
   env: { TESTORITTO_ARG_BASE_URL: 'https://dev.example.com' },
   ...over,
@@ -72,7 +72,7 @@ describe('buildInvocation', () => {
     expect(built.args).toContain('--reporter=json');
     expect(built.args).toContain('--grep');
     expect(built.options.shell).toBe(false);
-    expect(built.options.cwd).toBe(join('C:\\repo', '.casewright', 'autotests'));
+    expect(built.options.cwd).toBe(join('C:\\repo', '.ch', 'autotests'));
     const env = built.options.env as Record<string, string>;
     expect(env.PLAYWRIGHT_JSON_OUTPUT_NAME).toBe(built.reportPath);
     expect(env.TESTORITTO_ARG_BASE_URL).toBe('https://dev.example.com');

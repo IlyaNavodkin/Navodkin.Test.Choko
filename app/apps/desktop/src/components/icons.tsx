@@ -44,7 +44,7 @@ export function Icon({
 
 export type IconFn = (props?: IconProps) => ReactNode;
 
-/** The Casewright line-icon set. Each entry is called like `I.file({ size: 14 })`. */
+/** The Chioko line-icon set. Each entry is called like `I.file({ size: 14 })`. */
 export const I = {
   chevron: (p?: IconProps) => <Icon {...p} d="M9 6l6 6-6 6" />,
   chevronDown: (p?: IconProps) => <Icon {...p} d="M6 9l6 6 6-6" />,
@@ -68,6 +68,12 @@ export const I = {
     <Icon {...p}>
       <path d="M6 3h8l4 4v14a0 0 0 01 0 0H6a0 0 0 01 0 0V3z" />
       <path d="M14 3v4h4" />
+    </Icon>
+  ),
+  test: (p?: IconProps) => (
+    <Icon {...p}>
+      <path d="M9 3h6M10 3v6l-5 9a2 2 0 001.75 3h10.5A2 2 0 0019 18l-5-9V3M8 14h8" />
+      <path d="M10 17h.01M14 18h.01" />
     </Icon>
   ),
   download: (p?: IconProps) => (

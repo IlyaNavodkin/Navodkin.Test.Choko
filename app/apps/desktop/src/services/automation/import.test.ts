@@ -13,14 +13,14 @@ const row = (over: Partial<RunRow> = {}): RunRow => ({
   notes: '',
   checks: {},
   failNotes: {},
-  file: '.casewright/runs/r1/001-RND-0001.md',
+  file: '.ch/runs/r1/001-RND-0001.md',
   ...over,
 });
 
 const run = (rows: RunRow[] = [row()]): Run => ({
-  id: '.casewright/runs/r1',
+  id: '.ch/runs/r1',
   name: 'r1',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-10-19',
   status: 'open',
   scope: '',
@@ -82,6 +82,25 @@ describe('parseJUnit', () => {
 });
 
 describe('parsePlaywrightImport', () => {
+  it('preserves a test’s output, errors, and retries through import mapping', () => {
+    const payload = JSON.stringify({ suites: [{ title: 'sequence.spec.ts', specs: [
+      { title: 'login works', tags: ['@tt:login'], tests: [{ projectName: 'chromium', results: [
+        { status: 'failed', duration: 1, stdout: [{ text: 'login only' }], error: { message: 'Expected 50, received 40' } },
+        { status: 'failed', duration: 2, retry: 1, stderr: [{ text: 'login retry only' }], error: { message: 'Still 40' } },
+      ] }] },
+      { title: 'other test', tags: ['@tt:other'], tests: [{ projectName: 'chromium', results: [
+        { status: 'passed', duration: 1, stdout: [{ text: 'other only' }] },
+      ] }] },
+    ] }] });
+    const preview = previewImport(payload, 'playwright-json', run());
+    const results = importedResults(preview, run(), 'external');
+    expect(results).toHaveLength(1);
+    expect(results[0].attemptOutput).toMatchObject([
+      { stdout: 'login only', stderr: '', error: 'Expected 50, received 40' },
+      { stdout: '', stderr: 'login retry only', error: 'Still 40' },
+    ]);
+    expect(results[0].error).toBe('Still 40');
+  });
   it('reads tests, tags and flaky attempts from a JSON report', () => {
     const res = parsePlaywrightImport(
       JSON.stringify({

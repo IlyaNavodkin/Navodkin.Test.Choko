@@ -9,18 +9,18 @@ import {
   serializeReferenceEntry,
 } from './format/reference-book';
 import { sha256Hex } from './hash';
-import { CASEWRIGHT_DIR } from './repo-paths';
+import { CHIOKO_DIR } from './repo-paths';
 import { RepoPathError, resolveRepoWritePath, writeFileAtomic } from './repo-fs';
 
 /** The layout this module owns — re-exported so consumers never reach into the format layer for it. */
 export { GLOSSARY_DIR, glossaryRel, isSafeEntryId } from './format/reference-book';
 
 // ---------------------------------------------------------------------------
-// Reference book fs layer (`.casewright/glossary/`): read the catalog, read one record,
+// Reference book fs layer (`.ch/glossary/`): read the catalog, read one record,
 // and write one record atomically with a stale/conflict guard.
 //
 // Non-negotiable rules (design §9, spec "Compatible storage and no-write open"):
-//   · opening a repository writes nothing — a missing `.casewright/` is an empty catalog;
+//   · opening a repository writes nothing — a missing `.ch/` is an empty catalog;
 //   · every write is atomic and containment-checked (never outside the repo, never through
 //     a symlink) and marked as a self-write for the watcher;
 //   · a record the app cannot represent is never rewritten;
@@ -92,7 +92,7 @@ const errText = (e: unknown): string => (e instanceof Error ? e.message : String
 
 /** The first product-path segment that exists but is not a directory (`null` when the path is clear). */
 async function nonDirectoryOnPath(repoPath: string): Promise<string | null> {
-  for (const rel of [CASEWRIGHT_DIR, GLOSSARY_DIR]) {
+  for (const rel of [CHIOKO_DIR, GLOSSARY_DIR]) {
     try {
       if (!(await node.fsp().stat(node.path().join(repoPath, rel))).isDirectory()) return rel;
     } catch {
@@ -128,7 +128,7 @@ function docFromBytes(rel: string, id: string, bytes: Buffer): ReferenceDoc {
 }
 
 /**
- * Read the whole catalog, sorted by file name. A missing `.casewright/` (or a missing
+ * Read the whole catalog, sorted by file name. A missing `.ch/` (or a missing
  * `glossary/` folder) is simply an empty catalog — this never creates anything.
  */
 export async function loadGlossary(repoPath: string): Promise<GlossaryLoad> {

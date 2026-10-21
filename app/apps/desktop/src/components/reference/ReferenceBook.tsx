@@ -247,89 +247,91 @@ export function ReferenceBookView(props: ReferenceBookViewProps) {
   const empty = refs.length === 0 && !draft;
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-panel">
-      <div className="flex items-center gap-3 px-[22px] py-[14px]">
-        <h2 className="m-0 text-[18px] font-semibold">Reference book</h2>
-        <Tag>.casewright/glossary/</Tag>
-        <span className="flex-1" />
-        <Button onClick={() => props.onCreate('link')}>{I.plus({ size: 14 })} New link</Button>
-        <Button onClick={() => props.onCreate('arguments')}>{I.plus({ size: 14 })} New arguments set</Button>
-      </div>
-      <SaveErrorBar
-        error={props.saveError}
-        onReload={props.onReload}
-        onOverwrite={props.onOverwrite}
-        onRetry={props.onRetry}
-      />
-      <LeavePrompt
-        pending={props.pendingLeave}
-        onStay={props.onStay}
-        onDiscard={props.onLeaveDiscard}
-        onSave={props.onLeaveSave}
-      />
-      {props.refIssues.length > 0 && (
-        <div className="flex flex-col gap-0.5 border-b border-[oklch(0.85_0.06_80)] bg-blocked-soft px-4 py-2 text-[12px] text-[oklch(0.5_0.12_66)]">
-          {props.refIssues.map((issue, i) => (
-            <span key={i}>{issue.message}</span>
-          ))}
+    <div className="flex min-h-0 min-w-0 flex-1 bg-panel">
+      {!empty && <ReferenceList
+        docs={refs}
+        selectedId={selId}
+        query={props.query}
+        kindFilter={props.kindFilter}
+        showArchived={props.showArchived}
+        onSelect={props.onSelect}
+        onQuery={props.onQuery}
+        onKindFilter={props.onKindFilter}
+        onShowArchived={props.onShowArchived}
+        onArchive={props.onArchive}
+      />}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="flex flex-wrap items-center gap-3 border-b border-border px-[22px] py-[14px]">
+          <h2 className="m-0 text-[24px] font-extrabold">Reference book</h2>
+          <Tag>.ch/glossary/</Tag>
+          <span className="flex-1" />
+          <Button onClick={() => props.onCreate('link')}>{I.plus({ size: 14 })} New link</Button>
+          <Button onClick={() => props.onCreate('arguments')}>{I.plus({ size: 14 })} New arguments set</Button>
         </div>
-      )}
+        <SaveErrorBar
+          error={props.saveError}
+          onReload={props.onReload}
+          onOverwrite={props.onOverwrite}
+          onRetry={props.onRetry}
+        />
+        <LeavePrompt
+          pending={props.pendingLeave}
+          onStay={props.onStay}
+          onDiscard={props.onLeaveDiscard}
+          onSave={props.onLeaveSave}
+        />
+        {props.refIssues.length > 0 && (
+          <div className="flex flex-col gap-0.5 border-b border-[oklch(0.85_0.06_80)] bg-blocked-soft px-4 py-2 text-[12px] text-[oklch(0.5_0.12_66)]">
+            {props.refIssues.map((issue, i) => (
+              <span key={i}>{issue.message}</span>
+            ))}
+          </div>
+        )}
 
-      {empty ? (
-        <div className="grid min-h-0 flex-1 place-items-center">
-          <div className="flex max-w-[460px] flex-col items-center gap-3 text-center">
-            {I.link({ size: 30, style: { color: 'var(--ink-faint)' } })}
-            <div className="text-[14px] font-medium">Nothing in the reference book yet</div>
-            <div className="text-[13px] text-ink-3">
-              Keep the definitions, documents and environment values your cases repeat here — and link them from case text
-              instead of copying them. Each record is one readable Markdown file under{' '}
-              <span className="font-mono">.casewright/glossary/</span>, so it travels with the repository.
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="primary" onClick={() => props.onCreate('link')}>
-                {I.plus({ size: 14 })} New link
-              </Button>
-              <Button onClick={() => props.onCreate('arguments')}>{I.plus({ size: 14 })} New arguments set</Button>
+        {empty ? (
+          <div className="grid min-h-0 flex-1 place-items-center">
+            <div className="flex max-w-[460px] flex-col items-center gap-3 text-center">
+              {I.link({ size: 30, style: { color: 'var(--ink-faint)' } })}
+              <div className="text-[14px] font-medium">Nothing in the reference book yet</div>
+              <div className="text-[13px] text-ink-3">
+                Keep the definitions, documents and environment values your cases repeat here — and link them from case text
+                instead of copying them. Each record is one readable Markdown file under{' '}
+                <span className="font-mono">.ch/glossary/</span>, so it travels with the repository.
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="primary" onClick={() => props.onCreate('link')}>
+                  {I.plus({ size: 14 })} New link
+                </Button>
+                <Button onClick={() => props.onCreate('arguments')}>{I.plus({ size: 14 })} New arguments set</Button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="flex min-h-0 flex-1">
-          <ReferenceList
-            docs={refs}
-            selectedId={selId}
-            query={props.query}
-            kindFilter={props.kindFilter}
-            showArchived={props.showArchived}
-            onSelect={props.onSelect}
-            onQuery={props.onQuery}
-            onKindFilter={props.onKindFilter}
-            onShowArchived={props.onShowArchived}
-            onArchive={props.onArchive}
-          />
-          <ReferenceCard
-            draft={draft}
-            doc={doc}
-            dirty={props.dirty}
-            isNew={props.draftBase === null}
-            saveError={props.saveError}
-            onPatch={props.onPatch}
-            onSave={props.onSave}
-            onDiscard={props.onDiscard}
-            onArchive={props.onCardArchive}
-            onAddValue={props.onAddValue}
-            onEditValue={props.onEditValue}
-            onRemoveValue={props.onRemoveValue}
-          />
-        </div>
+        ) : (
+          <div className="flex min-h-0 flex-1">
+            <ReferenceCard
+              draft={draft}
+              doc={doc}
+              dirty={props.dirty}
+              isNew={props.draftBase === null}
+              saveError={props.saveError}
+              onPatch={props.onPatch}
+              onSave={props.onSave}
+              onDiscard={props.onDiscard}
+              onArchive={props.onCardArchive}
+              onAddValue={props.onAddValue}
+              onEditValue={props.onEditValue}
+              onRemoveValue={props.onRemoveValue}
+            />
+          </div>
       )}
+      </div>
     </div>
   );
 }
 
 /**
  * The reference book section: the catalog of `link` and `arguments` records, stored one
- * Markdown file per record under `.casewright/glossary/`. The section coexists with the
+ * Markdown file per record under `.ch/glossary/`. The section coexists with the
  * case tree and runs in the sidebar; nothing here writes until the user saves explicitly.
  */
 export function ReferenceBook() {

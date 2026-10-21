@@ -27,6 +27,7 @@ import type {
   Result,
   Run,
   RunRow,
+  RunRowFilter,
   RunAutomationView,
   Screen,
   Selection,
@@ -46,6 +47,7 @@ import { createGitSlice } from './slices/git-slice';
 import { createDialogSlice } from './slices/dialog-slice';
 import { createUpdatesSlice } from './slices/updates-slice';
 import { createUiSlice } from './slices/ui-slice';
+import { installNavigationHistory } from './navigation-history';
 
 export interface AppState {
   /* data */
@@ -68,9 +70,9 @@ export interface AppState {
    * launcher. No-ops (just loads recents) outside NW.js or when there is no recent repo.
    */
   autoReopen: () => Promise<void>;
-  /** Opened a Git repo that has no `.casewright/` yet — offer to scaffold it. */
+  /** Opened a Git repo that has no `.ch/` yet — offer to scaffold it. */
   needsInit: boolean;
-  /** Opened a `.casewright/` repo with zero workspaces — invite creating the first. */
+  /** Opened a `.ch/` repo with zero workspaces — invite creating the first. */
   emptyRepo: boolean;
   initRepo: () => Promise<void>;
 
@@ -78,6 +80,10 @@ export interface AppState {
   screen: Screen;
   view: View;
   sel: Selection;
+  canNavigateBack: boolean;
+  canNavigateForward: boolean;
+  navigateBack: () => void;
+  navigateForward: () => void;
   openRepo: (path?: string) => Promise<void>;
   goHome: () => void;
   setWorkspace: (w: Workspace) => Promise<void>;
@@ -97,7 +103,7 @@ export interface AppState {
   openCase: (id: string) => void;
   openSuite: (suiteId: string) => void;
   openRunsList: () => void;
-  openRun: (runId: string) => void;
+  openRun: (runId: string, filter?: RunRowFilter) => void;
   openRunAutomation: (runId: string) => void;
   openCreateRun: () => void;
   startGuide: (runId: string, index?: number) => void;
@@ -170,7 +176,7 @@ export interface AppState {
   lastTester: string;
   setLastTester: (v: string) => void;
 
-  /* reference book (`.casewright/glossary/`) — catalog + a draft that is only written on save */
+  /* reference book (`.ch/glossary/`) — catalog + a draft that is only written on save */
   refs: ReferenceDoc[];
   /** Diagnostics from reading the catalog (an unreadable folder, skipped files). */
   refIssues: LintWarning[];
@@ -187,7 +193,7 @@ export interface AppState {
   refQuery: string;
   refKindFilter: RefKindFilter;
   refShowArchived: boolean;
-  /** (Re)read the catalog — read-only: a repository without `.casewright/` stays untouched. */
+  /** (Re)read the catalog — read-only: a repository without `.ch/` stays untouched. */
   loadRefs: () => Promise<void>;
   openReferenceBook: () => void;
   selectRefEntry: (id: string) => void;
@@ -216,7 +222,7 @@ export interface AppState {
   /** Open the Reference section at one record — what a link chip in case text does. */
   openReferenceEntry: (id: string) => void;
 
-  /* automation (`.casewright/automation/`) — catalog, bindings, trusted profile */
+  /* automation (`.ch/automation/`) — catalog, bindings, trusted profile */
   automationCatalog: CatalogEntry[];
   automationBindings: AutomationBinding[];
   automationProfiles: AutomationProfile[];
@@ -383,6 +389,10 @@ export const useAppStore = create<AppState>()((set, get) => {
     screen: 'launcher',
     view: 'editor',
     sel: { kind: 'case', id: undefined, runId: null },
+    canNavigateBack: false,
+    canNavigateForward: false,
+    navigateBack: () => {},
+    navigateForward: () => {},
     editorFocus: null,
     wsModalId: null,
 
@@ -404,6 +414,8 @@ export const useAppStore = create<AppState>()((set, get) => {
     ...createUiSlice(set),
   };
 });
+
+installNavigationHistory(useAppStore);
 
 /**
  * The renderer's read-only view of the reference book: link chips in prose resolve a record's

@@ -2,11 +2,11 @@
 
 ## Overview
 
-Re-platform the Casewright **desktop** app's UI from bespoke token-based CSS (`src/styles/base.css`
+Re-platform the Chioko **desktop** app's UI from bespoke token-based CSS (`src/styles/base.css`
 + `components.css`, ~600 lines) and the hand-rolled `src/components/ui/*` to **Tailwind CSS v4 +
 shadcn/ui** (Radix-based components), per PRD §9. The existing visual design — warm-neutral
 surfaces, a single slate accent, the status palette, IBM Plex / Newsreader type, and the merge-view
-showpiece — must be **preserved exactly**. The shared `@casewright/brand` tokens remain the source
+showpiece — must be **preserved exactly**. The shared `@chioko/brand` tokens remain the source
 of truth (bridged into Tailwind's `@theme`), and the `@/components/ui` barrel keeps the same export
 surface so the ~15 consumers don't churn.
 
@@ -23,7 +23,7 @@ is present until Workstream B removes it).
 ### [x] 0100 - Tailwind v4 setup + brand-token bridge
 
 **Overview:** Install Tailwind v4 (CSS-first, no `tailwind.config.js`/PostCSS) via the Vite plugin,
-and bridge the existing `@casewright/brand` oklch design tokens into Tailwind's `@theme` so utility
+and bridge the existing `@chioko/brand` oklch design tokens into Tailwind's `@theme` so utility
 classes (e.g. `bg-panel`, `text-ink`, `border-border`) are backed by the brand variables rather than
 duplicating them.
 
@@ -44,7 +44,7 @@ duplicating them.
 
 **Notes:**
 - Tailwind v4 needs no `tailwind.config.js` or PostCSS. The Google Fonts `@import` MUST precede `@import "tailwindcss"` or it's ignored.
-- `@theme inline` keeps `@casewright/brand` as the single token source (also consumed by the marketing site, which is untouched).
+- `@theme inline` keeps `@chioko/brand` as the single token source (also consumed by the marketing site, which is untouched).
 
 ---
 

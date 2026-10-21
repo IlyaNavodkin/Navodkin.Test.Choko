@@ -92,7 +92,7 @@ serialize/parse functions (the riskiest logic), runnable in plain Node.
 - [x] 0301 Added `vitest` + `vite-node`; `test`/`fixture` scripts; `vitest.config.ts` (`@` alias) + `vitest.setup.ts` (injects `globalThis.require` so the node bridge resolves modules in tests).
 - [x] 0302 `case.test.ts`: golden serialize === PRD §5.2 canonical; parse round-trip; tolerant 3-space steps; missing-id generation; out-of-schema preservation; **idempotent serialize for every sample case** + structural-field round-trip.
 - [x] 0303 `run.test.ts`: CSV round-trip (incl. comma-quoting), 7-column header, `RunRowSchema` coercion (bad `result`→`not_run`), missing-column warning, sidecar round-trip.
-- [x] 0304 `make-fixture.mts` (run via vite-node so it reuses the real `serializeCase`/`serializeRunCsv`): writes `casewright.json`, per-workspace `workspace.yaml`, the suite-folder tree, `<displayId>-<slug>.md` cases, run CSV+sidecars; `git init && add && commit` on `main`; `--with-origin` adds a bare `.fixture-origin.git` remote + push. Output gitignored.
+- [x] 0304 `make-fixture.mts` (run via vite-node so it reuses the real `serializeCase`/`serializeRunCsv`): writes `chioko.json`, per-workspace `workspace.yaml`, the suite-folder tree, `<displayId>-<slug>.md` cases, run CSV+sidecars; `git init && add && commit` on `main`; `--with-origin` adds a bare `.fixture-origin.git` remote + push. Output gitignored.
 - [x] 0305 `pnpm test` → 17 passing; `pnpm fixture --with-origin` → inspected: real git repo, canonical files, correct folder tree, origin pushed.
 
 **Notes:**
@@ -116,7 +116,7 @@ OS data dir, and rewire the store + launcher so the app renders a real repo. No 
 - `apps/desktop/src/types/index.ts` - Reshape `Recent` (ISO `lastOpened`, `lastWorkspaceId`).
 
 **Sub-Tasks:**
-- [x] 0401 `repo.ts` `openRepo(path)`: `simple-git` worktree check; read+validate `casewright.json` (fallback: single implicit workspace + warning); resolve globs (`qa/*` + explicit, custom matcher); each `workspace.yaml` → `Workspace` (`displayIdPrefix`→`prefix`); returns workspaces + branch + warnings.
+- [x] 0401 `repo.ts` `openRepo(path)`: `simple-git` worktree check; read+validate `chioko.json` (fallback: single implicit workspace + warning); resolve globs (`qa/*` + explicit, custom matcher); each `workspace.yaml` → `Workspace` (`displayIdPrefix`→`prefix`); returns workspaces + branch + warnings.
 - [x] 0402 `repo.ts` `loadWorkspace`: walks folders → `TreeNode[]` (suite id = `slug(relPath)`, `_suite.md` display name); parses every `*.md` (skips `_suite.md` + runs dir) → `Case[]`; reads `runsDir/*.csv` + sidecars → `Run[]`; collects `LintWarning[]`.
 - [x] 0403 `recents.ts`: `listRecents`/`addRecent`/`removeRecent` in `nw.App.dataPath` (no-ops to `[]` outside NW.js); `Recent` reshaped to ISO `lastOpened` + `lastWorkspaceId`.
 - [x] 0404 Store: removed sample seeding; initial `cases/runs/tree = []`, `workspace = null`; added `repoPath/loading/error/warnings/recents/conflict:null`; async `openRepo(path?)` (pickDirectory fallback + `addRecent`) / `setWorkspace`; `casePath` uses `caseFileName`.
@@ -202,6 +202,6 @@ whole loop end-to-end against the fixture in NW.js.
 ## Notes
 
 - Strict order: 0100 → 0200 → 0300 → 0400 → 0500 → 0600 → 0700. 0300's fixture is the dev target for 0400+.
-- Unit tests live alongside the code (`services/format/case.test.ts` next to `case.ts`). Run with `npx vitest [path]` (or `pnpm --filter @casewright/desktop test`).
+- Unit tests live alongside the code (`services/format/case.test.ts` next to `case.ts`). Run with `npx vitest [path]` (or `pnpm --filter @chioko/desktop test`).
 - Real data requires NW.js + a git repo — verify via `pnpm dev:desktop` against `.fixture/`; the old browser-based Playwright smoke can't exercise fs/git.
 - Run Workstream A (`.docs/tailwind-shadcn-replatform/tasks.md`) first so this workstream edits already-converted components.

@@ -33,19 +33,19 @@ export function Launcher() {
       <div className="flex min-h-0 w-full max-w-[660px] flex-col px-8 py-[clamp(28px,6vh,64px)]">
         <div className="mb-7 flex flex-none items-center gap-3">
           <Logo size={88} />
-          <span className="text-[32px] font-bold tracking-[-0.04em] text-accent">Chioko</span>
+          <span className="font-brand text-[32px] font-black tracking-[-0.03em] text-accent">Chioko</span>
         </div>
 
         {needsInit && (
           <div className="mb-5 flex-none rounded-lg border border-accent-line bg-accent-soft p-4">
-            <div className="flex items-center gap-2 text-[13px] font-semibold">{I.repo({ size: 15 })} Not a Casewright repository yet</div>
+            <div className="flex items-center gap-2 text-[13px] font-semibold">{I.repo({ size: 15 })} Not a Chioko repository yet</div>
             <div className="mt-1.5 text-[12.5px] text-ink-3">
               <span className="font-mono">{repoName(repoPath)}</span> is a Git repo but has no{' '}
-              <span className="font-mono">.casewright/</span> folder.
+              <span className="font-mono">.ch/</span> folder.
             </div>
             <div className="mt-3 flex gap-2">
               <Button variant="primary" disabled={loading} onClick={() => void initRepo()}>
-                {I.plus({ size: 14 })} {loading ? 'Initializing…' : 'Initialize .casewright/'}
+                {I.plus({ size: 14 })} {loading ? 'Initializing…' : 'Initialize .ch/'}
               </Button>
               <Button disabled={loading} onClick={() => void openRepo()}>
                 Choose another folder
@@ -57,8 +57,8 @@ export function Launcher() {
           <div className="mb-5 flex-none rounded-lg border border-border bg-panel-2 p-4">
             <div className="flex items-center gap-2 text-[13px] font-semibold">{I.layers({ size: 15 })} No workspaces yet</div>
             <div className="mt-1.5 text-[12.5px] text-ink-3">
-              <span className="font-mono">{repoName(repoPath)}</span> has a <span className="font-mono">.casewright/</span> folder but no
-              workspaces. Add a <span className="font-mono">casewright.yaml</span> to a folder to declare one, then reload.
+              <span className="font-mono">{repoName(repoPath)}</span> has a <span className="font-mono">.ch/</span> folder but no
+              workspaces. Add a <span className="font-mono">chioko.yaml</span> to a folder to declare one, then reload.
             </div>
             <div className="mt-3 flex gap-2">
               <Button variant="primary" disabled={loading} onClick={() => void openRepo(repoPath)}>

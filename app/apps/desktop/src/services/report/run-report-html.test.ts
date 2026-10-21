@@ -29,7 +29,7 @@ const failRow: RunRow = {
   checks: { 'step:0': 'fail', 'accept:0': 'fail' },
   failNotes: { 'step:0': 'button 500s', 'accept:0': 'never arrived' },
   itemText: {},
-  file: '.casewright/runs/r1/001-PAY-0042.md',
+  file: '.ch/runs/r1/001-PAY-0042.md',
 };
 
 const passRow: RunRow = {
@@ -44,9 +44,9 @@ const passRow: RunRow = {
 };
 
 const run: Run = {
-  id: '.casewright/runs/r1',
+  id: '.ch/runs/r1',
   name: 'Sprint 13',
-  file: '.casewright/runs/r1',
+  file: '.ch/runs/r1',
   created: '2026-06-09',
   testDate: '2026-06-09',
   status: 'open',
@@ -82,7 +82,7 @@ function buildModel(overrides: Partial<RunReportModel> = {}): RunReportModel {
     status: run.status,
     created: run.created,
     testDate: run.testDate ?? run.created,
-    repoName: 'casewright',
+    repoName: 'chioko',
     generatedAt: '2026-06-12 09:30',
     summary: buildRunSummary(run, [kase]),
     suites,
@@ -148,7 +148,7 @@ describe('buildRunReportHtml', () => {
     expect(html).toContain('Sprint 13');
     expect(html).not.toContain('Workspace'); // a run can span workspaces — omitted
     expect(html).not.toContain('Scope'); // removed from the header
-    expect(html).toContain('casewright');
+    expect(html).toContain('chioko');
     expect(html).toContain('Jun 9, 2026'); // ISO dates rendered in a readable locale form
     expect(html).not.toContain('2026-06-09'); // ...not the raw sortable form
     expect(html).toContain('open');
@@ -227,13 +227,13 @@ describe('buildRunReportHtml', () => {
 
   it('adds a Save-PDF toolbar and self-print script only in preview mode', () => {
     const plain = buildRunReportHtml(buildModel());
-    expect(plain).not.toContain('cw-toolbar');
+    expect(plain).not.toContain('ch-toolbar');
     expect(plain).not.toContain('<script');
 
     const preview = buildRunReportHtml(buildModel(), { preview: true });
-    expect(preview).toContain('class="cw-preview"'); // body gets the preview chrome class
-    expect(preview).toContain('cw-toolbar');
-    expect(preview).toContain('id="cw-save"');
+    expect(preview).toContain('class="ch-preview"'); // body gets the preview chrome class
+    expect(preview).toContain('ch-toolbar');
+    expect(preview).toContain('id="ch-save"');
     expect(preview).toContain('<script'); // self-save wiring
     expect(preview).toContain('@media print'); // toolbar hidden when printing
     expect(preview).toContain('"Sprint 13.pdf"'); // default filename embedded from the run name
@@ -242,18 +242,18 @@ describe('buildRunReportHtml', () => {
   it('emits hidden notes sections + an unchecked "Include notes" toggle only in preview mode', () => {
     const plain = buildRunReportHtml(buildModel());
     expect(plain).not.toContain('class="notes-block"');
-    expect(plain).not.toContain('id="cw-notes-toggle"');
+    expect(plain).not.toContain('id="ch-notes-toggle"');
     expect(plain).not.toContain('button 500s'); // failure detail stays out of the plain report
 
     const preview = buildRunReportHtml(buildModel(), { preview: true });
-    expect(preview).toContain('<input type="checkbox" id="cw-notes-toggle" />'); // no `checked` → default off
+    expect(preview).toContain('<input type="checkbox" id="ch-notes-toggle" />'); // no `checked` → default off
     expect(preview).toContain('class="notes-block"');
     expect(preview).toContain('Test run notes');
     expect(preview).toContain('Environment was staging; payments gateway flaked twice.'); // run notes
     expect(preview).toContain('button 500s'); // per-case failure detail with its note
     expect(preview).toContain('flaky on retry'); // per-case recorded notes
     expect(preview).toContain('.notes-block{display:none;}'); // hidden until the toggle flips the body class
-    expect(preview).toContain('body.cw-with-notes .notes-block{display:block;}');
+    expect(preview).toContain('body.ch-with-notes .notes-block{display:block;}');
   });
 
   it('omits the notes toggle and sections when the run has no notes or failure detail', () => {
@@ -262,7 +262,7 @@ describe('buildRunReportHtml', () => {
       buildModel({ notes: '', summary: buildRunSummary(quiet, [kase]) }),
       { preview: true },
     );
-    expect(preview).not.toContain('id="cw-notes-toggle"');
+    expect(preview).not.toContain('id="ch-notes-toggle"');
     expect(preview).not.toContain('class="notes-block"');
   });
 

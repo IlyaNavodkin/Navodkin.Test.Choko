@@ -20,5 +20,7 @@ coverage/
 .DS_Store
 Thumbs.db
 .playwright-mcp/
+.nwdev-automation/
+.commandcode/
 # Skill is installed under .agents/skills with project adaptations.
 /react-ts-frontend-patterns/

@@ -6,12 +6,12 @@
 //      papaparse) there, so the app ships a real, flat node_modules — pnpm's
 //      symlinked store can't be copied into a distributable.
 //   3. nw-builder downloads the pinned NW.js runtime and merges the staged app
-//      into Casewright.exe (+ Chromium runtime) under build/out.
-//   4. Zip build/out into a portable Casewright-<version>-win-x64.zip.
+//      into Chioko.exe (+ Chromium runtime) under build/out.
+//   4. Zip build/out into a portable Chioko-<version>-win-x64.zip.
 //
 // Output (all under apps/desktop/build/, gitignored):
-//   build/out/Casewright.exe            — the app folder (consumed by the installer)
-//   build/Casewright-<version>-win-x64.zip — portable distribution
+//   build/out/Chioko.exe            — the app folder (consumed by the installer)
+//   build/Chioko-<version>-win-x64.zip — portable distribution
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -29,8 +29,8 @@ const iconPath = join(desktopRoot, 'build-resources', 'icon.ico');
 
 const pkg = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'));
 
-// Version: CI passes the release tag via CASEWRIGHT_VERSION; otherwise package.json.
-const version = (process.env.CASEWRIGHT_VERSION || pkg.version).replace(/^v/, '');
+// Version: CI passes the release tag via CHIOKO_VERSION; otherwise package.json.
+const version = (process.env.CHIOKO_VERSION || pkg.version).replace(/^v/, '');
 
 // Pin the NW.js runtime to the same version as the dev SDK (`nw` devDep), normal flavor.
 const nwVersion = (pkg.devDependencies.nw || '').replace(/-sdk$|-nacl$/, '') || 'latest';
@@ -46,7 +46,7 @@ if (!existsSync(join(distDir, 'index.html'))) {
   process.exit(1);
 }
 
-console.log(`\n▶ Packaging Casewright ${version} (NW.js ${nwVersion}, win-x64)\n`);
+console.log(`\n▶ Packaging Chioko ${version} (NW.js ${nwVersion}, win-x64)\n`);
 
 // ── 1. stage ───────────────────────────────────────────────────────────────
 rmSync(stagingDir, { recursive: true, force: true });
@@ -54,8 +54,8 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(stagingDir, { recursive: true });
 
 const manifest = {
-  name: 'casewright',
-  productName: 'Casewright',
+  name: 'chioko',
+  productName: 'Chioko',
   version,
   main: 'dist/index.html',
   // Carry node-remote through so the report preview window (a local file:// page) gets the
@@ -66,6 +66,13 @@ const manifest = {
 };
 writeFileSync(join(stagingDir, 'package.json'), JSON.stringify(manifest, null, 2));
 cpSync(distDir, join(stagingDir, 'dist'), { recursive: true });
+// Local font binaries are bundled by Vite; ship their original OFL notices with the app.
+const fontLicenseDir = join(stagingDir, 'licenses', 'fonts');
+mkdirSync(fontLicenseDir, { recursive: true });
+for (const family of ['onest', 'rubik', 'nunitosans', 'ibmplexmono']) {
+  const name = `${family}-OFL.txt`;
+  cpSync(join(desktopRoot, '..', '..', 'packages', 'brand', 'fonts', name), join(fontLicenseDir, name));
+}
 // Ship the PNG referenced by window.icon (the .exe carries the .ico, but the running
 // window/taskbar icon comes from window.icon → build-resources/icon.png).
 mkdirSync(join(stagingDir, 'build-resources'), { recursive: true });
@@ -101,21 +108,21 @@ await nwbuild({
   zip: false,
   logLevel: 'info',
   app: {
-    name: 'Casewright',
+    name: 'Chioko',
     icon: iconPath,
     version,
-    company: pkg.author || 'Casewright',
-    fileDescription: "Casewright — a bespoke editor for manual test cases",
+    company: pkg.author || 'Chioko',
+    fileDescription: "Chioko — a bespoke editor for manual test cases",
     fileVersion: version,
-    productName: 'Casewright',
+    productName: 'Chioko',
     productVersion: version,
-    internalName: 'Casewright',
-    originalFilename: 'Casewright.exe',
-    legalCopyright: `© ${year} ${pkg.author || 'Casewright'}`,
+    internalName: 'Chioko',
+    originalFilename: 'Chioko.exe',
+    legalCopyright: `© ${year} ${pkg.author || 'Chioko'}`,
   },
 });
 
-const exePath = join(outDir, 'Casewright.exe');
+const exePath = join(outDir, 'Chioko.exe');
 if (!existsSync(exePath)) {
   console.error(`✗ nw-builder did not produce ${exePath}`);
   process.exit(1);
@@ -123,7 +130,7 @@ if (!existsSync(exePath)) {
 console.log(`  ✓ built ${exePath}`);
 
 // ── 4. portable zip ──────────────────────────────────────────────────────────
-const zipPath = join(buildDir, `Casewright-${version}-win-x64.zip`);
+const zipPath = join(buildDir, `Chioko-${version}-win-x64.zip`);
 rmSync(zipPath, { force: true });
 const zip = spawnSync(
   'powershell',

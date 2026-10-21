@@ -73,7 +73,7 @@ function FolderSettings({ node, ws }: { node: SuiteNode; ws: Workspace | null })
 
   const inherited = resolveSuitePrefix(node.id);
   const effectivePrefix = prefix.trim() || (isWs ? 'CW' : inherited);
-  const notePath = isWs ? (ws?.path ? `${ws.path}.md` : '.casewright/config.yaml') : `${node.path}.md`;
+  const notePath = isWs ? (ws?.path ? `${ws.path}.md` : '.ch/config.yaml') : `${node.path}.md`;
 
   return (
     <section className="rounded-lg border border-border bg-panel-2">
@@ -126,7 +126,7 @@ function FolderSettings({ node, ws }: { node: SuiteNode; ws: Workspace | null })
           {!isWs && !prefix.trim() && (
             <> (inherited from <span className="font-mono">{inherited}</span>)</>
           )}
-          ; runs are stored centrally in <span className="font-mono">.casewright/runs/</span>.
+          ; runs are stored centrally in <span className="font-mono">.ch/runs/</span>.
         </div>
       </div>
     </section>
@@ -168,7 +168,7 @@ export function SuiteSummary() {
             {isWorkspace ? I.workspace({ size: 20 }) : I.folder({ size: 20 })}
           </span>
           <div className="min-w-0 flex-1">
-            <h2 className="m-0 text-[21px] font-semibold tracking-[-0.01em]">{node.name}</h2>
+            <h2 className="m-0 text-[24px] font-extrabold tracking-[-0.01em]">{node.name}</h2>
             <div className="mt-0.5 font-mono text-[12px] text-ink-faint">{node.path}/</div>
           </div>
           <Button variant="primary" onClick={() => createCase(node.id)}>

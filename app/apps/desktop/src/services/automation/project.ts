@@ -1,9 +1,9 @@
 import { node } from '@/lib/node';
-import { CASEWRIGHT_DIR } from '@/services/repo-paths';
+import { CHIOKO_DIR } from '@/services/repo-paths';
 
 // ---------------------------------------------------------------------------
 // The autotest project lives inside the repository's data folder:
-//   .casewright/autotests/
+//   .ch/autotests/
 //     package.json
 //     playwright.config.ts
 //     node_modules/
@@ -15,12 +15,12 @@ import { CASEWRIGHT_DIR } from '@/services/repo-paths';
 // ---------------------------------------------------------------------------
 
 /** Repo-relative autotest project root — the detection marker. */
-export const AUTOTESTS_DIR = `${CASEWRIGHT_DIR}/autotests`;
+export const AUTOTESTS_DIR = `${CHIOKO_DIR}/autotests`;
 
 export interface AutomationProject {
   /** Absolute path of the repository root. */
   repoPath: string;
-  /** Repo-relative project root (`.casewright/autotests`). */
+  /** Repo-relative project root (`.ch/autotests`). */
   rel: string;
   /** Absolute path of the project root. */
   dir: string;
@@ -28,7 +28,7 @@ export interface AutomationProject {
   exists: boolean;
 }
 
-/** Absolute path of `<repo>/.casewright/autotests`. */
+/** Absolute path of `<repo>/.ch/autotests`. */
 export function automationProjectPath(repoPath: string): string {
   return node.path().join(repoPath, ...AUTOTESTS_DIR.split('/'));
 }

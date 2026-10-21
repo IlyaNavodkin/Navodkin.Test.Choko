@@ -3,12 +3,12 @@
  * repository under apps/desktop/.fixture, using the same serializers the app uses.
  * This is the canonical dev/test target for the on-disk + Git backend.
  *
- * Layout: `.casewright/config.yaml` (with the `workspaces:` list) + `.casewright/.gitignore`
- * + a flat central `.casewright/runs/`. Each workspace/suite folder gets an OPTIONAL sibling
+ * Layout: `.ch/config.yaml` (with the `workspaces:` list) + `.ch/.gitignore`
+ * + a flat central `.ch/runs/`. Each workspace/suite folder gets an OPTIONAL sibling
  * "folder note" (`<folder>.md`) — written only when it has a custom name / prefix / description
  * (single-word, metadata-free suites are just plain folders).
  *
- * Run via `pnpm --filter @casewright/desktop fixture` (uses vite-node so the `@`
+ * Run via `pnpm --filter @chioko/desktop fixture` (uses vite-node so the `@`
  * alias + TS resolve). Pass `--with-origin` to also create a bare `.fixture-origin.git`
  * remote and push to it (for the Git-loop tests).
  */
@@ -23,7 +23,7 @@ import { simpleGit } from 'simple-git';
 
 import { cases, runs, trees, workspaces } from '@/data/sample';
 import { serializeCase } from '@/services/format/case';
-import { CASEWRIGHT_GITIGNORE, serializeConfigYaml } from '@/services/format/config';
+import { CHIOKO_GITIGNORE, serializeConfigYaml } from '@/services/format/config';
 import { serializeFolderNote } from '@/services/format/folder-note';
 import { serializeRunCase, serializeRunDetails, type RunCaseItem } from '@/services/format/run';
 import { caseFileName } from '@/services/format/filename';
@@ -44,14 +44,14 @@ const withOrigin = process.argv.includes('--with-origin');
 rmSync(repoRoot, { recursive: true, force: true });
 mkdirSync(repoRoot, { recursive: true });
 
-// --- .casewright/ scaffold (repo-wide config + workspace list + central runs + gitignore) ---
-const cwDir = join(repoRoot, '.casewright');
+// --- .ch/ scaffold (repo-wide config + workspace list + central runs + gitignore) ---
+const cwDir = join(repoRoot, '.ch');
 mkdirSync(join(cwDir, 'runs'), { recursive: true });
 writeFileSync(
   join(cwDir, 'config.yaml'),
-  serializeConfigYaml({ version: 1, name: 'Casewright Fixture', workspaces: workspaces.map((w) => w.path) }),
+  serializeConfigYaml({ version: 1, name: 'Chioko Fixture', workspaces: workspaces.map((w) => w.path) }),
 );
-writeFileSync(join(cwDir, '.gitignore'), CASEWRIGHT_GITIGNORE);
+writeFileSync(join(cwDir, '.gitignore'), CHIOKO_GITIGNORE);
 
 // --- workspace list (config.yaml) + lazy sibling folder notes + suite/case subtrees ---
 const byId = new Map(cases.map((c) => [c.id, c]));
@@ -92,14 +92,14 @@ for (const ws of workspaces) {
 }
 
 // --- demo Playwright project (the Autotests section) ----------------------
-// The autotest project lives inside the repository's data folder: `.casewright/autotests/`.
+// The autotest project lives inside the repository's data folder: `.ch/autotests/`.
 // Its presence is the detection marker; the app runs Playwright with that folder as cwd and
 // resolves dependencies from its own package.json/node_modules. Browsers/deps are the user's
-// `npm install` step (see .casewright/autotests/README.md); nothing here downloads them.
+// `npm install` step (see .ch/autotests/README.md); nothing here downloads them.
 const fixtureTemplate = join(here, 'fixture');
 cpSync(fixtureTemplate, join(cwDir, 'autotests'), { recursive: true });
 
-// --- runs: one folder per run (_run.md + a sidecar per case) under .casewright/runs/ ---
+// --- runs: one folder per run (_run.md + a sidecar per case) under .ch/runs/ ---
 const runsDir = join(cwDir, 'runs');
 const overlay = (row: RunRow, key: string, text: string): RunCaseItem => ({
   key,
@@ -149,10 +149,10 @@ for (const run of runs) {
 // --- git init + seed commit on `main` ---
 const git = simpleGit(repoRoot);
 await git.init();
-await git.addConfig('user.email', 'fixture@casewright.dev', false, 'local');
-await git.addConfig('user.name', 'Casewright Fixture', false, 'local');
+await git.addConfig('user.email', 'fixture@chioko.dev', false, 'local');
+await git.addConfig('user.name', 'Chioko Fixture', false, 'local');
 await git.add('.');
-await git.commit('Seed Casewright fixture repository');
+await git.commit('Seed Chioko fixture repository');
 await git.branch(['-M', 'main']);
 
 if (withOrigin) {
@@ -169,4 +169,4 @@ const fileCount = cases.length + runs.length * 2 + folderNotes + 2;
 console.log(
   `Fixture written to ${repoRoot} (~${fileCount} files, ${cases.length} cases, ${runs.length} runs, ${workspaces.length} workspaces, ${folderNotes} folder notes).`,
 );
-console.log('Autotests demo: run "npm install" in .fixture/.casewright/autotests, then discover/bind tests in the Autotests section.');
+console.log('Autotests demo: run "npm install" in .fixture/.ch/autotests, then discover/bind tests in the Autotests section.');

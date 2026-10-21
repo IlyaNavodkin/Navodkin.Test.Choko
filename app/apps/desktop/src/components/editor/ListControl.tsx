@@ -58,7 +58,7 @@ export function ListControl({ icon, title, mark, marker, items, onChange, placeh
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center gap-[9px]">
         <span className="grid place-items-center text-ink-3">{icon}</span>
-        <span className="text-[13px] font-semibold tracking-[0.01em] text-ink">{title}</span>
+        <span className="font-heading text-[16px] font-bold text-ink">{title}</span>
         <span className="font-mono text-[11px] text-ink-faint">{mark}</span>
         <span className="flex-1" />
         <Button variant="ghost" size="sm" onClick={() => setPreview((p) => !p)}>

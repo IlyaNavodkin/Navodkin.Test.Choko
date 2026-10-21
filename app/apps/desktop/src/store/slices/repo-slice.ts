@@ -73,10 +73,12 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
       // A dirty reference-book draft outlives a repo switch only if the user says so.
       if (!get().guardRefLeave('another repository', () => void get().openRepo(target))) return;
       history.resetHistory(); // a different repo's cases are about to load — old undo entries no longer apply
+      const previousRepo = get().repoPath;
+      stopWatch(); // release native directory handles before a data-folder migration
       set({ loading: true, error: null, needsInit: false, emptyRepo: false });
       try {
         const opened = await openRepoSvc(target);
-        // No `.casewright/` yet — stay on the launcher and offer to scaffold it (req 2).
+        // No `.ch/` yet — stay on the launcher and offer to scaffold it (req 2).
         // Clear any previously-open repo's slices so the launcher never reads stale data.
         if (opened.needsInit) {
           stopWatch();
@@ -117,7 +119,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
           opened.workspaces.find((w) => firstCasePath === w.path || firstCasePath.startsWith(w.path + '/')) ??
           opened.workspaces[0] ??
           null;
-        const empty = opened.workspaces.length === 0; // `.casewright/` present but no markers (req 11)
+        const empty = opened.workspaces.length === 0; // `.ch/` present but no markers (req 11)
         set({
           repoPath: opened.repoPath,
           workspaces: opened.workspaces,
@@ -158,6 +160,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
         });
         set({ recents });
       } catch (e) {
+        if (previousRepo) startWatch(previousRepo);
         set({ loading: false, error: e instanceof Error ? e.message : String(e) });
         get().toast('Could not open repository');
       }
@@ -171,7 +174,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
         await initRepoSvc(target);
         set({ needsInit: false });
         await get().openRepo(target); // re-open the now-initialized repo
-        get().toast('Initialized .casewright/');
+        get().toast('Initialized .ch/');
       } catch (e) {
         set({ loading: false, error: e instanceof Error ? e.message : String(e) });
         get().toast('Could not initialize repository');
@@ -267,7 +270,7 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
         !(await get().confirm({
           title: `Remove workspace "${workspace.name}"?`,
           message:
-            'This only removes it from .casewright/config.yaml — the folder, its cases, and its folder note are left untouched.',
+            'This only removes it from .ch/config.yaml — the folder, its cases, and its folder note are left untouched.',
           confirmLabel: 'Remove',
           danger: true,
         }))
@@ -307,11 +310,11 @@ export function createRepoSlice(set: StoreSet, get: StoreGet, internals: StoreIn
       void flushPersist();
       set({ view: 'runs' });
     },
-    openRun: (runId) => {
+    openRun: (runId, filter) => {
       const name = get().runs.find((r) => r.id === runId)?.name;
-      if (!get().guardRefLeave(name ? `the run "${name}"` : 'that run', () => get().openRun(runId))) return;
+      if (!get().guardRefLeave(name ? `the run "${name}"` : 'that run', () => get().openRun(runId, filter))) return;
       void flushPersist();
-      set((s) => ({ sel: { ...s.sel, kind: 'run', runId }, view: 'run' }));
+      set((s) => ({ sel: { ...s.sel, kind: 'run', runId, runFilter: filter }, view: 'run' }));
     },
     openCreateRun: () => set({ modal: 'createRun' }),
     openRunAutomation: (runId) => {

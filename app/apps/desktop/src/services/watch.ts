@@ -19,7 +19,7 @@ function isIgnored(rel: string): boolean {
   const parts = norm.split('/');
   const top = parts[0];
   if (top === '.git' || top === 'node_modules') return true;
-  if (top === '.casewright' && parts[1] === 'cache') return true;
+  if (top === '.ch' && parts[1] === 'cache') return true;
   const base = parts[parts.length - 1] ?? '';
   // editor temp/swap/lock files, git index lock, vim's 4913 probe
   if (/^\.#|~$|\.sw[px]$|\.tmp$|^4913$|\.lock$/.test(base)) return true;

@@ -1,10 +1,10 @@
 /* ============================================================
-   Casewright — seed data (NOT app data)
+   Chioko — seed data (NOT app data)
 
    The running app reads real files from disk via the repo + git services; it no
    longer imports this module. This is the canonical seed for:
      • `scripts/make-fixture.mts` — materializes it into a real Git fixture repo
-       (`.casewright/` layout: config.yaml + central runs/ + per-workspace casewright.yaml)
+       (`.ch/` layout: config.yaml + central runs/ + per-workspace chioko.yaml)
      • `services/format/*.test.ts` — serialize/parse round-trip tests
    The `conflict` export illustrates the merge model for the deferred 3-way engine.
 
@@ -309,7 +309,7 @@ function sampleRun(
   meta: { id: string; name: string; created: string; status: 'open' | 'closed'; scope: string },
   seedRows: SeedRow[],
 ): Run {
-  const file = `.casewright/runs/${meta.id}`;
+  const file = `.ch/runs/${meta.id}`;
   return {
     id: file,
     file,
@@ -475,7 +475,7 @@ export const conflict: Conflict = {
     },
     {
       kind: 'run',
-      path: '.casewright/runs/2026-06-10-regression.csv',
+      path: '.ch/runs/2026-06-10-regression.csv',
       title: 'Regression — randomness suite',
       rows: [
         { case_id: '3f9a1c7e20', display_id: 'RND-0001', auto: 'same', value: { result: 'pass', tester: 'amartin', notes: '' } },

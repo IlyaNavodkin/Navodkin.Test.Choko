@@ -37,7 +37,7 @@ export function ModuleNav({ casesSidebarOpen, onToggleCases }: ModuleNavProps) {
     { label: 'Cases', title: 'Cases · workspaces — click again to show or hide the explorer', icon: I.layers, active: casesActive, onClick: openCases },
     { label: 'Runs', title: 'Runs', icon: I.grid, active: view === 'runs' || view === 'run' || view === 'runAutomation' || view === 'guide', onClick: openRunsList },
     { label: 'Reference', title: 'Reference', icon: I.link, active: view === 'glossary', onClick: openReferenceBook },
-    { label: 'Autotests', title: 'Autotests', icon: I.play, active: view === 'automation', onClick: () => {
+    { label: 'Autotests', title: 'Autotests', icon: I.test, active: view === 'automation', onClick: () => {
       if (guardRefLeave('autotests', openAutomationSection)) openAutomationSection();
     } },
   ];

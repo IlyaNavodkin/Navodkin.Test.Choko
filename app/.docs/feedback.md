@@ -2,7 +2,7 @@
 
 ## Workspace Changes
 
-- Add workspace actions (add workspace, edit workspace, remove workspace) to File menu in the title bar. Add should select a folder and then open the edit modal (dropdown with each workspace, the new one already selected). Edit should open the same modal but with the current name and description filled in. Remove should ask for confirmation and then remove the workspace (delete the casewright.yaml file, no other changes).
+- Add workspace actions (add workspace, edit workspace, remove workspace) to File menu in the title bar. Add should select a folder and then open the edit modal (dropdown with each workspace, the new one already selected). Edit should open the same modal but with the current name and description filled in. Remove should ask for confirmation and then remove the workspace (delete the chioko.yaml file, no other changes).
 
 ## Test Case Schema Changes
 
@@ -22,7 +22,7 @@
 
 - Add a third state (failed) to the checkboxes in runs. Clicking will cycle through the states. This will allow testers to mark steps as failed/blocked for easier tracking and reporting. This should also be preserved in the markdown sidecar for each test case in the run. Use [ ] for empty, [x] for passed, and [-] for failed.
 
-- When running a test case and the result is set to a non-passing state, show a copy-able defect section below to allow the user to easily paste into work item tracking system (devops, jira, etc.). Use the state of the checks above to help provide background info. It should provide the test name, test details, and the steps that were marked as failed with a description of the failure (if provided by the tester). This should be copy-able so that the tester can easily paste into their work item tracking system (devops, jira, etc.) and then link back to the run in casewright for easy reference.
+- When running a test case and the result is set to a non-passing state, show a copy-able defect section below to allow the user to easily paste into work item tracking system (devops, jira, etc.). Use the state of the checks above to help provide background info. It should provide the test name, test details, and the steps that were marked as failed with a description of the failure (if provided by the tester). This should be copy-able so that the tester can easily paste into their work item tracking system (devops, jira, etc.) and then link back to the run in chioko for easy reference.
 
 ## Test Variables Support
 

@@ -14,7 +14,7 @@ importers:
 
   apps/desktop:
     dependencies:
-      '@casewright/brand':
+      '@chioko/brand':
         specifier: workspace:*
         version: link:../../packages/brand
       '@radix-ui/react-context-menu':
@@ -111,7 +111,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@casewright/brand':
+      '@chioko/brand':
         specifier: workspace:*
         version: link:../../packages/brand
       astro:

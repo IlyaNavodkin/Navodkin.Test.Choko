@@ -1,4 +1,5 @@
-import { createElement, Fragment, type KeyboardEvent, type ReactNode } from 'react';
+import { createElement, Fragment, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { HoverPopover } from '@/components/ui/hover-popover';
 import { openExternal } from '@/lib/nwjs';
 import { glossaryHrefId, openReferenceRecord, referenceLinkInfo } from './glossary-link';
 import { resolveVariables } from './variables';
@@ -74,12 +75,31 @@ function extLink(key: string, url: string, label: string): ReactNode {
  * the frozen snapshot of that run) resolves it — and a link whose record is missing (or archived)
  * says so instead of pretending. The case text itself is never modified by reading it.
  */
+function ReferenceReadCard({ id, title, description, archived, snapshot }: { id: string; title: string; description: string; archived: boolean; snapshot: boolean }) {
+  const [copyStatus, setCopyStatus] = useState('Copy text');
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(`${title}\n\n${description}`.trim()); setCopyStatus('Copied'); }
+    catch { setCopyStatus('Copy failed — select text to copy'); }
+  };
+  return <section className="w-[296px] max-w-full select-text">
+    <div className="mb-2 flex items-center justify-between gap-3"><span className="text-[11px] font-medium uppercase text-ink-3">Read</span>{archived && <span className="text-ink-3">Archived</span>}</div>
+    <h3 className="mb-2 break-words text-[16px] font-bold">{title}</h3>
+    {snapshot && <p className="mb-2 text-ink-3">As recorded when this run was created.</p>}
+    <div className="max-h-[min(360px,45vh)] overflow-auto break-words">{description.trim() ? renderMarkdown(description, 'reference-read') : <p className="text-ink-3">No description.</p>}</div>
+    <div className="mt-3 flex flex-wrap gap-3 border-t border-border pt-3">
+      <button type="button" className="text-accent-ink hover:underline" onClick={() => void copy()}>{copyStatus}</button>
+      <button type="button" className="text-accent-ink hover:underline" onClick={() => openReferenceRecord(id)}>Open in Reference</button>
+    </div>
+    <span role="status" className="sr-only">{copyStatus === 'Copy text' ? '' : copyStatus}</span>
+  </section>;
+}
+
 function refChip(key: string, id: string, label: string): ReactNode {
   const info = referenceLinkInfo(id);
   const archived = !!info?.entry.archived;
   const title = info?.entry.title.trim() || label;
   const hint = !info
-    ? `Not found in this repository's reference book (.casewright/glossary/${id}.md).`
+    ? `Not found in this repository's reference book (.ch/glossary/${id}.md).`
     : `${info.entry.description.split('\n')[0].trim() || 'No description.'}${archived ? ' — archived record.' : ''}${
         info.runSnapshot ? ' — as recorded when this run was created.' : ''
       }`;
@@ -88,21 +108,17 @@ function refChip(key: string, id: string, label: string): ReactNode {
     : archived
       ? 'rounded-sm border border-border bg-sunken px-1 text-ink-3 hover:bg-raise cursor-pointer'
       : 'rounded-sm border border-accent-line bg-accent-soft px-1 text-accent-ink hover:bg-raise cursor-pointer';
-  return (
-    <button
-      key={key}
-      type="button"
-      title={hint}
-      className={cls}
-      onClick={(ev) => {
-        ev.preventDefault();
-        ev.stopPropagation();
-        openReferenceRecord(id);
-      }}
-    >
-      {title}
-    </button>
-  );
+  const trigger = <button type="button" title={!info ? hint : undefined} className={cls}
+    aria-label={`${title}${archived ? ' — archived record' : ''}`}
+    onClick={(ev) => { ev.preventDefault(); ev.stopPropagation(); openReferenceRecord(id); }}>
+    {title}
+    {info && <span className="sr-only"> — {hint}</span>}
+  </button>;
+  if (!info) return <Fragment key={key}>{trigger}</Fragment>;
+  return <HoverPopover key={key} inline interactive content={<ReferenceReadCard id={id} title={title} description={info.entry.description} archived={archived} snapshot={!!info.runSnapshot} />}>
+    {trigger}
+  </HoverPopover>;
+
 }
 
 /**

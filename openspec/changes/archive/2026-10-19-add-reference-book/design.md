@@ -2,13 +2,13 @@
 
 ## Context
 
-См. proposal.md. Текущее приложение читает и пишет `.casewright/` (`services/repo-load.ts`, `services/repo-fs.ts`), кейсы сериализует `services/format/case.ts`, все записи помечает self-write (`markWrite`) и debounce-ит (`services/persist.ts`). `utils/markdown.tsx` рендерит inline-разметку, `utils/markdown-html.ts` — HTML для PDF-отчётов; относительные ссылки сейчас отображаются текстом (`safeUrl` пропускает только http/https/mailto). Точки расширения — эти сервисы и store-slice'ы.
+См. proposal.md. Текущее приложение читает и пишет `.ch/` (`services/repo-load.ts`, `services/repo-fs.ts`), кейсы сериализует `services/format/case.ts`, все записи помечает self-write (`markWrite`) и debounce-ит (`services/persist.ts`). `utils/markdown.tsx` рендерит inline-разметку, `utils/markdown-html.ts` — HTML для PDF-отчётов; относительные ссылки сейчас отображаются текстом (`safeUrl` пропускает только http/https/mailto). Точки расширения — эти сервисы и store-slice'ы.
 
 ## Goals / Non-Goals
 
 **Goals:** каталог записей с двумя видами сущностей, стабильная Markdown-ссылка, читаемая без приложения, снапшоты в прогоне и источник значений для аргументов автотестов.
 
-**Non-Goals:** секреты в значениях, произвольные относительные пути за пределы `.testoritto/glossary` текущего репозитория, автозамена слов, облачная синхронизация, изменение формата кейсов и `.casewright/`.
+**Non-Goals:** секреты в значениях, произвольные относительные пути за пределы `.testoritto/glossary` текущего репозитория, автозамена слов, облачная синхронизация, изменение формата кейсов и `.ch/`.
 
 ## Decisions
 
@@ -58,7 +58,7 @@ Markdown-описание.
 
 ## Run snapshot v1 (конкретизация решения 7)
 
-Папка прогона `.casewright/runs/<stem>/` получает два необязательных extension-sidecar'а; оба пишутся один раз при создании прогона и никогда не перезаписываются приложением (это история, а не настройки).
+Папка прогона `.ch/runs/<stem>/` получает два необязательных extension-sidecar'а; оба пишутся один раз при создании прогона и никогда не перезаписываются приложением (это история, а не настройки).
 
 `glossary.json`:
 

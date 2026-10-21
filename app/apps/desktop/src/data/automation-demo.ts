@@ -10,7 +10,7 @@ import { automationEntryKey, planReferenceArguments, runAutomationEntries } from
 export function installAutomationDemo(): void {
   const state = useAppStore.getState();
   const docs: ReferenceDoc[] = ['Development', 'Staging'].map((title, i) => ({
-    id: `00000000-0000-4000-8000-00000000000${i + 1}`, rel: `.casewright/glossary/environment-${i}.md`,
+    id: `00000000-0000-4000-8000-00000000000${i + 1}`, rel: `.ch/glossary/environment-${i}.md`,
     revision: `demo-environment-${i}`, readonly: false, issues: [], extra: {}, eol: '\n',
     entry: { id: `00000000-0000-4000-8000-00000000000${i + 1}`, title, kind: 'arguments', archived: false,
       aliases: [i ? 'stage' : 'dev'], description: i ? 'Проверки в тестовом окружении перед релизом.' : 'Локальная разработка и отладка тестов.',

@@ -47,7 +47,7 @@ export function AutomationCard({ entry, bindings, cases, docs, onArchive, onCase
     <article className="min-h-0 min-w-0 flex-1 overflow-auto px-8 py-6">
       <div className="mx-auto flex max-w-[820px] flex-col">
         <div className="mb-2 flex items-center gap-2 text-[11px] text-ink-3"><Tag>{entry.project || 'default project'}</Tag><span className="font-mono">{entry.automationId}</span>{entry.archived && <Tag>archived</Tag>}</div>
-        <div className="flex items-start gap-3"><h3 className="min-w-0 flex-1 text-[21px] font-semibold leading-snug">{entry.title || entry.automationId}</h3><Button size="sm" variant="ghost" disabled={busy} onClick={() => onArchive(!entry.archived)}>{entry.archived ? 'Restore' : 'Archive'}</Button></div>
+        <div className="flex items-start gap-3"><h3 className="min-w-0 flex-1 text-[24px] font-extrabold leading-snug">{entry.title || entry.automationId}</h3><Button size="sm" variant="ghost" disabled={busy} onClick={() => onArchive(!entry.archived)}>{entry.archived ? 'Restore' : 'Archive'}</Button></div>
         <div className="mt-2 flex items-center gap-1.5 break-all font-mono text-[11px] text-ink-3">{I.file({ size: 13 })}{entry.file ?? 'No source file'}{entry.line ? `:${entry.line}` : ''}</div>
         <div className="my-6 border-t border-border" />
         <AutomationConfiguration entry={entry} bindings={bindings} cases={cases} docs={docs} onCase={onCase} onArgumentSet={onArgumentSet} onOpenReference={onOpenReference} busy={busy} />
@@ -64,24 +64,26 @@ export function AutomationBook() {
   const bindings = selected ? ctx.automationBindings.filter((b) => automationEntryKey(b) === automationEntryKey(selected) && !b.archived) : [];
   const save = async (action: () => Promise<void>) => { setSaving(true); try { await action(); } finally { setSaving(false); } };
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-panel">
-      <header className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-4">
-        <div><h2 className="text-[19px] font-semibold">Autotests</h2><p className="mt-0.5 text-[12px] text-ink-3">Project structure, Case coverage and shared environments</p></div>
-        <span className="flex-1" />
-        {import.meta.env.MODE === 'mockup' && <Tag>Demo project</Tag>}
-        <label className="flex items-center gap-1.5 text-[12px] text-ink-3"><input type="checkbox" checked={ctx.automationTrusted} onChange={(e) => ctx.setAutomationTrusted(e.target.checked)} />Trust this project</label>
-        <Button disabled={ctx.automationBusy || !ctx.automationTrusted || saving} onClick={() => void ctx.discoverAutomation()}>{I.sync({ size: 14 })}{ctx.automationBusy ? 'Refreshing…' : 'Refresh project'}</Button>
-      </header>
-      {ctx.automationDiscoverError && <div role="alert" className="border-b border-border bg-blocked-soft px-6 py-3 text-[12px] text-blocked">{ctx.automationDiscoverError}</div>}
-      {!!ctx.automationIssues.length && <div role="alert" className="border-b border-border bg-blocked-soft px-6 py-3 text-[12px] text-blocked">{ctx.automationIssues.map((i, n) => <p key={n}>{i.message}</p>)}</div>}
-      {ctx.automationCatalog.length ? <div className="flex min-h-0 flex-1">
-        <AutomationListView entries={ctx.automationCatalog} selectedId={selected ? automationEntryKey(selected) : null} query={ctx.automationQuery} filter={ctx.automationFilter} project={ctx.automationProjectFilter} onSelect={ctx.selectAutomationEntry} onQuery={ctx.setAutomationQuery} onFilter={ctx.setAutomationFilter} onProject={ctx.setAutomationProjectFilter} />
-        <AutomationCard key={selected ? automationEntryKey(selected) : 'empty'} entry={selected} bindings={bindings} cases={ctx.cases} docs={ctx.refs} busy={saving}
-          onArchive={(archived) => selected && void save(() => ctx.setAutomationArchived(selected.automationId, archived))}
-          onCase={(caseId) => selected && void save(() => ctx.assignAutomationCase(selected, caseId))}
-          onArgumentSet={(id) => selected && void save(() => ctx.setAutomationArgumentSet(selected, id))}
-          onOpenReference={(id) => id ? ctx.openReferenceEntry(id) : ctx.openReferenceBook()} />
-      </div> : <div className="grid flex-1 place-items-center p-8"><div className="max-w-md text-center"><div className="mb-3 text-ink-faint">{I.folder({ size: 32 })}</div><h3 className="font-semibold">Connect your test project</h3><p className="mt-2 text-[13px] text-ink-3">Keep your Playwright project in .casewright/autotests/. Trust the project, then refresh to browse its folders and tests. Author tests in VS Code or your terminal.</p></div></div>}
+    <div className="flex min-h-0 min-w-0 flex-1 bg-panel">
+      <AutomationListView entries={ctx.automationCatalog} selectedId={selected ? automationEntryKey(selected) : null} query={ctx.automationQuery} filter={ctx.automationFilter} project={ctx.automationProjectFilter} onSelect={ctx.selectAutomationEntry} onQuery={ctx.setAutomationQuery} onFilter={ctx.setAutomationFilter} onProject={ctx.setAutomationProjectFilter} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-4">
+          <div><h2 className="text-[24px] font-extrabold">Autotests</h2><p className="mt-0.5 text-[12px] text-ink-3">Project structure, Case coverage and shared environments</p></div>
+          <span className="flex-1" />
+          {import.meta.env.MODE === 'mockup' && <Tag>Demo project</Tag>}
+          <label className="flex items-center gap-1.5 text-[12px] text-ink-3"><input type="checkbox" checked={ctx.automationTrusted} onChange={(e) => ctx.setAutomationTrusted(e.target.checked)} />Trust this project</label>
+          <Button disabled={ctx.automationBusy || !ctx.automationTrusted || saving} onClick={() => void ctx.discoverAutomation()}>{I.sync({ size: 14 })}{ctx.automationBusy ? 'Refreshing…' : 'Refresh project'}</Button>
+        </header>
+        {ctx.automationDiscoverError && <div role="alert" className="border-b border-border bg-blocked-soft px-6 py-3 text-[12px] text-blocked">{ctx.automationDiscoverError}</div>}
+        {!!ctx.automationIssues.length && <div role="alert" className="border-b border-border bg-blocked-soft px-6 py-3 text-[12px] text-blocked">{ctx.automationIssues.map((i, n) => <p key={n}>{i.message}</p>)}</div>}
+        {ctx.automationCatalog.length ? <div className="flex min-h-0 flex-1">
+          <AutomationCard key={selected ? automationEntryKey(selected) : 'empty'} entry={selected} bindings={bindings} cases={ctx.cases} docs={ctx.refs} busy={saving}
+            onArchive={(archived) => selected && void save(() => ctx.setAutomationArchived(selected.automationId, archived))}
+            onCase={(caseId) => selected && void save(() => ctx.assignAutomationCase(selected, caseId))}
+            onArgumentSet={(id) => selected && void save(() => ctx.setAutomationArgumentSet(selected, id))}
+            onOpenReference={(id) => id ? ctx.openReferenceEntry(id) : ctx.openReferenceBook()} />
+        </div> : <div className="grid flex-1 place-items-center p-8"><div className="max-w-md text-center"><div className="mb-3 text-ink-faint">{I.folder({ size: 32 })}</div><h3 className="font-semibold">Connect your test project</h3><p className="mt-2 text-[13px] text-ink-3">Keep your Playwright project in .ch/autotests/. Trust the project, then refresh to browse its folders and tests. Author tests in VS Code or your terminal.</p></div></div>}
+      </div>
     </div>
   );
 }

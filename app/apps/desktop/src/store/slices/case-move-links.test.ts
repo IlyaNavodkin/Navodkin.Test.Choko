@@ -44,7 +44,7 @@ async function seedRepo(): Promise<string> {
   const repo = await mkRepo();
   const c = kase();
   const files: [string, string][] = [
-    ['.casewright/config.yaml', serializeConfigYaml({ version: 1, name: 'Move fixture', workspaces: ['Areas'] })],
+    ['.ch/config.yaml', serializeConfigYaml({ version: 1, name: 'Move fixture', workspaces: ['Areas'] })],
     ['Areas/Alpha/' + caseFileName(c), serializeCase(c)],
     ['Areas/Beta/Deep/.keep', ''],
     [glossaryRel(ID), serializeReferenceEntry({

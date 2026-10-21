@@ -536,12 +536,16 @@ export function createAutomationSlice(set: StoreSet, get: StoreGet): AutomationS
         liveHandles.delete(runId);
         await get().loadRunAutomation(runId);
         set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], busy: false } } }));
-        const view = get().runAutomation[runId];
-        const summary = summarizeExecutions(view?.executions ?? []);
+        // Don't name this `view`: it would shadow the `view` declared before the try and
+        // put that earlier reference in its temporal dead zone.
+        const latestView = get().runAutomation[runId];
+        const summary = summarizeExecutions(latestView?.executions ?? []);
         get().toast?.(summary);
       } catch (e) {
         const message = e instanceof AutomationRuntimeError ? e.message : errText(e);
-        set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...(s.runAutomation[runId] ?? view), busy: false, issues: [message] } } }));
+        // No `view` here: the one in the try block is block-scoped and would throw a TDZ
+        // error, hiding the real failure behind "Cannot access 'view' before initialization".
+        set((s) => ({ runAutomation: { ...s.runAutomation, [runId]: { ...s.runAutomation[runId], busy: false, issues: [message] } } }));
       }
     },
 

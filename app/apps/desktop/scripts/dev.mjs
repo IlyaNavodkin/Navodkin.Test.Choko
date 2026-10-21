@@ -6,9 +6,11 @@ import { mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
+import { resolveDevRuntime } from './dev-runtime.mjs';
 
 const root = dirname(dirname(fileURLToPath(import.meta.url))); // apps/desktop
 const automation = process.argv.includes('--automation');
+const nwExecutable = await resolveDevRuntime();
 
 const server = await createServer({
   root, configFile: join(root, 'vite.config.ts'),
@@ -52,18 +54,19 @@ writeFileSync(
   ),
 );
 
-// `nw` resolves from node_modules/.bin (pnpm puts it on PATH for this script).
+// Launch the native process directly, so its lifetime is the app's lifetime.
 const args = automation ? [
   '--remote-debugging-port=9223',
   '--remote-debugging-address=127.0.0.1',
   `--user-data-dir=${join(devDir, 'profile')}`,
 ] : [];
-const nw = spawn('nw', [devDir, ...args], { stdio: 'inherit', shell: true });
+const nw = spawn(nwExecutable, [devDir, ...args], { cwd: root, stdio: 'inherit', windowsHide: automation });
 
 const shutdown = async (code = 0) => {
   await server.close().catch(() => {});
   process.exit(code);
 };
 nw.on('exit', (code) => shutdown(code ?? 0));
+nw.on('error', (error) => { console.error('[desktop] Failed to start NW.js:', error); void shutdown(1); });
 process.on('SIGINT', () => shutdown(0));
 process.on('SIGTERM', () => shutdown(0));

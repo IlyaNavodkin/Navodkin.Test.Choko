@@ -86,6 +86,17 @@ export const node = {
   os: () => load<OsMod>('node:os'),
   url: () => load<UrlMod>('node:url'),
   childProcess: () => load<ChildProc>('node:child_process'),
+  /**
+   * The real Node environment. The renderer bundle must not read the literal
+   * `process.env`: Vite/Rolldown statically replaces it with `{}` in a browser build,
+   * which hides PATH from the external-Node lookup (and from spawned Playwright).
+   * Reading it off the global process object keeps the runtime value under NW.js and
+   * degrades to an empty env in a plain browser.
+   */
+  env: (): NodeJS.ProcessEnv => {
+    const g = globalThis as unknown as { process?: { env?: NodeJS.ProcessEnv } };
+    return g.process?.env ?? {};
+  },
   /** SHA-256 / randomUUID — content revisions and product-data ids. */
   crypto: () => load<CryptoMod>('node:crypto'),
   /** `createRequire` — resolve a project's installed CLI/package without bundling it. */

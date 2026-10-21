@@ -93,7 +93,8 @@ const defaultPathExists = async (p: string): Promise<boolean> => {
  */
 export async function findNodeOnPath(deps: NodeLookupDeps = {}): Promise<string | null> {
   const path = node.path();
-  const env = deps.env ?? process.env;
+  // `process.env` is replaced with `{}` by the production bundler — use the bridge.
+  const env = deps.env ?? node.env();
   const platform = deps.platform ?? process.platform;
   const exists = deps.pathExists ?? defaultPathExists;
   const delimiter = deps.delimiter ?? (platform === 'win32' ? ';' : ':');

@@ -22,7 +22,7 @@ export interface InvocationSpec {
   executionDir: string;
   /** Extra Playwright args (selection, projects, …). */
   args?: readonly string[];
-  /** Extra environment (e.g. `TESTORITTO_ARG_*`), merged over `process.env`. */
+  /** Extra environment (e.g. `TESTORITTO_ARG_*`), merged over the Node environment. */
   env?: Record<string, string>;
   /** Hard timeout for the whole invocation. */
   timeoutMs?: number;
@@ -61,7 +61,8 @@ export function buildInvocation(spec: InvocationSpec): BuiltInvocation {
     // A process group on POSIX lets us signal the whole tree; on Windows we use taskkill /T.
     detached: process.platform !== 'win32',
     env: {
-      ...process.env,
+      // Not the literal `process.env`: the production bundler replaces it with `{}`.
+      ...node.env(),
       ...spec.env,
       PLAYWRIGHT_JSON_OUTPUT_NAME: reportPath,
       FORCE_COLOR: '0',

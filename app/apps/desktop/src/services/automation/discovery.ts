@@ -37,7 +37,7 @@ export function buildDiscoveryInvocation(spec: DiscoverySpec): DiscoveryInvocati
       cwd: automationProjectPath(spec.repoPath),
       shell: false,
       windowsHide: true,
-      env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' },
+      env: { ...node.env(), FORCE_COLOR: '0', NO_COLOR: '1' },
     },
   };
 }

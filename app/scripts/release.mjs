@@ -186,13 +186,18 @@ function assertCleanTree() {
   }
 }
 
-function resolvePushTarget(branch) {
+function getUpstream() {
   try {
-    const upstream = git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}']).trim();
-    if (upstream.includes('/')) return upstream.slice(upstream.indexOf('/') + 1);
+    return git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}'], {
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).trim();
   } catch {
-    // No upstream configured; push the current branch name.
+    return '';
   }
+}
+
+function resolvePushTarget(branch, upstream) {
+  if (upstream.includes('/')) return upstream.slice(upstream.indexOf('/') + 1);
   return branch;
 }
 
@@ -281,14 +286,8 @@ async function main() {
   if (branch === 'HEAD') {
     throw new Error('Cannot release from a detached HEAD. Check out a branch first.');
   }
-  const targetBranch = resolvePushTarget(branch);
-  const upstream = (() => {
-    try {
-      return git(['rev-parse', '--abbrev-ref', '--symbolic-full-name', '@{upstream}']).trim();
-    } catch {
-      return '';
-    }
-  })();
+  const upstream = getUpstream();
+  const targetBranch = resolvePushTarget(branch, upstream);
 
   assertBranchState(upstream);
   assertTagIsNew(tag, 'origin');

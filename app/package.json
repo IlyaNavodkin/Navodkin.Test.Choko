@@ -17,7 +17,11 @@
     "build": "turbo run build",
     "build:web": "turbo run build --filter=@choko/web",
     "lint": "turbo run lint",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "release": "node scripts/release.mjs",
+    "release:patch": "node scripts/release.mjs patch",
+    "release:minor": "node scripts/release.mjs minor",
+    "release:major": "node scripts/release.mjs major"
   },
   "devDependencies": {
     "turbo": "^2.9.16"

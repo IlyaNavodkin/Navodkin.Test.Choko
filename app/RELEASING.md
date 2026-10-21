@@ -16,6 +16,50 @@ The workflow runs in two cases:
 2. **Release build** — push a tag matching `v*` (for example `v0.17.0`).
    The run builds both platforms and attaches the files to a GitHub Release.
 
+## Release script (recommended)
+
+Run the interactive helper from `app/`:
+
+```bash
+pnpm release
+```
+
+It asks for `patch`, `minor`, or `major`, then:
+
+1. verifies the working tree is clean and the branch is not behind its upstream;
+2. verifies the tag does not already exist locally or on `origin`;
+3. runs the required typecheck, tests, desktop build, and web build;
+4. bumps both `app/package.json` and `app/apps/desktop/package.json`;
+5. commits `chore(release): <version>`;
+6. creates the annotated `v<version>` tag;
+7. optionally pushes the commit and tag to `origin`.
+
+The tag push starts the GitHub Actions release workflow. The script does not create
+the GitHub Release directly.
+
+Non-interactive examples:
+
+```bash
+pnpm release minor                 # skip the bump prompt
+pnpm release --dry-run major       # show the plan, change nothing
+pnpm release --no-push patch       # commit + tag locally
+pnpm release --yes --push minor    # no confirmation prompts
+pnpm release --skip-checks minor   # not recommended
+```
+
+Useful flags:
+
+| Flag | Effect |
+| --- | --- |
+| `--dry-run` | Print the plan and commands without changing anything |
+| `--no-push` | Create the commit and tag locally, do not push |
+| `--push` | Push without asking |
+| `--yes` | Skip the release confirmation |
+| `--skip-checks` | Skip typecheck/tests/builds |
+| `--no-fetch` | Skip `git fetch` |
+
+The script requires a clean working tree. Commit or stash changes first.
+
 ## Manual build (no tag)
 
 Use this for a test build or when you need binaries without publishing a release.

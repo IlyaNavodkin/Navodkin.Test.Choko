@@ -173,10 +173,10 @@ Official desktop builds are produced by GitHub Actions:
 - Workflow: [`.github/workflows/build-desktop.yml`](.github/workflows/build-desktop.yml)
 - Manual build: **Actions → Build desktop binaries → Run workflow**. No tag is
   required; the workflow uploads Windows and macOS artifacts.
-- Release build: bump both `app/package.json` and `app/apps/desktop/package.json`,
-  commit and push `main`, then create and push a `v*` tag. The workflow verifies
-  that the tag matches both package versions and attaches the binaries to a GitHub
-  Release.
+- Release build: from `app/`, run `pnpm release` and choose `patch`, `minor`, or
+  `major`. The script bumps both package versions, commits, tags, and optionally
+  pushes. The workflow verifies that the tag matches both package versions and
+  attaches the binaries to a GitHub Release.
 
 Windows builds include a portable ZIP and an Inno Setup installer. macOS builds are
 arm64-only and ad-hoc signed. Full instructions, version rules, free-tier limits,

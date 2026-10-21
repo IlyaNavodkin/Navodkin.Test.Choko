@@ -39,7 +39,9 @@ export function relativePath(baseRel: string, targetRel: string): string {
 
 /** The href for a record, relative to the document at `baseRel`. */
 export function glossaryHrefFrom(baseRel: string, id: string): string {
-  return relativePath(baseRel, `${GLOSSARY_DIR}/${id}.md`);
+  // Keep the .ch/glossary marker even when the case itself is inside .ch.
+  // Chips resolve by that marker + id, independently of the current document path.
+  return `${'../'.repeat(dirOf(baseRel).length)}${GLOSSARY_DIR}/${id}.md`;
 }
 
 /**

@@ -49,6 +49,12 @@ describe('relativePath', () => {
 });
 
 describe('glossaryHrefFrom / glossaryLinkMarkdown', () => {
+  it('keeps links recognizable and pointing to the glossary when cases live inside .ch', () => {
+    const base = '.ch/areas/web-tools/case.md';
+    const href = glossaryHrefFrom(base, ID);
+    expect(glossaryHrefId(href)).toBe(ID);
+    expect(new URL(href, `https://project.test/${base}`).pathname).toBe(`/${FILE}`);
+  });
   it('builds a link relative to the document that holds it', () => {
     expect(glossaryHrefFrom('Suite/case.md', ID)).toBe(`../${FILE}`);
     expect(glossaryLinkMarkdown('Suite/case.md', ID, 'Payments runbook')).toBe(`[Payments runbook](../${FILE})`);

@@ -160,4 +160,5 @@ apps/desktop/.nwcache/
 
 # Generated fixture repo (dev/test target for the on-disk + git backend)
 apps/desktop/.fixture/
+apps/desktop/.testproject/
 apps/desktop/.fixture-origin.git/

@@ -1,6 +1,6 @@
 {
   "name": "@choko/desktop",
-  "version": "0.16.1",
+  "version": "0.17.0",
   "private": true,
   "type": "module",
   "description": "Choko desktop app — a bespoke editor for manual test cases (NW.js + React + TypeScript).",

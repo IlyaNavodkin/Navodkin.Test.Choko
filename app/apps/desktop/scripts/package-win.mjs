@@ -27,6 +27,7 @@ const stagingDir = join(buildDir, 'staging');
 const outDir = join(buildDir, 'out');
 const cacheDir = join(desktopRoot, '.nwcache');
 const iconPath = join(desktopRoot, 'build-resources', 'icon.ico');
+const licensePath = join(desktopRoot, '..', '..', '..', 'LICENSE');
 
 const pkg = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'));
 
@@ -68,6 +69,7 @@ const manifest = {
 };
 writeFileSync(join(stagingDir, 'package.json'), JSON.stringify(manifest, null, 2));
 cpSync(distDir, join(stagingDir, 'dist'), { recursive: true });
+cpSync(licensePath, join(stagingDir, 'LICENSE'));
 // Local font binaries are bundled by Vite; ship their original OFL notices with the app.
 const fontLicenseDir = join(stagingDir, 'licenses', 'fonts');
 mkdirSync(fontLicenseDir, { recursive: true });
@@ -125,6 +127,7 @@ await nwbuild({
 });
 
 const exePath = join(outDir, 'Chioko.exe');
+cpSync(licensePath, join(outDir, 'LICENSE'));
 // External executables must sit next to Chioko.exe, outside the app's NW archive.
 cpSync(bundledGit, join(outDir, 'git'), { recursive: true });
 if (!existsSync(exePath)) {

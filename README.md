@@ -1,25 +1,112 @@
-# Chioko
+<p align="center">
+  <img src="app/packages/brand/chioko-mascot.png" width="140" alt="Логотип Chioko — чихуахуа в бордовой толстовке" />
+</p>
 
-Private project: [Navodkin.Test.Chioko](https://github.com/IlyaNavodkin/Navodkin.Test.Chioko).
+<h1 align="center">Chioko</h1>
 
-Chioko is a desktop application for test cases, manual runs, reference entries and
-Playwright autotests. It uses React, TypeScript and NW.js in a pnpm workspace.
+<p align="center">
+  Тест-кейсы, ручные прогоны и автотесты в одном desktop-приложении.<br />
+  Markdown для данных. Git для истории. Понятный интерфейс для ежедневной работы QA.
+</p>
 
-## Run locally
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-900c30" alt="Лицензия MIT" /></a>
+  <img src="https://img.shields.io/badge/desktop-Windows-573c42" alt="Desktop-сборка для Windows" />
+  <img src="https://img.shields.io/badge/data-Markdown%20%2B%20Git-573c42" alt="Данные в Markdown и Git" />
+</p>
 
-For a Windows release, extract the whole ZIP and launch `Chioko.exe`. Keep its
-supporting files and `git/` folder together; Git is included in the distribution.
-Choose **Создать проект**, enter a name and parent folder. Chioko creates a local
-Git repository, `.ch/` settings and the first workspace, then offers to create the
-first test case. No GitHub account or command line is required.
+<p align="center">
+  <a href="#возможности">Возможности</a> ·
+  <a href="#начать-работу">Начать работу</a> ·
+  <a href="#разработка">Разработка</a> ·
+  <a href="#благодарности">Благодарности</a>
+</p>
 
-Use **Открыть проект** to select an existing repository root or ordinary folder.
-For a folder without Chioko settings, confirm **Добавить Chioko в проект**.
-Existing documents are preserved. Recent projects stay on the start screen;
-**File → Projects…** returns there. A project is the whole repository; workspaces
-organize its test cases into areas. Remote synchronization and autotests are optional.
+**Chioko** помогает вести тестовую документацию, выполнять проверки и разбирать
+результаты в одном проекте. Кейсы остаются обычными файлами: их можно читать,
+редактировать в IDE и использовать в работе с агентом. История изменений хранится
+в Git, а синхронизацию с удалённым репозиторием можно подключить позже.
 
-For development from source, use Node.js 22 or newer, pnpm 11 and Git.
+Chioko — форк [Casewright](https://github.com/jimbuck/casewright), созданного
+[Jim Buck](https://github.com/jimbuck), с собственным интерфейсом и развитием
+сценариев работы с кейсами, справочником и автотестами.
+
+![Редактор тест-кейса в Chioko: навигация, статусы, описание и шаги проверки](docs/images/chioko-desktop.png)
+
+*На скриншоте — демонстрационные данные.*
+
+## Возможности
+
+| Раздел | Что можно делать |
+| --- | --- |
+| **Cases** | Создавать кейсы с описанием, предусловиями, шагами и ожидаемыми результатами; группировать их по папкам и workspace, задавать статусы и теги. |
+| **Runs** | Собирать прогоны, фиксировать результаты проверок, фильтровать кейсы по статусам и смотреть активность по дням и годам. |
+| **Reference** | Хранить ссылки, описания и наборы аргументов для разных окружений; вставлять записи в кейсы и читать их через карточки. |
+| **Autotests** | Просматривать тесты в структуре исходных файлов, связывать несколько автотестов с одним кейсом и выбирать аргументы из справочника. |
+
+- **Запуск и разбор автотестов:** отдельный тест, все выбранные или проваленные; результат и вывод по каждому тесту, включая повторные попытки.
+- **Баг-репорты:** черновик на основе кейса и результатов прогона, редактирование фактического результата и добавление доказательств.
+- **Отчёты:** предпросмотр и экспорт в PDF с оформлением Chioko.
+- **Git:** локальная история, просмотр изменений, коммиты, Pull и Push.
+- **Навигация:** переходы назад и вперёд, быстрый доступ к модулям и открытие папки репозитория.
+
+Интерфейс использует светлые поверхности, бордовый акцент и шрифты Onest, Rubik
+и Nunito Sans. Шрифты включены в приложение и PDF-экспорт.
+
+## Начать работу
+
+### Готовая Windows-сборка
+
+1. Распакуйте ZIP-архив целиком и запустите **Chioko.exe**. Папка `git/` и остальные файлы должны оставаться рядом с приложением: Git уже включён в поставку.
+2. Выберите **Создать проект**, укажите название и папку. Chioko подготовит локальный Git-репозиторий, настройки `.ch` и первый workspace.
+3. Создайте первый тест-кейс, затем добавьте его в прогон и запишите результат проверки.
+
+Чтобы продолжить работу с существующей папкой, нажмите **Открыть проект**.
+Если в ней ещё нет настроек Chioko, приложение предложит добавить их, сохранив
+имеющиеся документы. Недавние проекты доступны на стартовом экране;
+вернуться к нему можно через **File → Projects…**.
+
+Для работы с ручными кейсами GitHub и командная строка не требуются.
+Для настоящего запуска автотестов нужны Node.js 22+, зависимости Playwright
+в тестовом проекте и установленный браузер Playwright.
+
+## Как хранятся данные
+
+**Проект** — корневая папка репозитория. **Workspace** — область тестирования
+внутри проекта, например «Витрина», «Личный кабинет» или «API».
+Для начала достаточно одного workspace, который создаётся автоматически.
+
+Chioko поддерживает хранение кейсов внутри `.ch/areas`. Пример компактной структуры:
+
+```text
+my-project/
+├── .git/                  # история Git всего проекта
+└── .ch/
+    ├── config.yaml        # настройки и список workspace
+    ├── areas/
+    │   └── web-tools/     # workspace: папки и Markdown-кейсы
+    ├── runs/              # прогоны и результаты
+    ├── glossary/          # справочник и наборы аргументов
+    ├── autotests/         # проект Playwright
+    ├── automation/        # связи с кейсами и результаты автотестов
+    └── defects/           # сохранённые баг-репорты и вложения
+```
+
+Пути workspace задаются в `.ch/config.yaml`: они также могут находиться
+в корне проекта или в других его папках. `.git` остаётся в корне репозитория.
+
+Для переноса данных предыдущей версии в `.ch` доступна команда:
+
+```powershell
+cd app/apps/desktop
+pnpm migrate:chioko D:\path\to\test-repository
+```
+
+Подробности формата и рабочих сценариев — в [документации desktop-приложения](app/apps/desktop/README.md).
+
+## Разработка
+
+Нужны **Node.js 22+**, **pnpm 11+** и **Git**.
 
 ```powershell
 cd app
@@ -27,41 +114,50 @@ pnpm install
 pnpm dev:desktop
 ```
 
-The desktop window reloads when sources change. Keep the terminal running.
-For an HTTP mockup with disposable sample data:
+Откроется настоящее desktop-окно с обновлением при изменении исходников.
+Терминал с dev-сервером должен оставаться запущенным.
+
+Для HTTP-предпросмотра с временными демоданными:
 
 ```powershell
 cd app/apps/desktop
 pnpm dev:mockup
 ```
 
-## Project data
-
-Each test repository uses `.ch/config.yaml`, `.ch/runs/`, `.ch/glossary/` and
-`.ch/autotests/`. Test cases remain readable Markdown files in their workspace
-folders. Opening a repository from the previous version migrates its data and
-references to `.ch/`; the migration can also be run explicitly:
+Проверки и сборка из папки `app`:
 
 ```powershell
-cd app/apps/desktop
-pnpm migrate:chioko D:\path\to\test-repository
-```
-
-The migration resumes interrupted reference updates and refuses to merge two
-existing data directories. Review and commit the migrated test repository.
-
-## Validate
-
-```powershell
-cd app
 pnpm --filter @chioko/desktop typecheck
 pnpm --filter @chioko/desktop test
 pnpm --filter @chioko/desktop build
+pnpm --filter @chioko/desktop package:win
 ```
 
-The brand lives in `app/packages/brand`: ivory surfaces, burgundy accents,
-Onest for UI text, Rubik for headings and Nunito Sans for the Chioko wordmark.
-PDF previews and exports share these tokens and embed fonts for offline use.
-Original font license notices are included in the brand package.
+Браузерные проверки компонентов:
 
-See [desktop documentation](app/apps/desktop/README.md) for storage and workflows.
+```powershell
+cd apps/desktop
+pnpm exec playwright install chromium
+pnpm test:ui
+```
+
+Основа приложения — **React + TypeScript + NW.js**, сборка — **Vite**,
+монорепозиторий — **pnpm workspaces**. Общие цвета, шрифты и графика находятся
+в [`app/packages/brand`](app/packages/brand).
+
+## Благодарности
+
+Особая благодарность **[Jim Buck](https://github.com/jimbuck)** — создателю
+**[Casewright](https://github.com/jimbuck/casewright)**.
+
+**Chioko является форком его приложения.** Спасибо за оригинальный проект,
+исходный код и основу для дальнейшего развития инструмента. Мы сохраняем
+указание авторства и уведомление об авторских правах оригинального Casewright.
+
+## Лицензия
+
+Код Chioko распространяется по [лицензии MIT](LICENSE). В ней сохранено
+авторское уведомление Jim Buck и добавлено уведомление для изменений Chioko.
+
+Шрифты поставляются со своими [лицензиями SIL Open Font License](app/packages/brand/fonts).
+Сторонние компоненты, включая поставляемый Git, сохраняют собственные лицензии.

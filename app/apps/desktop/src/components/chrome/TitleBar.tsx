@@ -92,6 +92,10 @@ export function TitleBar() {
       items: [
         { icon: I.layers, label: 'Cases', on: () => ctx.sel.id && ctx.openCase(ctx.sel.id) },
         { icon: I.grid, label: 'Runs', on: () => ctx.openRunsList() },
+        { icon: I.link, label: 'Reference', on: () => ctx.openReferenceBook() },
+        { icon: I.test, label: 'Autotests', on: () => {
+          if (ctx.guardRefLeave('autotests', ctx.openAutomationSection)) ctx.openAutomationSection();
+        } },
         { sep: true },
         { icon: I.sync, label: 'Reload', on: () => nwWindow()?.reload() },
         { icon: I.code, label: 'Toggle Developer Tools', on: () => nwWindow()?.showDevTools?.() },

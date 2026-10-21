@@ -1,4 +1,4 @@
-# Releasing Chioko
+# Releasing Choko
 
 Releases are **fully automatic** and driven by [Conventional Commits](https://www.conventionalcommits.org).
 You never choose a version number or push a tag by hand — you write good commit messages and merge
@@ -25,11 +25,11 @@ Every push to `main` runs [`.github/workflows/release.yml`](.github/workflows/re
 
 2. If a version was cut, [`.github/workflows/release-desktop.yml`](.github/workflows/release-desktop.yml)
    builds the Windows app + Inno Setup installer and **publishes the GitHub Release with the assets
-   attached** — `Chioko-Setup-<v>.exe` and `Chioko-<v>-win-x64.zip`.
+   attached** — `Choko-Setup-<v>.exe` and `Choko-<v>-win-x64.zip`.
 
 The two-step ordering is deliberate: the Release only becomes visible once the installer is present,
 so the in-app auto-updater never sees a release it can't download. The version flows into the build
-via `CHIOKO_VERSION`, which sets both the packaged manifest and `__APP_VERSION__` (the value the
+via `CHOKO_VERSION`, which sets both the packaged manifest and `__APP_VERSION__` (the value the
 running app compares against the latest release), keeping the updater's comparison correct.
 
 ## What you do
@@ -41,7 +41,7 @@ feat(runs): add per-case test-date override
 fix(editor): stop dropping the trailing newline on save
 feat!: require config.yaml at the repo root
 
-BREAKING CHANGE: the legacy chioko.json registry is no longer read.
+BREAKING CHANGE: the legacy choko.json registry is no longer read.
 ```
 
 Merge to `main`. If anything releasable landed, a new version ships a few minutes later; if not,

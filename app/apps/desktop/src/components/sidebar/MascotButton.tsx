@@ -32,7 +32,7 @@ export function MascotButton() {
       <button
         type="button"
         className="mascot-trigger grid size-10 place-items-center rounded-md bg-panel-2"
-        aria-label="Поиграть с Chioko — гав!"
+        aria-label="Поиграть с Choko — гав!"
         title="Нажми, чтобы погавкать 🐾"
         onClick={bark}
       >

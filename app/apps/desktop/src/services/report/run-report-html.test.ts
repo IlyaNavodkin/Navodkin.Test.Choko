@@ -82,7 +82,7 @@ function buildModel(overrides: Partial<RunReportModel> = {}): RunReportModel {
     status: run.status,
     created: run.created,
     testDate: run.testDate ?? run.created,
-    repoName: 'chioko',
+    repoName: 'choko',
     generatedAt: '2026-06-12 09:30',
     summary: buildRunSummary(run, [kase]),
     suites,
@@ -148,7 +148,7 @@ describe('buildRunReportHtml', () => {
     expect(html).toContain('Sprint 13');
     expect(html).not.toContain('Workspace'); // a run can span workspaces — omitted
     expect(html).not.toContain('Scope'); // removed from the header
-    expect(html).toContain('chioko');
+    expect(html).toContain('choko');
     expect(html).toContain('Jun 9, 2026'); // ISO dates rendered in a readable locale form
     expect(html).not.toContain('2026-06-09'); // ...not the raw sortable form
     expect(html).toContain('open');

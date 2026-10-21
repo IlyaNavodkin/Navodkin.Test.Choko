@@ -1,4 +1,4 @@
-# Chioko
+# Choko
 
 Visual identity based on the supplied reference: an ivory workspace, burgundy
 actions and a Chihuahua mascot in a burgundy hoodie. `tokens.css` is the source
@@ -32,7 +32,7 @@ Typography uses three roles, with matching Russian and English glyphs:
 
 | Role | Typeface / weight | Size |
 | --- | --- | --- |
-| Chioko wordmark | Nunito Sans Black 900 (`--font-brand`) | 28–32px |
+| Choko wordmark | Nunito Sans Black 900 (`--font-brand`) | 28–32px |
 | Page and case titles | Rubik ExtraBold 800 (`--font-heading`) | 24–28px |
 | Section headings | Rubik Bold 700 (`--font-heading`) | 16–18px |
 | Interface and reading text | Onest Regular 400 (`--font-ui`, `--font-read`) | 14px |
@@ -41,7 +41,7 @@ Typography uses three roles, with matching Russian and English glyphs:
 | Code, file paths and terminal output | IBM Plex Mono 400–600 (`--font-mono`) | context-dependent |
 
 Use Onest SemiBold 600 for emphasis inside the interface. Nunito Sans is reserved
-for the Chioko wordmark; it is not the interface or heading font. All font faces
+for the Choko wordmark; it is not the interface or heading font. All font faces
 are bundled as local WOFF2 assets in `fonts/`, with their OFL license files;
 desktop rendering makes no Google Fonts network requests. See `fonts/README.md`.
 
@@ -49,10 +49,10 @@ The wordmark has slightly tight letter spacing. Corner radii are 5px for small
 controls, 8px for buttons and inputs, and 12px for editor cards. Use quiet borders
 and minimal shadows. Typography does not widen or add text labels to the icon rail.
 
-`chioko-mascot.png` is the original supplied artwork, preserved unchanged. The
+`choko-mascot.png` is the original supplied artwork, preserved unchanged. The
 desktop `Logo` component uses `mix-blend-mode: multiply` to integrate its white
 canvas into the light surfaces. Display the full mascot without stretching,
-recoloring or cropping; pair it with the burgundy Chioko wordmark when there is
+recoloring or cropping; pair it with the burgundy Choko wordmark when there is
 room. Module navigation uses a 56px icon rail with 40px buttons and a 36px mascot.
 Keep module names available through accessible labels and hover tooltips.
 
@@ -63,7 +63,7 @@ decorative CSS mask at 14% opacity in the rail and 6.5% in the header. Patterns
 never intercept pointer events. Keep editor cards and content surfaces plain.
 
 Generate the Windows window/taskbar and executable icons with
-`pnpm --filter @chioko/desktop make-icon`. That script reads the same mascot.
-Packages use `@chioko/*`, project data lives in `.ch/`, and release/update IDs
-point to the private Chioko repository. Legacy SVG exports remain
-available for existing consumers; the desktop uses the Chioko PNG export.
+`pnpm --filter @choko/desktop make-icon`. That script reads the same mascot.
+Packages use `@choko/*`, project data lives in `.ch/`, and release/update IDs
+point to the private Choko repository. Legacy SVG exports remain
+available for existing consumers; the desktop uses the Choko PNG export.

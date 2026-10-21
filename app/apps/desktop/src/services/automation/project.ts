@@ -1,5 +1,5 @@
 import { node } from '@/lib/node';
-import { CHIOKO_DIR } from '@/services/repo-paths';
+import { CHOKO_DIR } from '@/services/repo-paths';
 
 // ---------------------------------------------------------------------------
 // The autotest project lives inside the repository's data folder:
@@ -15,7 +15,7 @@ import { CHIOKO_DIR } from '@/services/repo-paths';
 // ---------------------------------------------------------------------------
 
 /** Repo-relative autotest project root — the detection marker. */
-export const AUTOTESTS_DIR = `${CHIOKO_DIR}/autotests`;
+export const AUTOTESTS_DIR = `${CHOKO_DIR}/autotests`;
 
 export interface AutomationProject {
   /** Absolute path of the repository root. */

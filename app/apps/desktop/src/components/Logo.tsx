@@ -1,13 +1,13 @@
-import mascot from '@chioko/brand/chioko-mascot.png';
+import mascot from '@choko/brand/choko-mascot.png';
 
 /**
- * The supplied Chioko mascot, shared with the application icon.
+ * The supplied Choko mascot, shared with the application icon.
  */
 export function Logo({ size = 24, className }: { size?: number; className?: string }) {
   return (
     <img
       src={mascot}
-      alt="Chioko"
+      alt="Choko"
       className={['brand-mascot', className].filter(Boolean).join(' ')}
       width={size}
       height={size}

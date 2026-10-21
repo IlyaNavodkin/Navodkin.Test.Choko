@@ -23,7 +23,7 @@ export function Launcher() {
   const closeCreator = () => { setCreating(false); useAppStore.setState({ error: null }); };
   return <div className="flex min-h-0 flex-1 justify-center overflow-auto bg-bg">
     <main className="flex w-full max-w-[780px] flex-col px-6 py-10 sm:px-10">
-      <div className="mb-8 flex items-center gap-3"><Logo size={68} /><span className="font-brand text-[32px] font-black tracking-tight text-accent">Chioko</span></div>
+      <div className="mb-8 flex items-center gap-3"><Logo size={68} /><span className="font-brand text-[32px] font-black tracking-tight text-accent">Choko</span></div>
       <h1 className="font-heading text-[28px] font-extrabold leading-tight">Начните с проекта</h1>
       <p className="mt-3 max-w-[540px] text-[14px] leading-relaxed text-ink-3">В одном месте — тест-кейсы, прогоны, справочник и автотесты. Создайте проект или откройте существующую папку.</p>
       <div className="mt-6 flex flex-wrap gap-3">
@@ -31,10 +31,10 @@ export function Launcher() {
         <Button disabled={ctx.loading} onClick={() => void ctx.openRepo()}>{I.folderOpen({ size: 16 })} {ctx.loading ? 'Открываем проект…' : 'Открыть проект…'}</Button>
       </div>
       {(ctx.needsInit || ctx.emptyRepo) && <section className="mt-6 rounded-lg border border-accent-line bg-accent-soft p-4" aria-label="Настройка проекта">
-        <h2 className="text-[16px] font-bold">{ctx.emptyRepo ? 'Создадим первое рабочее пространство' : 'Добавить Chioko в эту папку?'}</h2>
-        <p className="mt-2 break-words text-[13px] leading-relaxed text-ink-2"><b>{folderName(ctx.repoPath)}</b>. {ctx.emptyRepo ? 'Рабочее пространство объединяет кейсы одной области. Начнём с одного — остальные можно добавить позже.' : 'Существующие документы останутся на месте. Chioko подготовит локальную историю и первое рабочее пространство.'}</p>
+        <h2 className="text-[16px] font-bold">{ctx.emptyRepo ? 'Создадим первое рабочее пространство' : 'Добавить Choko в эту папку?'}</h2>
+        <p className="mt-2 break-words text-[13px] leading-relaxed text-ink-2"><b>{folderName(ctx.repoPath)}</b>. {ctx.emptyRepo ? 'Рабочее пространство объединяет кейсы одной области. Начнём с одного — остальные можно добавить позже.' : 'Существующие документы останутся на месте. Choko подготовит локальную историю и первое рабочее пространство.'}</p>
         <p className="mt-2 break-all font-mono text-[11px] text-ink-3">{ctx.repoPath}</p>
-        <div className="mt-4 flex flex-wrap gap-2"><Button variant="primary" disabled={ctx.loading} onClick={() => void ctx.initRepo()}>{ctx.loading ? 'Подготавливаем…' : ctx.emptyRepo ? 'Создать рабочее пространство' : 'Добавить Chioko в проект'}</Button><Button disabled={ctx.loading} onClick={() => void ctx.openRepo()}>Выбрать другую папку</Button></div>
+        <div className="mt-4 flex flex-wrap gap-2"><Button variant="primary" disabled={ctx.loading} onClick={() => void ctx.initRepo()}>{ctx.loading ? 'Подготавливаем…' : ctx.emptyRepo ? 'Создать рабочее пространство' : 'Добавить Choko в проект'}</Button><Button disabled={ctx.loading} onClick={() => void ctx.openRepo()}>Выбрать другую папку</Button></div>
       </section>}
       {ctx.error && !creating && <p role="alert" className="mt-5 break-words rounded-md border border-fail bg-fail-soft p-3 text-[13px] text-fail">{ctx.error}</p>}
       <section className="mt-10" aria-labelledby="recent-projects">

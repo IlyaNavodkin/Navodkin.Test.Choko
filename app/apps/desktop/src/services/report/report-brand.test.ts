@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import brandTokens from '@chioko/brand/tokens.css?raw';
+import brandTokens from '@choko/brand/tokens.css?raw';
 import { REPORT_STYLE, renderToolbar } from './report-shared';
 
-describe('Chioko report brand', () => {
+describe('Choko report brand', () => {
   it('shares the application colors and typography without CSS imports', () => {
     expect(REPORT_STYLE).toContain(brandTokens.replace(/@import[^;]+;/g, ''));
     expect(REPORT_STYLE).toContain('--accent: #900c30');
@@ -16,6 +16,6 @@ describe('Chioko report brand', () => {
     expect(REPORT_STYLE).not.toContain('url(./fonts/');
   });
   it('brands the PDF preview toolbar', () => {
-    expect(renderToolbar()).toContain('Chioko · Report preview');
+    expect(renderToolbar()).toContain('Choko · Report preview');
   });
 });

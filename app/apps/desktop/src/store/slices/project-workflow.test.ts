@@ -13,7 +13,7 @@ afterEach(async () => {
 });
 describe('first project workflow', () => {
   it('opens a created project and saves its first case in the root workspace', async () => {
-    base = await mkdtemp(join(tmpdir(), 'chioko-first-project-'));
+    base = await mkdtemp(join(tmpdir(), 'choko-first-project-'));
     useAppStore.setState({ refDirty: false, repoPath: '', loading: false, error: null, screen: 'launcher' });
     expect(await useAppStore.getState().createProject({ name: 'My tests', parentPath: base })).toBe(true);
     let state = useAppStore.getState();

@@ -1,9 +1,9 @@
 {
-  "name": "chioko-concept",
+  "name": "choko-concept",
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Standalone concept mockup of the Chioko frontend in a neutral Cursor/Claude/Zed style. Not part of the pnpm workspace.",
+  "description": "Standalone concept mockup of the Choko frontend in a neutral Cursor/Claude/Zed style. Not part of the pnpm workspace.",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

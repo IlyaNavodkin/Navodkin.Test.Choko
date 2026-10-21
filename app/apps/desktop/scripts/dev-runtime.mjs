@@ -5,7 +5,7 @@ import { findpath } from 'nw';
 export async function resolveDevRuntime(findExecutable = findpath, exists = existsSync) {
   const executable = await findExecutable();
   if (!exists(executable)) {
-    throw new Error(`NW.js runtime is missing: ${executable}\nRun "pnpm --filter @chioko/desktop rebuild nw", then retry "pnpm dev".`);
+    throw new Error(`NW.js runtime is missing: ${executable}\nRun "pnpm --filter @choko/desktop rebuild nw", then retry "pnpm dev".`);
   }
   return executable;
 }

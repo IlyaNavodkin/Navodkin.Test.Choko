@@ -1,9 +1,9 @@
 {
-  "name": "@chioko/web",
+  "name": "@choko/web",
   "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Chioko marketing site \u0432\u0402\u201d static, built with Astro, deployed to GitHub Pages.",
+  "description": "Choko marketing site \u0432\u0402\u201d static, built with Astro, deployed to GitHub Pages.",
   "homepage": "https://github.com/IlyaNavodkin/Navodkin.Test.Chioko",
   "license": "MIT",
   "scripts": {
@@ -13,7 +13,7 @@
     "lint": "astro check"
   },
   "dependencies": {
-    "@chioko/brand": "workspace:*",
+    "@choko/brand": "workspace:*",
     "astro": "^6.4.4"
   },
   "devDependencies": {

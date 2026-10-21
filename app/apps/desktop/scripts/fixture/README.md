@@ -1,6 +1,6 @@
 # Autotests demo
 
-This is a tiny Playwright project inside `.ch/autotests/` of the Chioko fixture
+This is a tiny Playwright project inside `.ch/autotests/` of the Choko fixture
 repository. It exists so the **Autotests** section can be explored without pointing at a real
 product.
 
@@ -30,7 +30,7 @@ itself), so this step is required once after the fixture is generated.
 
 The red test is intentional: it gives you something to triage, bind, run and turn into a defect.
 
-## Try it in Chioko
+## Try it in Choko
 
 1. Open the **Autotests** section and tick **Trust this project**.
 2. Click **Discover tests** — the three demo tests appear in the catalog.

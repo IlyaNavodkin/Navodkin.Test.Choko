@@ -2,17 +2,17 @@
 
 ## Overview
 
-Replace the hand-maintained workspace registry (root `chioko.json` globs + per-workspace
+Replace the hand-maintained workspace registry (root `choko.json` globs + per-workspace
 `workspace.yaml` + per-workspace `runs/`) with:
 
 1. A **`.ch/` folder at the repo root** holding `config.yaml`, a centralized flat `runs/`
    directory, an auto-managed `.gitignore`, and reserved room for `cache/`.
-2. A **`chioko.yaml` inside each workspace folder** whose mere presence declares that folder a
+2. A **`choko.yaml` inside each workspace folder** whose mere presence declares that folder a
    workspace, discovered by a **one-time walk** on repo open (no central registry).
 
 Runs become **repo-level** (a single run may span workspaces); the JSON root config is replaced by
 YAML; legacy formats are dropped outright (hard cutover, no migration). See
-`.docs/chioko-config-model/prd.md` for the full requirements (FR 1–23).
+`.docs/choko-config-model/prd.md` for the full requirements (FR 1–23).
 
 ## Tasks
 
@@ -20,7 +20,7 @@ YAML; legacy formats are dropped outright (hard cutover, no migration). See
 
 **Overview:** Lay the type/schema foundation the rest of the work compiles against: a new
 `.ch/config.yaml` schema (replacing the JSON `RootConfigSchema`), a tightened
-`chioko.yaml` schema (required `name`/`displayIdPrefix`, no `runsDir`), and domain-type updates
+`choko.yaml` schema (required `name`/`displayIdPrefix`, no `runsDir`), and domain-type updates
 (drop `Workspace.runsDir`, make `Run.file`/`Run.id` repo-level, broaden `RunScope`). Parsing stays
 tolerant (coerce + `LintWarning`, never throw). (PRD FR 3, 12, 13, 16–20.)
 
@@ -32,7 +32,7 @@ tolerant (coerce + `LintWarning`, never throw). (PRD FR 3, 12, 13, 16–20.)
 
 **Sub-Tasks:**
 - [x] 0101 In `schemas/config.ts`, replace `RootConfigSchema` with a `ConfigYamlSchema` for `.ch/config.yaml`: `version` (int, `.default(1)`), optional `name` (string); use `z.looseObject` so unknown keys are preserved (FR 3). Export the schema and its inferred type; remove `RootConfig`.
-- [x] 0102 In `schemas/workspace.ts`, rename/retarget to `chioko.yaml`: keep `name` and `displayIdPrefix` as `.default('')` (so a malformed/blank file coerces rather than throws — the service adds the lint warning, FR 13), keep `description` optional, and **remove `runsDir`** (FR 12).
+- [x] 0102 In `schemas/workspace.ts`, rename/retarget to `choko.yaml`: keep `name` and `displayIdPrefix` as `.default('')` (so a malformed/blank file coerces rather than throws — the service adds the lint warning, FR 13), keep `description` optional, and **remove `runsDir`** (FR 12).
 - [x] 0103 Update `schemas/index.ts`: drop the `RootConfigSchema`/`RootConfig` exports, add the new config schema + type, keep `WorkspaceYamlSchema`/`LintWarning` exports.
 - [x] 0104 In `types/index.ts`, remove `runsDir` from `Workspace`; update the `Run.file`/`Run.id` doc comments to `.ch/runs/<stem>`; broaden `RunScope` to `'all' | 'workspace' | 'suite' | 'tag'` and ensure `CreateRunArgs` still type-checks against the new union.
 
@@ -48,51 +48,51 @@ tolerant (coerce + `LintWarning`, never throw). (PRD FR 3, 12, 13, 16–20.)
 ### [x] 0200 - Repo service: `.ch/` validation, discovery walk, scaffold & central runs
 
 **Overview:** Rewrite the read path in `repo.ts`. `openRepo` validates both a Git worktree **and** a
-`.ch/` directory, then discovers workspaces by a one-time walk for `chioko.yaml` markers
+`.ch/` directory, then discovers workspaces by a one-time walk for `choko.yaml` markers
 (skipping `.git`/`.ch`/dot-folders, no nesting, root-as-single-workspace short-circuit,
 alphabetical-by-name order, empty-repo state when no markers). Runs load once from
 `.ch/runs/` at the repo level. Add an `initRepo` scaffold helper plus the config/gitignore
 serializers. (PRD FR 1, 2, 4, 5, 6–11, 14, 16, 20.)
 
 **Relevant Files:**
-- `apps/desktop/src/services/repo.ts` - Rewrite `openRepo` + discovery; `loadWorkspaceMeta` reads `chioko.yaml`; repo-level `loadRuns`; add `initRepo` scaffold helper.
+- `apps/desktop/src/services/repo.ts` - Rewrite `openRepo` + discovery; `loadWorkspaceMeta` reads `choko.yaml`; repo-level `loadRuns`; add `initRepo` scaffold helper.
 - `apps/desktop/src/services/format/workspace.ts` - `serializeWorkspaceYaml` drops `runsDir`.
 - `apps/desktop/src/services/format/config.ts` - New: `serializeConfigYaml` + canonical `.ch/.gitignore` contents.
 - `apps/desktop/src/lib/node.ts` - Verify the YAML/`gray-matter` bridge handles the config doc (no change expected).
 
 **Sub-Tasks:**
-- [x] 0201 Add `services/format/config.ts`: `serializeConfigYaml({ version, name? })` (reuses the `yamlScalar` quoting helper now exported from `format/workspace.ts`) and a `CHIOKO_GITIGNORE` constant whose body ignores `cache/` (FR 4, 5).
+- [x] 0201 Add `services/format/config.ts`: `serializeConfigYaml({ version, name? })` (reuses the `yamlScalar` quoting helper now exported from `format/workspace.ts`) and a `CHOKO_GITIGNORE` constant whose body ignores `cache/` (FR 4, 5).
 - [x] 0202 In `format/workspace.ts`, change `serializeWorkspaceYaml` to `Pick<Workspace,'name'|'description'|'prefix'>` and drop the `runsDir` line (FR 12); export `yamlScalar`.
 - [x] 0203 In `repo.ts`, rewrite `openRepo` validation: require a Git worktree **and** a `.ch/` directory; when `.ch/` is absent emit a `needs-init` warning + `needsInit: true` (don't throw, FR 1–2); read+validate `.ch/config.yaml` tolerantly via `ConfigYamlSchema` (malformed → defaults + warning, FR 3).
-- [x] 0204 Replace `resolveWorkspacePaths` with a `discoverWorkspaces(repoPath)` walk: recurse from root, **skip** `.git`/`.ch`/any dot-folder; a folder containing `chioko.yaml` is a workspace and the walk **does not descend** into it (FR 7, 8); the walk naturally yields root-as-workspace when `<root>/chioko.yaml` exists (single workspace at `'.'`→`''`, FR 9); sort alphabetically by display name, tie-break by path (FR 10); emit an empty-repo warning when no markers are found (FR 11).
-- [x] 0205 Update `loadWorkspaceMeta` to read `chioko.yaml` (not `workspace.yaml`): coerce blank `name` → folder name and blank `displayIdPrefix` → a derived placeholder (`derivePrefix`), each with a `LintWarning` (FR 13); drop `runsDir`. After discovery, emit a warning for any duplicated `displayIdPrefix` across workspaces (load anyway, FR 14).
+- [x] 0204 Replace `resolveWorkspacePaths` with a `discoverWorkspaces(repoPath)` walk: recurse from root, **skip** `.git`/`.ch`/any dot-folder; a folder containing `choko.yaml` is a workspace and the walk **does not descend** into it (FR 7, 8); the walk naturally yields root-as-workspace when `<root>/choko.yaml` exists (single workspace at `'.'`→`''`, FR 9); sort alphabetically by display name, tie-break by path (FR 10); emit an empty-repo warning when no markers are found (FR 11).
+- [x] 0205 Update `loadWorkspaceMeta` to read `choko.yaml` (not `workspace.yaml`): coerce blank `name` → folder name and blank `displayIdPrefix` → a derived placeholder (`derivePrefix`), each with a `LintWarning` (FR 13); drop `runsDir`. After discovery, emit a warning for any duplicated `displayIdPrefix` across workspaces (load anyway, FR 14).
 - [x] 0206 Centralize runs: made `loadRuns` workspace-agnostic — reads `.ch/runs/` once at the repo level with `file`/`id` = `.ch/runs/<stem>` (FR 16, 20); removed runs from `loadWorkspace` (split `LoadedWorkspace`/`LoadedRepo` return types); `loadRepo` calls repo-level `loadRuns`.
 - [x] 0207 Add `initRepo(repoPath)` scaffold helper: writes `.ch/config.yaml` (via `serializeConfigYaml`), creates `.ch/runs/` (seeds a `.gitkeep` so the empty dir is tracked), and writes `.ch/.gitignore` (FR 2, 4).
 
 **Notes:**
-- Depends on 0100. The discovery walk fully replaces glob resolution — no `chioko.json` is read
+- Depends on 0100. The discovery walk fully replaces glob resolution — no `choko.json` is read
   anywhere after this task. `OpenedRepo.warnings` carries the `needs-init` / empty-repo signals the
   UI (0400) consumes. Re-derive a workspace's `id` from its path the same normalized way as today
   (`relJoin`/`slug`, repo-root → `''`).
 
 ---
 
-### [x] 0300 - Store rewiring: repo-level runs, scope-based create, `chioko.yaml` writes, init action
+### [x] 0300 - Store rewiring: repo-level runs, scope-based create, `choko.yaml` writes, init action
 
 **Overview:** Update `app-store.ts` so run paths target `.ch/runs/`, `createRun` seeds rows
 by Repo / Workspace / Suite scope across **all** workspaces, `updateWorkspace` writes
-`<workspace>/chioko.yaml` (dropping all `runsDir` logic), a `case → workspace` lookup buckets
+`<workspace>/choko.yaml` (dropping all `runsDir` logic), a `case → workspace` lookup buckets
 run rows by workspace for summaries, and a new scaffold/init action writes `.ch/` for an
 un-initialized repo. (PRD FR 15, 17–21, 2.)
 
 **Relevant Files:**
-- `apps/desktop/src/store/app-store.ts` - Run paths, scope-based seeding, `chioko.yaml` writes, `caseWorkspace` lookup, `initRepo` action + needs-init/empty wiring.
+- `apps/desktop/src/store/app-store.ts` - Run paths, scope-based seeding, `choko.yaml` writes, `caseWorkspace` lookup, `initRepo` action + needs-init/empty wiring.
 - `apps/desktop/src/services/recents.ts` - Verify recents still records `workspaces`/`lastWorkspaceId` (no schema change expected).
 
 **Sub-Tasks:**
 - [x] 0301 Repoint run paths to `.ch/runs/`: in `createRun`, build `file = relJoin(RUNS_REL, stem + '.csv')` (+ matching `.md` sidecar) and `id` from the stem; `runRel` returns `run.file` unchanged; deleted all `relJoin(workspace.path, workspace.runsDir, …)` usage (FR 16, 20).
 - [x] 0302 Made `createRun` scope-based across the whole repo: `'all'` → every case in the repo; `'workspace'` → cases in the active workspace; `'suite'` → the suite subtree (`idx.inSuite`); `'tag'` → cases carrying the tag (repo-wide). Records a human-readable `scope` label (e.g. `"workspace: Payments QA"`, `"repo"`). Dropped the old `workspace`-gated filter (FR 17, 19).
-- [x] 0303 In `updateWorkspace`, `writeWsYaml` now writes `<workspace>/chioko.yaml` (via `relJoin`, root-safe) and the entire `runsDir` rename branch is removed (FR 15).
+- [x] 0303 In `updateWorkspace`, `writeWsYaml` now writes `<workspace>/choko.yaml` (via `relJoin`, root-safe) and the entire `runsDir` rename branch is removed (FR 15).
 - [x] 0304 Added a `caseWorkspace(caseId)` helper (resolve a case → its suite path → owning `Workspace` via `workspaceOfPath`), exposed on the store for summaries — the read-time owning-workspace derivation (FR 18) that replaces file-path-prefix bucketing.
 - [x] 0305 Added an `initRepo` store action that calls the service scaffold (0207) then re-opens the repo, plus `needsInit`/`emptyRepo` state flags set from the open result so the UI can branch (FR 2).
 - [x] 0306 Updated the `openRepo` action to consume `needsInit` / empty-repo without crashing: sets the flags, keeps `screen: 'launcher'` + `workspace: null` in those states instead of opening a broken workbench (FR 1, 11).
@@ -106,7 +106,7 @@ un-initialized repo. (PRD FR 15, 17–21, 2.)
 ### [x] 0400 - UI: workspace settings, create-run scope, empty-repo & init flows
 
 **Overview:** Surface the new model in the UI: the workspace settings panel drops *Runs directory*,
-enforces non-blank *Name*/*Display ID prefix*, and shows the `<workspace>/chioko.yaml` path;
+enforces non-blank *Name*/*Display ID prefix*, and shows the `<workspace>/choko.yaml` path;
 summary run stats filter by **case membership** (not file-path prefix); the create-run modal offers
 Repo / Workspace / Suite scope; and new launcher/center states cover an empty repo (no markers) and
 the `.ch/` init/scaffold flow. (PRD FR 2, 11, 15, 19, 21.)
@@ -119,7 +119,7 @@ the `.ch/` init/scaffold flow. (PRD FR 2, 11, 15, 19, 21.)
 - `apps/desktop/src/components/runs/RunsList.tsx` - Runs-dir chip now reflects the central `.ch/runs/`.
 
 **Sub-Tasks:**
-- [x] 0401 In `WorkspaceSettings` (`SuiteSummary.tsx`): removed the *Runs directory* `Field`, its `runsDir` state + `useEffect` dep; path label now `{ws.path}/chioko.yaml` (root-safe); *Name* and *Display ID prefix* revert to the saved value when blurred blank (FR 15); helper text now points at central `.ch/runs/`.
+- [x] 0401 In `WorkspaceSettings` (`SuiteSummary.tsx`): removed the *Runs directory* `Field`, its `runsDir` state + `useEffect` dep; path label now `{ws.path}/choko.yaml` (root-safe); *Name* and *Display ID prefix* revert to the saved value when blurred blank (FR 15); helper text now points at central `.ch/runs/`.
 - [x] 0402 In `SuiteSummary`, replaced the `relevantRuns` filter + `runTally` arg with case-membership: a run is relevant if any row's `case_id` is in the node's collected case ids (works for both workspace and suite nodes); dropped `r.file.startsWith(ws.path + '/')` (FR 18, 21).
 - [x] 0403 In `CreateRunModal`: scope options are now **Whole repo** (`'all'`), **This workspace** (`'workspace'`, default), **By suite** (`'suite'`, flattened suite picker), **By tag** (`'tag'`); per-scope seeded-row `count` preview (workspace count via `caseWorkspace`); writes to `.ch/runs/` (FR 19).
 - [x] 0404 In `Launcher.tsx`: added an **init** panel (Git repo without `.ch/` → `initRepo` scaffold + "choose another folder") and an **empty-repo** panel (`.ch/` with no workspaces → reload), styled with the accent-soft / panel-2 treatments (FR 2, 11).
@@ -136,19 +136,19 @@ the `.ch/` init/scaffold flow. (PRD FR 2, 11, 15, 19, 21.)
 
 **Overview:** Regenerate the dev/test fixture and the in-memory seed to the new layout:
 `.ch/config.yaml`, `.ch/runs/` (flat, central), `.ch/.gitignore`, and a
-per-workspace `chioko.yaml`; remove the root `chioko.json` glob list and all `runsDir`
+per-workspace `choko.yaml`; remove the root `choko.json` glob list and all `runsDir`
 usage; rewrite run file paths to `.ch/runs/<stem>`; spread cases across ≥2 workspaces so a
 cross-workspace run is demonstrable. (PRD FR 22, 23; §8.)
 
 **Relevant Files:**
 - `apps/desktop/src/data/sample.ts` - Drop `rootConfig` + `runsDir`; repo-level run paths; multi-workspace case/suite layout.
-- `apps/desktop/scripts/make-fixture.mts` - Write the `.ch/` layout + per-workspace `chioko.yaml`.
+- `apps/desktop/scripts/make-fixture.mts` - Write the `.ch/` layout + per-workspace `choko.yaml`.
 
 **Sub-Tasks:**
 - [x] 0501 In `sample.ts`: deleted the `rootConfig` export and the `runsDir` field on every `Workspace`; rewrote each run's `file`/`id` to `.ch/runs/<stem>`; updated the `conflict` run `path` to `.ch/runs/…` (FR 22, 23).
 - [x] 0502 In `sample.ts`, added an **Onboarding** workspace with its own Activation/Invites suites + ONB cases, replaced the single `tree` with a per-workspace `trees` map, and added a "Release readiness — cross-team" run whose rows reference both PAY and ONB cases — exercising the cross-workspace metric (PRD §8).
-- [x] 0503 In `make-fixture.mts`: stopped writing `chioko.json`/`workspace.yaml`/per-workspace `runs/`; now writes `.ch/config.yaml` (`serializeConfigYaml`), `.ch/.gitignore` (`CHIOKO_GITIGNORE`), and flat `.ch/runs/` CSV+sidecars; writes a `chioko.yaml` per workspace and materializes each workspace's subtree from `trees[ws.id]` (FR 23).
-- [x] 0504 Regenerated via `pnpm fixture` and verified: `.ch/config.yaml`, `.ch/.gitignore`, and `.ch/runs/*` are git-tracked; per-workspace `chioko.yaml` + multi-workspace trees on disk; a `.ch/cache/probe` left `git status` clean (ignored). Format round-trip tests stay green (17/17) (PRD §8).
+- [x] 0503 In `make-fixture.mts`: stopped writing `choko.json`/`workspace.yaml`/per-workspace `runs/`; now writes `.ch/config.yaml` (`serializeConfigYaml`), `.ch/.gitignore` (`CHOKO_GITIGNORE`), and flat `.ch/runs/` CSV+sidecars; writes a `choko.yaml` per workspace and materializes each workspace's subtree from `trees[ws.id]` (FR 23).
+- [x] 0504 Regenerated via `pnpm fixture` and verified: `.ch/config.yaml`, `.ch/.gitignore`, and `.ch/runs/*` are git-tracked; per-workspace `choko.yaml` + multi-workspace trees on disk; a `.ch/cache/probe` left `git status` clean (ignored). Format round-trip tests stay green (17/17) (PRD §8).
 
 **Notes:**
 - Depends on 0100 (types) + 0200 (serializers). The current script only materializes
@@ -168,27 +168,27 @@ the `initRepo` scaffold output, and the tightened workspace/config schemas. (PRD
 **Relevant Files:**
 - `apps/desktop/src/services/repo.test.ts` - Rebuilt fixtures + new discovery/nesting/root/central-runs/init tests.
 - `apps/desktop/src/services/format/workspace.test.ts` - `serializeWorkspaceYaml` round-trip without `runsDir` (created).
-- `apps/desktop/src/services/format/config.test.ts` - `serializeConfigYaml` + `CHIOKO_GITIGNORE` (created).
+- `apps/desktop/src/services/format/config.test.ts` - `serializeConfigYaml` + `CHOKO_GITIGNORE` (created).
 - `apps/desktop/src/schemas/config.test.ts` - Config/workspace schema coercion + unknown-key preservation (created).
 
 **Sub-Tasks:**
-- [x] 0601 Rebuilt the `repo.test.ts` fixtures to the `.ch/` layout (`.ch/config.yaml`, `.ch/runs/<…>.csv`, per-workspace `chioko.yaml`) and fixed the `openRepo`/`loadWorkspace`/`loadRepo` assertions (run `file`/`id` now `.ch/runs/…`, `loadWorkspace` no longer returns `runs`, workspaces discovered not globbed, no `runsDir`).
-- [x] 0602 Added a discovery-walk test: two `chioko.yaml` workspaces are discovered, a `.hidden/` marker is skipped, and results sort alphabetically by display name (names chosen so name-order ≠ path-order) (FR 7, 10).
-- [x] 0603 Added a no-nesting test: a `chioko.yaml` in a workspace subfolder yields a single workspace, and that subfolder loads as a suite (FR 8).
-- [x] 0604 Added a root-as-workspace test (replacing the old implicit-fallback block): `<root>/chioko.yaml` → one workspace at path `''`, non-empty ids, `"Auth"` (not `"./Auth"`) suite paths, `.ch/runs/…` run file (FR 9).
+- [x] 0601 Rebuilt the `repo.test.ts` fixtures to the `.ch/` layout (`.ch/config.yaml`, `.ch/runs/<…>.csv`, per-workspace `choko.yaml`) and fixed the `openRepo`/`loadWorkspace`/`loadRepo` assertions (run `file`/`id` now `.ch/runs/…`, `loadWorkspace` no longer returns `runs`, workspaces discovered not globbed, no `runsDir`).
+- [x] 0602 Added a discovery-walk test: two `choko.yaml` workspaces are discovered, a `.hidden/` marker is skipped, and results sort alphabetically by display name (names chosen so name-order ≠ path-order) (FR 7, 10).
+- [x] 0603 Added a no-nesting test: a `choko.yaml` in a workspace subfolder yields a single workspace, and that subfolder loads as a suite (FR 8).
+- [x] 0604 Added a root-as-workspace test (replacing the old implicit-fallback block): `<root>/choko.yaml` → one workspace at path `''`, non-empty ids, `"Auth"` (not `"./Auth"`) suite paths, `.ch/runs/…` run file (FR 9).
 - [x] 0605 Added missing-`.ch/` (→ `needsInit`, no throw, `needs-init` warning) and empty-repo (`.ch/` present, no markers → `empty-repo` warning, zero workspaces) tests (FR 1, 11).
 - [x] 0606 Added an `initRepo` scaffold test: writes `.ch/config.yaml` (`version: 1`), creates `.ch/runs/`, writes a `.gitignore` matching `cache/`, then opens cleanly with the empty-repo warning (FR 2, 4).
-- [x] 0607 Added `schemas/config.test.ts` (ConfigYaml default/coerce/looseObject-preserve; WorkspaceYaml blank-default/coerce/no-runsDir), `format/config.test.ts` (`serializeConfigYaml` + `CHIOKO_GITIGNORE`), and `format/workspace.test.ts` (`serializeWorkspaceYaml` emits no `runsDir`); central `loadRuns` paths covered in `repo.test.ts` (FR 3, 12–14, 16).
+- [x] 0607 Added `schemas/config.test.ts` (ConfigYaml default/coerce/looseObject-preserve; WorkspaceYaml blank-default/coerce/no-runsDir), `format/config.test.ts` (`serializeConfigYaml` + `CHOKO_GITIGNORE`), and `format/workspace.test.ts` (`serializeWorkspaceYaml` emits no `runsDir`); central `loadRuns` paths covered in `repo.test.ts` (FR 3, 12–14, 16).
 
 **Notes:**
-- Depends on all prior tasks. Run with `pnpm --filter @chioko/desktop test`; typecheck with
-  `pnpm --filter @chioko/desktop typecheck`. Both must be green to close out the feature.
+- Depends on all prior tasks. Run with `pnpm --filter @choko/desktop test`; typecheck with
+  `pnpm --filter @choko/desktop typecheck`. Both must be green to close out the feature.
 
 ## Notes
 
 - Unit tests live alongside the code they cover (e.g. `repo.ts` ↔ `repo.test.ts`).
-- Run the suite with `pnpm --filter @chioko/desktop test` (vitest); typecheck with
-  `pnpm --filter @chioko/desktop typecheck` (tsc --noEmit).
+- Run the suite with `pnpm --filter @choko/desktop test` (vitest); typecheck with
+  `pnpm --filter @choko/desktop typecheck` (tsc --noEmit).
 - **Dependency order is strict:** 0100 → 0200 → 0300 → 0400, with 0500 (fixture/sample) depending on
   0100+0200 and 0600 (tests) depending on everything. Because 0100 removes `Workspace.runsDir` and
   broadens `RunScope`, the project typecheck only returns to green once the consumer tasks

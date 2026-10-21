@@ -5,19 +5,19 @@
  *
  * Like the builders themselves, this stays free of React, NW.js, and Node so it's directly
  * unit-testable and renders identically in the print window. The CSS defines its OWN
- * `:root` custom properties and embedded fonts from `@chioko/brand`, so a standalone
+ * `:root` custom properties and embedded fonts from `@choko/brand`, so a standalone
  * print window shares the app's design without external requests.
  */
-import brandTokens from '@chioko/brand/tokens.css?raw';
-import brandFontCss from '@chioko/brand/fonts.css?raw';
-import onestLatin from '@chioko/brand/fonts/onest-400-600-latin.woff2?inline';
-import onestCyrillic from '@chioko/brand/fonts/onest-400-600-cyrillic.woff2?inline';
-import rubikLatin from '@chioko/brand/fonts/rubik-700-800-latin.woff2?inline';
-import rubikCyrillic from '@chioko/brand/fonts/rubik-700-800-cyrillic.woff2?inline';
-import monoLatin from '@chioko/brand/fonts/ibm-plex-mono-400-latin.woff2?inline';
-import monoCyrillic from '@chioko/brand/fonts/ibm-plex-mono-400-cyrillic.woff2?inline';
-import nunitoLatin from '@chioko/brand/fonts/nunito-sans-900-latin.woff2?inline';
-import nunitoCyrillic from '@chioko/brand/fonts/nunito-sans-900-cyrillic.woff2?inline';
+import brandTokens from '@choko/brand/tokens.css?raw';
+import brandFontCss from '@choko/brand/fonts.css?raw';
+import onestLatin from '@choko/brand/fonts/onest-400-600-latin.woff2?inline';
+import onestCyrillic from '@choko/brand/fonts/onest-400-600-cyrillic.woff2?inline';
+import rubikLatin from '@choko/brand/fonts/rubik-700-800-latin.woff2?inline';
+import rubikCyrillic from '@choko/brand/fonts/rubik-700-800-cyrillic.woff2?inline';
+import monoLatin from '@choko/brand/fonts/ibm-plex-mono-400-latin.woff2?inline';
+import monoCyrillic from '@choko/brand/fonts/ibm-plex-mono-400-cyrillic.woff2?inline';
+import nunitoLatin from '@choko/brand/fonts/nunito-sans-900-latin.woff2?inline';
+import nunitoCyrillic from '@choko/brand/fonts/nunito-sans-900-cyrillic.woff2?inline';
 import type { Result } from '@/types';
 
 export const RESULT_META: Record<Result, { label: string; color: string }> = {
@@ -215,7 +215,7 @@ export function renderToolbar(opts: ToolbarOptions = {}): string {
     : '';
   return `
   <div class="ch-toolbar">
-    <span class="ch-toolbar-title">Chioko · Report preview</span>
+    <span class="ch-toolbar-title">Choko · Report preview</span>
     <div class="ch-toolbar-actions">
       <span class="ch-status" id="ch-status"></span>
       ${toggle}

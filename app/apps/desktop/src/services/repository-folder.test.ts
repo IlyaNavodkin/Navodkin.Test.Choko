@@ -7,7 +7,7 @@ import { openRepositoryFolder } from './repository-folder';
 let repo: string;
 const openItem = vi.fn();
 beforeEach(async () => {
-  repo = await mkdtemp(join(tmpdir(), 'chioko repo folder '));
+  repo = await mkdtemp(join(tmpdir(), 'choko repo folder '));
   await mkdir(join(repo, '.git'));
   openItem.mockClear();
   vi.stubGlobal('window', { nw: { Shell: { openItem } } });

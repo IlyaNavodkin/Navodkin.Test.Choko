@@ -91,7 +91,7 @@ export function AboutModal() {
     <Modal onClose={close} maxWidth={520}>
       <ModalHeader>
         <Logo size={38} />
-        <h3 className="font-brand text-[28px]! font-black! tracking-[-0.03em] text-accent">Chioko</h3>
+        <h3 className="font-brand text-[28px]! font-black! tracking-[-0.03em] text-accent">Choko</h3>
         <Tag className="ml-auto font-mono">v{__APP_VERSION__}</Tag>
       </ModalHeader>
       <ModalBody className="flex flex-col gap-4">

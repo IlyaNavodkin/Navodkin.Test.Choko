@@ -1,10 +1,10 @@
 import { node } from '@/lib/node';
 import { ConfigYamlSchema, type ConfigYaml } from '@/schemas';
 import { folderSlug } from '@/utils/ids';
-import { CHIOKO_GITIGNORE, serializeConfigYaml } from './format/config';
+import { CHOKO_GITIGNORE, serializeConfigYaml } from './format/config';
 import { serializeFolderNote, type FolderNoteMeta } from './format/folder-note';
 import {
-  CHIOKO_DIR,
+  CHOKO_DIR,
   CONFIG_REL,
   baseOf,
   folderNoteRel,
@@ -30,10 +30,10 @@ import { deletePath, isDir, readMaybe, renamePath, writeFileAt } from './repo-fs
 export async function initRepo(repoPath: string): Promise<void> {
   const path = node.path();
   const fsp = node.fsp();
-  const dir = path.join(repoPath, CHIOKO_DIR);
+  const dir = path.join(repoPath, CHOKO_DIR);
   await fsp.mkdir(path.join(dir, 'runs'), { recursive: true });
   await fsp.writeFile(path.join(dir, 'config.yaml'), serializeConfigYaml({ version: 1, name: path.basename(repoPath) }));
-  await fsp.writeFile(path.join(dir, '.gitignore'), CHIOKO_GITIGNORE);
+  await fsp.writeFile(path.join(dir, '.gitignore'), CHOKO_GITIGNORE);
   await fsp.writeFile(path.join(dir, 'runs', '.gitkeep'), '');
 }
 

@@ -112,11 +112,11 @@ export function TitleBar() {
     },
   ];
 
-  const title = screen === 'main' && ctx.workspace ? `${ctx.workspace.name} — Chioko` : 'Chioko';
+  const title = screen === 'main' && ctx.workspace ? `${ctx.workspace.name} — Choko` : 'Choko';
 
   return (
     <div className="brand-titlebar relative z-50 flex h-9 flex-none items-stretch select-none [-webkit-app-region:drag]">
-      <span className="flex items-center px-3 font-brand text-[16px] font-black text-accent-ink" onDoubleClick={toggleMax}>Chioko</span>
+      <span className="flex items-center px-3 font-brand text-[16px] font-black text-accent-ink" onDoubleClick={toggleMax}>Choko</span>
       {screen === 'main' && (
         <div className="brand-menubar flex items-stretch [-webkit-app-region:no-drag]">
           {menus.map((m) => (

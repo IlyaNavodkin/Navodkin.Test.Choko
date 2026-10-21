@@ -1,18 +1,18 @@
-; Inno Setup script for the Chioko desktop app.
+; Inno Setup script for the Choko desktop app.
 ; Compiles the nw-builder output (../build/out) into a single per-user installer:
-;   Chioko-Setup-<version>.exe  (no admin/UAC, Start Menu shortcut, uninstaller)
+;   Choko-Setup-<version>.exe  (no admin/UAC, Start Menu shortcut, uninstaller)
 ;
-; The version is injected by CI:  ISCC.exe /DMyAppVersion=0.1.0 chioko.iss
+; The version is injected by CI:  ISCC.exe /DMyAppVersion=0.1.0 choko.iss
 ; Paths are relative to this .iss file (apps/desktop/build-resources/).
 
 #ifndef MyAppVersion
   #define MyAppVersion "0.0.0"
 #endif
 
-#define MyAppName "Chioko"
+#define MyAppName "Choko"
 #define MyAppPublisher "Jim Buck"
 #define MyAppURL "https://github.com/IlyaNavodkin/Navodkin.Test.Chioko"
-#define MyAppExeName "Chioko.exe"
+#define MyAppExeName "Choko.exe"
 
 [Setup]
 ; A stable, app-unique GUID — keep this constant across releases so upgrades replace cleanly.
@@ -44,7 +44,7 @@ WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes
 OutputDir=..\build
-OutputBaseFilename=Chioko-Setup-{#MyAppVersion}
+OutputBaseFilename=Choko-Setup-{#MyAppVersion}
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -53,7 +53,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-; The entire nw-builder output (Chioko.exe + Chromium runtime + merged app).
+; The entire nw-builder output (Choko.exe + Chromium runtime + merged app).
 Source: "..\build\out\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]

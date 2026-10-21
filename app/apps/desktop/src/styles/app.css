@@ -1,5 +1,5 @@
 /* ============================================================
-   Chioko — Tailwind v4 entry stylesheet
+   Choko — Tailwind v4 entry stylesheet
 
    Tailwind, then shared brand tokens (including local font faces),
    then the @theme bridge
@@ -9,7 +9,7 @@
    ============================================================ */
 @import 'tailwindcss';
 
-@import '@chioko/brand/tokens.css';
+@import '@choko/brand/tokens.css';
 /* `inline` keeps utility colors connected to the live palette. */
 @theme inline {
   /* surfaces */
@@ -136,7 +136,7 @@
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  mask: url('@chioko/brand/chrome-pattern.svg') repeat;
+  mask: url('@choko/brand/chrome-pattern.svg') repeat;
 }
 .brand-rail::before {
   background: var(--rail-pattern);
@@ -178,7 +178,7 @@
 }
 .module-nav-button[aria-current='page']:hover { background: var(--accent-soft); }
 
-.chioko-select-content {
+.choko-select-content {
   width: var(--radix-select-trigger-width);
   min-width: min(180px, calc(100vw - 16px));
   max-width: calc(100vw - 16px);
@@ -210,7 +210,7 @@
   transform: translateY(-1px) scale(0.96);
 }
 .mascot-barking {
-  animation: chioko-bark 380ms ease-in-out;
+  animation: choko-bark 380ms ease-in-out;
 }
 .mascot-bark {
   position: absolute;
@@ -226,7 +226,7 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.2;
-  animation: chioko-bubble 1600ms ease-out forwards;
+  animation: choko-bubble 1600ms ease-out forwards;
   will-change: transform, opacity;
 }
 .mascot-bark::after {
@@ -241,14 +241,14 @@
   background: var(--panel);
   transform: rotate(45deg);
 }
-@keyframes chioko-bark {
+@keyframes choko-bark {
   0%, 100% { transform: rotate(0) translateY(0); }
   18% { transform: rotate(-13deg) translateY(-2px) scale(1.08); }
   38% { transform: rotate(12deg) translateY(-4px) scale(1.1); }
   58% { transform: rotate(-9deg) translateY(-2px); }
   78% { transform: rotate(6deg); }
 }
-@keyframes chioko-bubble {
+@keyframes choko-bubble {
   0% { opacity: 0; transform: translate(0, 4px) scale(0.65) rotate(-6deg); }
   12% { opacity: 1; transform: translate(4px, -6px) scale(1.06); }
   28% { opacity: 1; }
@@ -258,9 +258,9 @@
   .mascot-lift { transition: none; }
   .mascot-trigger:is(:hover, :focus-visible, :active) .mascot-lift { transform: none; }
   .mascot-barking { animation: none; }
-  .mascot-bark { animation: chioko-bubble-fade 1200ms ease-out forwards; }
+  .mascot-bark { animation: choko-bubble-fade 1200ms ease-out forwards; }
 }
-@keyframes chioko-bubble-fade {
+@keyframes choko-bubble-fade {
   0%, 65% { opacity: 1; }
   100% { opacity: 0; }
 }

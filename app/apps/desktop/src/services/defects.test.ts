@@ -12,7 +12,7 @@ afterEach(async () => {
 });
 
 const repo = async (): Promise<string> => {
-  const dir = await mkdtemp(join(tmpdir(), 'chioko-defect-'));
+  const dir = await mkdtemp(join(tmpdir(), 'choko-defect-'));
   cleanup.push(dir);
   return dir;
 };

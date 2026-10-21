@@ -25,7 +25,7 @@ export const DEFECTS_DIR = '.ch/defects';
  */
 export function environmentFor(kase?: Case): string {
   const parts: string[] = [];
-  if (typeof __APP_VERSION__ === 'string' && __APP_VERSION__) parts.push(`Chioko ${__APP_VERSION__}`);
+  if (typeof __APP_VERSION__ === 'string' && __APP_VERSION__) parts.push(`Choko ${__APP_VERSION__}`);
   try {
     const os = node.os();
     parts.push(`${os.type()} ${os.release()}`);

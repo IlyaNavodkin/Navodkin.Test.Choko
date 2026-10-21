@@ -14,7 +14,7 @@
       "@semantic-release/changelog",
       {
         "changelogFile": "CHANGELOG.md",
-        "changelogTitle": "# Changelog\n\nAll notable changes to Chioko. Generated automatically from Conventional Commits — do not edit by hand."
+        "changelogTitle": "# Changelog\n\nAll notable changes to Choko. Generated automatically from Conventional Commits — do not edit by hand."
       }
     ],
     [

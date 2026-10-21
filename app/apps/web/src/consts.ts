@@ -16,7 +16,7 @@ export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 export const VERSION = version;
 
 /**
- * Prefix an internal path with the configured base - `/` locally, `/chioko/`
+ * Prefix an internal path with the configured base - `/` locally, `/choko/`
  * on GitHub Pages - so links resolve in both. `withBase()` returns the site root.
  */
 export function withBase(path = ''): string {

@@ -3,21 +3,21 @@
 ## 1. Introduction / Overview
 
 Today the desktop app finds workspaces through a **hand-maintained registry**: a root
-`chioko.json` lists glob patterns (`qa/*`, explicit paths), and each workspace keeps its
+`choko.json` lists glob patterns (`qa/*`, explicit paths), and each workspace keeps its
 settings in a `workspace.yaml` plus its runs in a local `<workspace>/runs/` folder. This model has
 two problems we have already hit in practice:
 
 - **It looks "half-loaded."** If a folder isn't in the registry it simply doesn't appear, so a
-  freshly-added workspace is invisible until someone edits `chioko.json`.
+  freshly-added workspace is invisible until someone edits `choko.json`.
 - **Workspaces aren't self-contained, and the registry is a merge hotspot.** Moving a folder loses
   its config, and two people adding two workspaces on two branches conflict on the same file.
 
 This feature replaces that model with:
 
-1. A **`.ch/` folder at the repo root** that holds all of chioko's repo-level
+1. A **`.ch/` folder at the repo root** that holds all of choko's repo-level
    bookkeeping — `config.yaml` (repo-wide config), `runs/` (all runs), an auto-managed `.gitignore`,
    and reserved room for future transient data (`cache/`).
-2. A **`chioko.yaml` inside each workspace folder** whose *mere presence* declares that folder a
+2. A **`choko.yaml` inside each workspace folder** whose *mere presence* declares that folder a
    workspace. Workspaces are found by a **one-time discovery walk** on repo open — there is no
    central registry to maintain.
 
@@ -27,9 +27,9 @@ config format — all under a single obvious `.ch/` folder.
 
 ## 2. Goals
 
-- Discover every workspace automatically by walking for `chioko.yaml` markers; eliminate the
+- Discover every workspace automatically by walking for `choko.yaml` markers; eliminate the
   registry entirely.
-- Make a workspace folder **self-contained** — its `chioko.yaml` carries its identity, so the
+- Make a workspace folder **self-contained** — its `choko.yaml` carries its identity, so the
   folder can be moved or copied between repos and keep its name and ID prefix.
 - **Centralize runs** at the repo level under `.ch/runs/` so a single run can span multiple
   workspaces (the foundation for a repo-wide execution report).
@@ -37,17 +37,17 @@ config format — all under a single obvious `.ch/` folder.
 - Auto-scaffold `.ch/` on repo init, including a `.gitignore` that keeps `cache/` out of Git
   while committing `config.yaml` and `runs/`.
 - **Hard cutover**: regenerate the fixture in the new layout and remove all legacy
-  `chioko.json` / `workspace.yaml` handling.
+  `choko.json` / `workspace.yaml` handling.
 
 ## 3. User Stories
 
-- **As a test author**, I want to drop a new folder containing a `chioko.yaml` into my repo and
+- **As a test author**, I want to drop a new folder containing a `choko.yaml` into my repo and
   have it appear as a workspace the next time I open the repo — without editing any registry.
 - **As a test author**, I want to move or copy a workspace folder between repos and keep its name
   and display-ID prefix, because its config travels with it.
 - **As a QA lead**, I want one run to cover cases from several workspaces so I can produce a single
   repo-wide test-execution report.
-- **As a maintainer**, I want all of chioko's bookkeeping in one obvious `.ch/` folder,
+- **As a maintainer**, I want all of choko's bookkeeping in one obvious `.ch/` folder,
   with caches automatically kept out of Git.
 - **As a contributor**, I want adding a new workspace on my branch to never conflict with a teammate
   adding theirs, because there is no shared registry file to edit.
@@ -56,12 +56,12 @@ config format — all under a single obvious `.ch/` folder.
 
 ### Repo structure & detection
 
-1. A chioko repository is identified by a **`.ch/` directory at the worktree root**.
+1. A choko repository is identified by a **`.ch/` directory at the worktree root**.
    `openRepo` must validate **both** that the path is a Git worktree **and** that `.ch/`
    exists.
 2. If `.ch/` is missing, the app must **offer to initialize** it — scaffolding
    `.ch/config.yaml`, `.ch/runs/`, and `.ch/.gitignore`.
-3. **`.ch/config.yaml`** is the repo-wide config file (replaces `chioko.json`). Minimum
+3. **`.ch/config.yaml`** is the repo-wide config file (replaces `choko.json`). Minimum
    schema: `version: <int>` and optional `name: <repo display name>`. Parsing is **tolerant**:
    unknown keys are accepted and preserved, and a malformed file is coerced to defaults with a lint
    warning rather than failing the open. It contains **no** workspace list or globs — discovery is
@@ -73,22 +73,22 @@ config format — all under a single obvious `.ch/` folder.
 
 ### Workspace declaration & discovery
 
-6. A folder **is a workspace if and only if** it contains a `chioko.yaml` file. The file's
+6. A folder **is a workspace if and only if** it contains a `choko.yaml` file. The file's
    presence is the sole declaration.
 7. On open, the app performs a **one-time walk** from the repo root to discover workspaces. The walk
    skips `.git`, `.ch`, and any dot-folders.
-8. **Workspaces do not nest.** Once a `chioko.yaml` is found in a folder, that folder is a
+8. **Workspaces do not nest.** Once a `choko.yaml` is found in a folder, that folder is a
    workspace and the walk **does not descend into it** to look for more workspaces; its subfolders
    are treated as suites within that workspace.
-9. **Repo root as a single workspace:** if `<root>/chioko.yaml` exists, the **entire repo is one
+9. **Repo root as a single workspace:** if `<root>/choko.yaml` exists, the **entire repo is one
    workspace rooted at `.`**, and no further discovery is performed.
 10. Discovered workspaces are ordered **alphabetically by display name** (tie-break by path). There
     is no curation, ordering, or exclude list.
-11. If `.ch/` exists but **no `chioko.yaml` markers** are found anywhere, the app shows
+11. If `.ch/` exists but **no `choko.yaml` markers** are found anywhere, the app shows
     an **empty-repo state** inviting the user to create the first workspace. There is no implicit
     fallback workspace.
 
-### Workspace config (`chioko.yaml`)
+### Workspace config (`choko.yaml`)
 
 12. Schema: `name` (string, **required**), `displayIdPrefix` (string, **required**), `description`
     (string, optional). There is **no `runsDir`** — runs are centralized (16–21).
@@ -98,7 +98,7 @@ config format — all under a single obvious `.ch/` folder.
 14. `displayIdPrefix` **should be unique across workspaces**. On a duplicate the app loads anyway but
     emits a warning, because duplicate prefixes produce ambiguous display IDs across workspaces.
 15. The workspace settings panel (on the workspace summary page) edits `name`, `displayIdPrefix`,
-    and `description`, writing back to `<workspace>/chioko.yaml`. `name` and `displayIdPrefix`
+    and `description`, writing back to `<workspace>/choko.yaml`. `name` and `displayIdPrefix`
     **cannot be saved blank**. The previous **Runs directory** field is removed.
 
 ### Runs (repo-level, centralized)
@@ -120,17 +120,17 @@ config format — all under a single obvious `.ch/` folder.
 
 ### Migration / cutover
 
-22. **No migration code.** The app no longer reads `chioko.json` or `workspace.yaml`; those
+22. **No migration code.** The app no longer reads `choko.json` or `workspace.yaml`; those
     formats are dropped.
 23. The fixture generator (`apps/desktop/scripts/make-fixture.mts`) and the `.fixture/` repo are
     **regenerated** to the new layout: `.ch/config.yaml`, `.ch/runs/`,
-    `.ch/.gitignore`, and a per-workspace `chioko.yaml`. The in-memory sample data
+    `.ch/.gitignore`, and a per-workspace `choko.yaml`. The in-memory sample data
     (`src/data/sample.ts`) is updated to match (incl. removing `runsDir` and the root-config glob
     list).
 
 ## 5. Non-Goals (Out of Scope)
 
-- **No migration/upgrade tooling** for legacy repos; legacy `chioko.json` / `workspace.yaml` are
+- **No migration/upgrade tooling** for legacy repos; legacy `choko.json` / `workspace.yaml` are
   not read at all.
 - **No nested workspaces.**
 - **No glob patterns, explicit allowlists, ordering, or exclude config** — discovery is pure.
@@ -144,7 +144,7 @@ config format — all under a single obvious `.ch/` folder.
 
 - **Workspace summary settings panel** (`SuiteSummary.tsx` → `WorkspaceSettings`): remove the *Runs
   directory* input; keep *Name* / *Display ID prefix* / *Description*; show the file path as
-  `<workspace>/chioko.yaml`; enforce non-blank *Name* and *Display ID prefix* on blur.
+  `<workspace>/choko.yaml`; enforce non-blank *Name* and *Display ID prefix* on blur.
 - **Create-run modal** (`CreateRunModal.tsx`): the scope selector reflects the current selection
   (Repo / Workspace / Suite) and indicates which cases will be seeded.
 - **Empty-repo state** (req 11) and **init flow** (req 2) are new launcher/center states; style them
@@ -164,7 +164,7 @@ Concrete touchpoints (junior-dev orientation):
   remove `runsDir`.
 - **`src/services/repo.ts`** — rewrite `openRepo`: validate `.ch/`; check root-as-workspace
   (req 9); run the discovery walk that **replaces** `resolveWorkspacePaths`. Update
-  `loadWorkspaceMeta` to read `chioko.yaml`. `loadWorkspace` stops loading runs per-workspace; a
+  `loadWorkspaceMeta` to read `choko.yaml`. `loadWorkspace` stops loading runs per-workspace; a
   single `loadRuns('.ch/runs', …)` loads them at the repo level. Add an `initRepo`/scaffold
   helper (writes `config.yaml`, `runs/`, `.gitignore`).
 - **`src/services/format/workspace.ts`** — `serializeWorkspaceYaml` drops `runsDir`; emits `name`,
@@ -172,7 +172,7 @@ Concrete touchpoints (junior-dev orientation):
 - **`src/types/index.ts`** — drop `Workspace.runsDir`; `Run.file`/`Run.id` become repo-level
   (`.ch/runs/<stem>`); revisit `RunScope` (`'all' | 'workspace' | 'suite' | 'tag'`).
 - **`src/store/app-store.ts`** — run-path helpers (`runRel`, `createRun`) target `.ch/runs/`;
-  `createRun` seeds by scope across workspaces; `updateWorkspace` writes `chioko.yaml`; remove
+  `createRun` seeds by scope across workspaces; `updateWorkspace` writes `choko.yaml`; remove
   all `runsDir` logic; add a `case → workspace` lookup so run rows can be bucketed by workspace; add
   the init/scaffold write.
 - **`src/components/summary/SuiteSummary.tsx`** — settings-panel changes (req 15); run filtering by
@@ -189,7 +189,7 @@ keeping prefixes unique keeps cross-workspace display IDs unambiguous.
 
 ## 8. Success Metrics
 
-- Dropping a folder that contains `chioko.yaml` into a repo makes it appear as a workspace on
+- Dropping a folder that contains `choko.yaml` into a repo makes it appear as a workspace on
   next open, with **no other edits** (manual reproduction).
 - Opening the regenerated fixture lists **all** workspaces with **no registry file** present.
 - A single run can include cases from **≥2 workspaces** and renders correct per-workspace stats on

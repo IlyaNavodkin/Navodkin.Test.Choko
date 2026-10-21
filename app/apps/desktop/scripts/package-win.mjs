@@ -6,12 +6,12 @@
 //      papaparse) there, so the app ships a real, flat node_modules — pnpm's
 //      symlinked store can't be copied into a distributable.
 //   3. nw-builder downloads the pinned NW.js runtime and merges the staged app
-//      into Chioko.exe (+ Chromium runtime) under build/out.
-//   4. Zip build/out into a portable Chioko-<version>-win-x64.zip.
+//      into Choko.exe (+ Chromium runtime) under build/out.
+//   4. Zip build/out into a portable Choko-<version>-win-x64.zip.
 //
 // Output (all under apps/desktop/build/, gitignored):
-//   build/out/Chioko.exe            — the app folder (consumed by the installer)
-//   build/Chioko-<version>-win-x64.zip — portable distribution
+//   build/out/Choko.exe            — the app folder (consumed by the installer)
+//   build/Choko-<version>-win-x64.zip — portable distribution
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -31,8 +31,8 @@ const licensePath = join(desktopRoot, '..', '..', '..', 'LICENSE');
 
 const pkg = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'));
 
-// Version: CI passes the release tag via CHIOKO_VERSION; otherwise package.json.
-const version = (process.env.CHIOKO_VERSION || pkg.version).replace(/^v/, '');
+// Version: CI passes the release tag via CHOKO_VERSION; otherwise package.json.
+const version = (process.env.CHOKO_VERSION || pkg.version).replace(/^v/, '');
 
 // Pin the NW.js runtime to the same version as the dev SDK (`nw` devDep), normal flavor.
 const nwVersion = (pkg.devDependencies.nw || '').replace(/-sdk$|-nacl$/, '') || 'latest';
@@ -48,7 +48,7 @@ if (!existsSync(join(distDir, 'index.html'))) {
   process.exit(1);
 }
 
-console.log(`\n▶ Packaging Chioko ${version} (NW.js ${nwVersion}, win-x64)\n`);
+console.log(`\n▶ Packaging Choko ${version} (NW.js ${nwVersion}, win-x64)\n`);
 const bundledGit = await ensureBundledGit(cacheDir);
 
 // ── 1. stage ───────────────────────────────────────────────────────────────
@@ -57,8 +57,8 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(stagingDir, { recursive: true });
 
 const manifest = {
-  name: 'chioko',
-  productName: 'Chioko',
+  name: 'choko',
+  productName: 'Choko',
   version,
   main: 'dist/index.html',
   // Carry node-remote through so the report preview window (a local file:// page) gets the
@@ -112,23 +112,23 @@ await nwbuild({
   zip: false,
   logLevel: 'info',
   app: {
-    name: 'Chioko',
+    name: 'Choko',
     icon: iconPath,
     version,
-    company: pkg.author || 'Chioko',
-    fileDescription: "Chioko — a bespoke editor for manual test cases",
+    company: pkg.author || 'Choko',
+    fileDescription: "Choko — a bespoke editor for manual test cases",
     fileVersion: version,
-    productName: 'Chioko',
+    productName: 'Choko',
     productVersion: version,
-    internalName: 'Chioko',
-    originalFilename: 'Chioko.exe',
-    legalCopyright: `© ${year} ${pkg.author || 'Chioko'}`,
+    internalName: 'Choko',
+    originalFilename: 'Choko.exe',
+    legalCopyright: `© ${year} ${pkg.author || 'Choko'}`,
   },
 });
 
-const exePath = join(outDir, 'Chioko.exe');
+const exePath = join(outDir, 'Choko.exe');
 cpSync(licensePath, join(outDir, 'LICENSE'));
-// External executables must sit next to Chioko.exe, outside the app's NW archive.
+// External executables must sit next to Choko.exe, outside the app's NW archive.
 cpSync(bundledGit, join(outDir, 'git'), { recursive: true });
 if (!existsSync(exePath)) {
   console.error(`✗ nw-builder did not produce ${exePath}`);
@@ -137,7 +137,7 @@ if (!existsSync(exePath)) {
 console.log(`  ✓ built ${exePath}`);
 
 // ── 4. portable zip ──────────────────────────────────────────────────────────
-const zipPath = join(buildDir, `Chioko-${version}-win-x64.zip`);
+const zipPath = join(buildDir, `Choko-${version}-win-x64.zip`);
 rmSync(zipPath, { force: true });
 const zip = spawnSync(
   'powershell',

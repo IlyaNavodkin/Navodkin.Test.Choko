@@ -32,7 +32,7 @@ export async function previewReportHtml(html: string, windowTitle: string): Prom
   try {
     const fsp = node.fsp();
     const url = node.url();
-    const tmp = node.path().join(node.os().tmpdir(), `chioko-report-${Date.now()}.html`);
+    const tmp = node.path().join(node.os().tmpdir(), `choko-report-${Date.now()}.html`);
     console.debug('[pdf] previewReportHtml: writing temp HTML', { tmp, bytes: html.length });
     await fsp.writeFile(tmp, html, 'utf8');
 

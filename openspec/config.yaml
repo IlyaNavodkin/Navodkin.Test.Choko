@@ -4,7 +4,7 @@ context: |
   Language: Russian
   All artifacts must be written in Russian.
   Keep OpenSpec structural headings and SHALL/MUST keywords in English.
-  Chioko — desktop-приложение для ручных тест-кейсов, прогонов и автотестов; Git-репозиторий — хранилище данных и способ совместной работы.
+  Choko — desktop-приложение для ручных тест-кейсов, прогонов и автотестов; Git-репозиторий — хранилище данных и способ совместной работы.
   Продуктовое приложение — app/ (монорепо pnpm/turbo): apps/desktop — NW.js 0.112 + React 19 + TypeScript + Vite + Tailwind v4/shadcn UI; apps/web — маркетинговый сайт.
   Renderer имеет доступ к Node (lib/node.ts); fs/Git-слой — services/*, состояние — Zustand-слайсы, валидация — TypeScript + Zod.
   Данные репозитория — существующий формат приложения: .ch/config.yaml, объявленные workspace-папки, Markdown-кейсы, прогоны-папки (_run.md + NNN-<id>.md + .order), folder notes и .order.

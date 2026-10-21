@@ -10,7 +10,7 @@ import { node } from '@/lib/node';
 // in `.ch/runs/`.
 // ---------------------------------------------------------------------------
 
-export const CHIOKO_DIR = '.ch';
+export const CHOKO_DIR = '.ch';
 export const CONFIG_REL = '.ch/config.yaml';
 export const RUNS_REL = '.ch/runs';
 export const WORKSPACE_MARKER = 'casewright.yaml'; // legacy workspace marker — read only (migration + fallback)

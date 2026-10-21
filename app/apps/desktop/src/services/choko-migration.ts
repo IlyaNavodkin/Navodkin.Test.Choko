@@ -1,10 +1,10 @@
 import { node } from '@/lib/node';
 import { resolveRepoWritePath, writeFileAtomic } from './repo-fs';
-import { CHIOKO_DIR } from './repo-paths';
+import { CHOKO_DIR } from './repo-paths';
 
 // This is the only reader for the previous product's data-folder name.
 const LEGACY_DIR = '.casewright';
-const JOURNAL = `${CHIOKO_DIR}/.migration-paths.json`;
+const JOURNAL = `${CHOKO_DIR}/.migration-paths.json`;
 const SKIP = new Set(['.git', 'node_modules', '.cache', '.turbo', '.nwdev', '.nwdev-automation', 'dist', 'build', 'cache']);
 const TEXT = /\.(?:md|json|ya?ml|[cm]?js|tsx?|txt|gitignore)$/i;
 const eligible = (rel: string) => !rel.includes('\\') && !rel.split('/').some(part => SKIP.has(part) || part === '..' || part === '') && (TEXT.test(rel) || rel.endsWith('/.gitignore'));
@@ -15,11 +15,11 @@ async function statOrNull(path: string) {
 }
 
 /** Move the old data folder once, then atomically rewrite references. A journal makes interrupted rewrites resumable. */
-export async function migrateChiokoData(repoPath: string): Promise<boolean> {
+export async function migrateChokoData(repoPath: string): Promise<boolean> {
   const fsp = node.fsp();
   const path = node.path();
   const oldAbs = path.join(repoPath, LEGACY_DIR);
-  const newAbs = path.join(repoPath, CHIOKO_DIR);
+  const newAbs = path.join(repoPath, CHOKO_DIR);
   const old = await statOrNull(oldAbs);
   const current = await statOrNull(newAbs);
   if (old && current) throw new Error('Repository contains both old and .ch data folders. Move one aside before migration; nothing was merged.');
@@ -36,7 +36,7 @@ export async function migrateChiokoData(repoPath: string): Promise<boolean> {
         if (entry.isDirectory()) await walk(child);
         else if (entry.isFile() && eligible(child)) {
           const raw = await fsp.readFile(path.join(repoPath, child), 'utf8');
-          if (raw.includes(LEGACY_DIR)) pending.push(child.startsWith(`${LEGACY_DIR}/`) ? CHIOKO_DIR + child.slice(LEGACY_DIR.length) : child);
+          if (raw.includes(LEGACY_DIR)) pending.push(child.startsWith(`${LEGACY_DIR}/`) ? CHOKO_DIR + child.slice(LEGACY_DIR.length) : child);
         }
       }
     };
@@ -58,12 +58,12 @@ export async function migrateChiokoData(repoPath: string): Promise<boolean> {
   await resolveRepoWritePath(repoPath, JOURNAL);
   const pending: unknown = JSON.parse(await fsp.readFile(journalAbs, 'utf8'));
   if (!Array.isArray(pending) || !pending.every((rel): rel is string => typeof rel === 'string' && eligible(rel))) {
-    throw new Error('Invalid Chioko migration journal. No references were rewritten.');
+    throw new Error('Invalid Choko migration journal. No references were rewritten.');
   }
   for (const rel of pending as string[]) {
     const abs = await resolveRepoWritePath(repoPath, rel);
     const raw = await fsp.readFile(abs, 'utf8');
-    const next = raw.replaceAll(LEGACY_DIR, CHIOKO_DIR);
+    const next = raw.replaceAll(LEGACY_DIR, CHOKO_DIR);
     if (next !== raw) await writeFileAtomic(repoPath, rel, next);
   }
   await fsp.unlink(journalAbs);

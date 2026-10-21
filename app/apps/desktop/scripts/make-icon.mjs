@@ -1,5 +1,5 @@
-// Generate the app icons from the supplied Chioko mascot:
-//   build-resources/icon.ico — embedded in Chioko.exe by the packaging pipeline.
+// Generate the app icons from the supplied Choko mascot:
+//   build-resources/icon.ico — embedded in Choko.exe by the packaging pipeline.
 //   build-resources/icon.png — the NW.js `window.icon` (taskbar/window icon at runtime,
 //                              including `pnpm dev` and `nw .`, where there's no .exe icon).
 // Both are committed so the build never needs a rasterizer; re-run `pnpm make-icon`
@@ -12,7 +12,7 @@ import pngToIco from 'png-to-ico';
 
 const here = dirname(fileURLToPath(import.meta.url)); // apps/desktop/scripts
 const repoRoot = join(here, '..', '..', '..');
-const mascotPath = join(repoRoot, 'packages', 'brand', 'chioko-mascot.png');
+const mascotPath = join(repoRoot, 'packages', 'brand', 'choko-mascot.png');
 const outDir = join(here, '..', 'build-resources');
 const outFile = join(outDir, 'icon.ico');
 const pngFile = join(outDir, 'icon.png');

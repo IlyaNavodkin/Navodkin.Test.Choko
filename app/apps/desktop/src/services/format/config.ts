@@ -5,7 +5,7 @@ import { yamlScalar } from './workspace';
  * The `.ch/.gitignore` body. Keeps transient subdirectories (at minimum
  * `cache/`) out of Git while `config.yaml` and `runs/` are committed (PRD §4 req 4, 5).
  */
-export const CHIOKO_GITIGNORE = `# Chioko transient data — safe to delete, never committed.\ncache/\n`;
+export const CHOKO_GITIGNORE = `# Choko transient data — safe to delete, never committed.\ncache/\n`;
 
 /**
  * Serialize `.ch/config.yaml`: repo-wide config plus the `workspaces:` list that

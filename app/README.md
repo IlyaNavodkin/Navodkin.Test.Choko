@@ -1,4 +1,4 @@
-# Chioko
+# Choko
 
 A git-backed desktop application for writing and running test cases —
 _a bespoke editor for manual test cases; markdown on disk, Git as the data store._
@@ -8,21 +8,21 @@ This is a [Turborepo](https://turbo.build/repo) monorepo (pnpm workspaces).
 ## Workspace
 
 ```
-chioko/
+choko/
 ├── apps/
-│   ├── desktop/        # the Chioko app — NW.js + React + TypeScript (Vite)
+│   ├── desktop/        # the Choko app — NW.js + React + TypeScript (Vite)
 │   └── web/            # the marketing site — Astro static site, deployed to GitHub Pages
 ├── packages/
-│   └── brand/          # @chioko/brand — shared design tokens (palette, type, status colors)
+│   └── brand/          # @choko/brand — shared design tokens (palette, type, status colors)
 ├── turbo.json          # task pipeline
 └── pnpm-workspace.yaml
 ```
 
 | Package                | What it is                                                  |
 | ---------------------- | ----------------------------------------------------------- |
-| `@chioko/desktop`  | NW.js desktop app. See [`apps/desktop/README.md`](apps/desktop/README.md). |
-| `@chioko/web`      | Astro marketing site → GitHub Pages.                        |
-| `@chioko/brand`    | Design tokens shared by both apps.                          |
+| `@choko/desktop`  | NW.js desktop app. See [`apps/desktop/README.md`](apps/desktop/README.md). |
+| `@choko/web`      | Astro marketing site → GitHub Pages.                        |
+| `@choko/brand`    | Design tokens shared by both apps.                          |
 
 ## Prerequisites
 
@@ -48,7 +48,7 @@ pnpm dev:desktop    # launches the NW.js desktop app
 ```
 
 > Tip: to skip the large NW.js download while working only on the site, install just the web
-> graph: `pnpm install --filter @chioko/web...`.
+> graph: `pnpm install --filter @choko/web...`.
 
 ## Common scripts (root)
 
@@ -66,7 +66,7 @@ pnpm dev:desktop    # launches the NW.js desktop app
 publishes it to **GitHub Pages** on every push to `main` that touches the site.
 
 To turn it on: **Settings → Pages → Build and deployment → Source: _GitHub Actions_.** The
-workflow derives the correct `site` and `base` automatically (project site → `/chioko`,
+workflow derives the correct `site` and `base` automatically (project site → `/choko`,
 user/org site → `/`), so no config edit is needed. Commit `pnpm-lock.yaml` so the frozen
 install resolves in CI.
 

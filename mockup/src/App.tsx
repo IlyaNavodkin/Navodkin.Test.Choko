@@ -294,7 +294,7 @@ export default function App() {
                 <div className="w-logo">
                   <div className="w-mark">C</div>
                   <div>
-                    <div className="t">Chioko</div>
+                    <div className="t">Choko</div>
                     <div className="s">Manual test cases · markdown on disk · git as the data store</div>
                   </div>
                 </div>

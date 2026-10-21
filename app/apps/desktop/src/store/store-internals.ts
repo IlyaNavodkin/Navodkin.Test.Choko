@@ -91,7 +91,7 @@ export function createStoreInternals(set: StoreSet, get: StoreGet) {
     }
   };
 
-  /** Re-discover workspaces + rebuild the tree after we add/remove a `chioko.yaml`
+  /** Re-discover workspaces + rebuild the tree after we add/remove a `choko.yaml`
    *  ourselves. Preserves the active workspace + case selection when they survive. */
   const refreshWorkspaces = async () => {
     const repoPath = get().repoPath;

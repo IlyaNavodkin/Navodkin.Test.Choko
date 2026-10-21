@@ -4,7 +4,7 @@ import { defineConfig } from 'astro/config';
 // `site` and `base` are read from the environment so the GitHub Pages workflow can inject the
 // correct values for whatever owner/repo this lives in (see ../../.github/workflows/deploy-web.yml):
 //
-//   SITE_URL=https://<owner>.github.io   BASE_PATH=/chioko
+//   SITE_URL=https://<owner>.github.io   BASE_PATH=/choko
 //
 // Locally they default to a root-served dev site, so `pnpm dev:web` Just Works.
 // If you attach a custom domain later, set SITE_URL to it and BASE_PATH to '/'.

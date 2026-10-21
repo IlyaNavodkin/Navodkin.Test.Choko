@@ -7,7 +7,7 @@ import { openRepo, loadRepo } from './repo';
 import { createProject, initializeProject } from './project';
 
 const roots: string[] = [];
-async function parent() { const root = await mkdtemp(join(tmpdir(), 'chioko-project-')); roots.push(root); return root; }
+async function parent() { const root = await mkdtemp(join(tmpdir(), 'choko-project-')); roots.push(root); return root; }
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 
 describe('project setup', () => {
@@ -38,7 +38,7 @@ describe('project setup', () => {
     }
     expect(await readdir(base)).toEqual([]);
   });
-  it('offers setup for an ordinary folder, then adds Chioko without changing its documents', async () => {
+  it('offers setup for an ordinary folder, then adds Choko without changing its documents', async () => {
     const root = await parent(); await writeFile(join(root, 'notes.md'), 'Keep this.');
     expect((await openRepo(root)).needsInit).toBe(true);
     await initializeProject(root);

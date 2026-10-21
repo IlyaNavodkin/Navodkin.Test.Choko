@@ -44,7 +44,7 @@ export function Icon({
 
 export type IconFn = (props?: IconProps) => ReactNode;
 
-/** The Chioko line-icon set. Each entry is called like `I.file({ size: 14 })`. */
+/** The Choko line-icon set. Each entry is called like `I.file({ size: 14 })`. */
 export const I = {
   chevron: (p?: IconProps) => <Icon {...p} d="M9 6l6 6-6 6" />,
   chevronDown: (p?: IconProps) => <Icon {...p} d="M6 9l6 6 6-6" />,

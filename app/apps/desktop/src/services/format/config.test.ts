@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHIOKO_GITIGNORE, serializeConfigYaml } from './config';
+import { CHOKO_GITIGNORE, serializeConfigYaml } from './config';
 
 describe('serializeConfigYaml', () => {
   it('emits version and an optional name', () => {
@@ -25,8 +25,8 @@ describe('serializeConfigYaml', () => {
   });
 });
 
-describe('CHIOKO_GITIGNORE', () => {
+describe('CHOKO_GITIGNORE', () => {
   it('ignores cache/', () => {
-    expect(CHIOKO_GITIGNORE).toMatch(/^cache\/$/m);
+    expect(CHOKO_GITIGNORE).toMatch(/^cache\/$/m);
   });
 });

@@ -23,7 +23,7 @@ const tones = { success: 'text-pass', warning: 'text-blocked', muted: 'text-ink-
 // Encode every value, including explicit "None" (empty string), without a reserved-value collision.
 const encode = (value: string) => `option:${value}`;
 
-/** Chioko's single-choice control. Radix owns focus, typeahead, keyboard and collision handling. */
+/** Choko's single-choice control. Radix owns focus, typeahead, keyboard and collision handling. */
 export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select({
   options, value, onValueChange, placeholder = 'Choose…', size = 'md', className, disabled, ...props
 }, ref) {
@@ -42,7 +42,7 @@ export const Select = forwardRef<HTMLButtonElement, SelectProps>(function Select
       <SelectPrimitive.Icon className="shrink-0 text-ink-3">{I.chevronDown({ size: 14 })}</SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
     <SelectPrimitive.Portal>
-      <SelectPrimitive.Content position="popper" sideOffset={6} collisionPadding={8} className="chioko-select-content z-[80] flex flex-col overflow-hidden rounded-md border border-border-2 bg-panel font-ui text-[13px] text-ink shadow-[0_8px_24px_var(--shadow),0_2px_6px_var(--shadow)]">
+      <SelectPrimitive.Content position="popper" sideOffset={6} collisionPadding={8} className="choko-select-content z-[80] flex flex-col overflow-hidden rounded-md border border-border-2 bg-panel font-ui text-[13px] text-ink shadow-[0_8px_24px_var(--shadow),0_2px_6px_var(--shadow)]">
         <SelectPrimitive.ScrollUpButton className="grid h-6 cursor-default place-items-center bg-panel text-ink-3"><span className="rotate-180">{I.chevronDown({ size: 14 })}</span></SelectPrimitive.ScrollUpButton>
         <SelectPrimitive.Viewport className="min-h-0 flex-1 p-1">
           {options.map((option) => <SelectPrimitive.Item key={option.value} value={encode(option.value)} disabled={option.disabled} textValue={option.label}

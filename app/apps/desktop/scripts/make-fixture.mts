@@ -8,7 +8,7 @@
  * "folder note" (`<folder>.md`) — written only when it has a custom name / prefix / description
  * (single-word, metadata-free suites are just plain folders).
  *
- * Run via `pnpm --filter @chioko/desktop fixture` (uses vite-node so the `@`
+ * Run via `pnpm --filter @choko/desktop fixture` (uses vite-node so the `@`
  * alias + TS resolve). Pass `--with-origin` to also create a bare `.fixture-origin.git`
  * remote and push to it (for the Git-loop tests).
  */
@@ -23,7 +23,7 @@ import { simpleGit } from 'simple-git';
 
 import { cases, runs, trees, workspaces } from '@/data/sample';
 import { serializeCase } from '@/services/format/case';
-import { CHIOKO_GITIGNORE, serializeConfigYaml } from '@/services/format/config';
+import { CHOKO_GITIGNORE, serializeConfigYaml } from '@/services/format/config';
 import { serializeFolderNote } from '@/services/format/folder-note';
 import { serializeRunCase, serializeRunDetails, type RunCaseItem } from '@/services/format/run';
 import { caseFileName } from '@/services/format/filename';
@@ -49,9 +49,9 @@ const cwDir = join(repoRoot, '.ch');
 mkdirSync(join(cwDir, 'runs'), { recursive: true });
 writeFileSync(
   join(cwDir, 'config.yaml'),
-  serializeConfigYaml({ version: 1, name: 'Chioko Fixture', workspaces: workspaces.map((w) => w.path) }),
+  serializeConfigYaml({ version: 1, name: 'Choko Fixture', workspaces: workspaces.map((w) => w.path) }),
 );
-writeFileSync(join(cwDir, '.gitignore'), CHIOKO_GITIGNORE);
+writeFileSync(join(cwDir, '.gitignore'), CHOKO_GITIGNORE);
 
 // --- workspace list (config.yaml) + lazy sibling folder notes + suite/case subtrees ---
 const byId = new Map(cases.map((c) => [c.id, c]));
@@ -149,10 +149,10 @@ for (const run of runs) {
 // --- git init + seed commit on `main` ---
 const git = simpleGit(repoRoot);
 await git.init();
-await git.addConfig('user.email', 'fixture@chioko.dev', false, 'local');
-await git.addConfig('user.name', 'Chioko Fixture', false, 'local');
+await git.addConfig('user.email', 'fixture@choko.dev', false, 'local');
+await git.addConfig('user.name', 'Choko Fixture', false, 'local');
 await git.add('.');
-await git.commit('Seed Chioko fixture repository');
+await git.commit('Seed Choko fixture repository');
 await git.branch(['-M', 'main']);
 
 if (withOrigin) {

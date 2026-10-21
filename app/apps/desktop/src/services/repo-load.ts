@@ -10,7 +10,7 @@ import { parseRunCase, parseRunDetails, type RunCaseItem } from './format/run';
 import { parseRunArgumentsSnapshot, parseRunGlossarySnapshot } from './format/run-snapshot';
 import { parseSuite } from './format/suite';
 import {
-  CHIOKO_DIR,
+  CHOKO_DIR,
   CONFIG_REL,
   LEGACY_SUITE_FILE,
   ORDER_FILE,
@@ -23,7 +23,7 @@ import {
 } from './repo-paths';
 import { isDir, readMaybe } from './repo-fs';
 import { migrateRepo } from './repo-migration';
-import { migrateChiokoData } from './chioko-migration';
+import { migrateChokoData } from './choko-migration';
 
 // ---------------------------------------------------------------------------
 // Read side of the repo service: open + validate `.ch/`, discover
@@ -157,9 +157,9 @@ export async function openRepo(repoPath: string): Promise<OpenedRepo> {
   if (path.relative(gitRoot, await node.fsp().realpath(repoPath)) !== '') throw new Error('Выберите корневую папку проекта, а не вложенную папку.');
   const branch = (await git.branchLocal()).current || 'main';
 
-  if (await migrateChiokoData(repoPath)) warnings.push({ code: 'migrated', message: 'Moved project data and references to .ch/. Review and commit the migration.' });
+  if (await migrateChokoData(repoPath)) warnings.push({ code: 'migrated', message: 'Moved project data and references to .ch/. Review and commit the migration.' });
 
-  if (!(await isDir(path.join(repoPath, CHIOKO_DIR)))) {
+  if (!(await isDir(path.join(repoPath, CHOKO_DIR)))) {
     warnings.push({ code: 'needs-init', message: 'This repository has no .ch/ folder yet.' });
     return { repoPath, workspaces: [], branch, warnings, needsInit: true };
   }

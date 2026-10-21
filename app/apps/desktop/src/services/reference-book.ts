@@ -9,7 +9,7 @@ import {
   serializeReferenceEntry,
 } from './format/reference-book';
 import { sha256Hex } from './hash';
-import { CHIOKO_DIR } from './repo-paths';
+import { CHOKO_DIR } from './repo-paths';
 import { RepoPathError, resolveRepoWritePath, writeFileAtomic } from './repo-fs';
 
 /** The layout this module owns — re-exported so consumers never reach into the format layer for it. */
@@ -92,7 +92,7 @@ const errText = (e: unknown): string => (e instanceof Error ? e.message : String
 
 /** The first product-path segment that exists but is not a directory (`null` when the path is clear). */
 async function nonDirectoryOnPath(repoPath: string): Promise<string | null> {
-  for (const rel of [CHIOKO_DIR, GLOSSARY_DIR]) {
+  for (const rel of [CHOKO_DIR, GLOSSARY_DIR]) {
     try {
       if (!(await node.fsp().stat(node.path().join(repoPath, rel))).isDirectory()) return rel;
     } catch {

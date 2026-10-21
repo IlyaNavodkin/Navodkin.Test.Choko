@@ -29,8 +29,8 @@ export async function ensureBundledGit(cacheDir) {
   verifyGitArchive(readFileSync(archive));
   if (!existsSync(join(root, 'cmd', 'git.exe'))) {
     const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command',
-      'Expand-Archive -LiteralPath $env:CHIOKO_GIT_ARCHIVE -DestinationPath $env:CHIOKO_GIT_TARGET -Force'], {
-      windowsHide: true, stdio: 'inherit', env: { ...process.env, CHIOKO_GIT_ARCHIVE: archive, CHIOKO_GIT_TARGET: root },
+      'Expand-Archive -LiteralPath $env:CHOKO_GIT_ARCHIVE -DestinationPath $env:CHOKO_GIT_TARGET -Force'], {
+      windowsHide: true, stdio: 'inherit', env: { ...process.env, CHOKO_GIT_ARCHIVE: archive, CHOKO_GIT_TARGET: root },
     });
     if (result.status !== 0) throw new Error('MinGit extraction failed.');
   }
@@ -38,7 +38,7 @@ export async function ensureBundledGit(cacheDir) {
   const check = spawnSync(binary, ['--version'], { encoding: 'utf8', windowsHide: true });
   if (check.status !== 0) throw new Error('Bundled Git does not start.');
   console.log(`  ✓ ${check.stdout.trim()}`);
-  writeFileSync(join(root, 'CHIOKO-SOURCE.txt'), `Git for Windows ${MINGIT.version}\nBinary: ${MINGIT.url}\nCorresponding source and licenses: https://github.com/git-for-windows/git/tree/v2.56.0.windows.2\nOriginal licenses are included with this distribution.\n`);
+  writeFileSync(join(root, 'CHOKO-SOURCE.txt'), `Git for Windows ${MINGIT.version}\nBinary: ${MINGIT.url}\nCorresponding source and licenses: https://github.com/git-for-windows/git/tree/v2.56.0.windows.2\nOriginal licenses are included with this distribution.\n`);
   return root;
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {

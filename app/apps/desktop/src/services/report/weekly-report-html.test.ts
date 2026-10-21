@@ -46,7 +46,7 @@ const data: WeeklyData = {
 };
 
 function buildModel(overrides: Partial<WeeklyReportModel> = {}): WeeklyReportModel {
-  return { ...data, repoName: 'chioko', generatedAt: '2026-07-03 09:30', ...overrides };
+  return { ...data, repoName: 'choko', generatedAt: '2026-07-03 09:30', ...overrides };
 }
 
 describe('weekLabel', () => {
@@ -72,7 +72,7 @@ describe('buildWeeklyReportHtml', () => {
     const html = buildWeeklyReportHtml(buildModel());
     expect(html).toContain('Weekly test report');
     expect(html).toContain('Week of Jun 29 – Jul 5, 2026');
-    expect(html).toContain('chioko');
+    expect(html).toContain('choko');
     expect(html).not.toContain('2026-06-29'); // raw ISO never shown
   });
 

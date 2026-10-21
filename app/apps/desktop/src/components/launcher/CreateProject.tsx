@@ -33,7 +33,7 @@ export function CreateProject({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-2"><Input className="min-w-0 flex-1" id={`${id}-folder`} required disabled={ctx.loading} value={parentPath} onChange={(e) => setParentPath(e.target.value)} placeholder="Выберите папку на компьютере" /><Button className="shrink-0" disabled={ctx.loading} onClick={() => void chooseFolder()}>{I.folderOpen({ size: 14 })} Обзор…</Button></div>
           {parentPath && <p className="break-all text-[12px] text-ink-3">Новая папка: <span className="font-mono">{target}</span></p>}
         </div>
-        <div className="rounded-lg border border-border bg-panel-2 p-3 text-[12px] leading-relaxed text-ink-3">Chioko создаст локальную историю Git и первое рабочее пространство. Файлы проекта будут храниться на вашем компьютере.</div>
+        <div className="rounded-lg border border-border bg-panel-2 p-3 text-[12px] leading-relaxed text-ink-3">Choko создаст локальную историю Git и первое рабочее пространство. Файлы проекта будут храниться на вашем компьютере.</div>
         {ctx.error && <p role="alert" className="break-words text-[13px] text-fail">{ctx.error}</p>}
       </ModalBody>
       <ModalFooter><Button disabled={ctx.loading} onClick={onClose}>Отмена</Button><Button type="submit" variant="primary" disabled={ctx.loading || !name.trim() || !parentPath.trim()}>{ctx.loading ? 'Создаём проект…' : 'Создать проект'}</Button></ModalFooter>

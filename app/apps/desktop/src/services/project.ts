@@ -1,7 +1,7 @@
 import { node } from '@/lib/node';
 import { ConfigYamlSchema } from '@/schemas';
-import { migrateChiokoData } from './chioko-migration';
-import { CHIOKO_GITIGNORE, serializeConfigYaml } from './format/config';
+import { migrateChokoData } from './choko-migration';
+import { CHOKO_GITIGNORE, serializeConfigYaml } from './format/config';
 import { resolveRepoWritePath, writeFileAtomic } from './repo-fs';
 import { CONFIG_REL, parseYamlDoc } from './repo-paths';
 
@@ -17,7 +17,7 @@ export function projectFolderName(name: string): string {
 
 async function ensureGitAvailable(directory: string): Promise<void> {
   try { await node.simpleGit()(directory).version(); }
-  catch { throw new Error('Git недоступен. Используйте полную сборку Chioko или установите Git для запуска из исходников.'); }
+  catch { throw new Error('Git недоступен. Используйте полную сборку Choko или установите Git для запуска из исходников.'); }
 }
 
 /** Create only a new child folder. Existing folders are opened/adopted through a separate explicit action. */
@@ -41,7 +41,7 @@ export async function createProject({ name, parentPath }: CreateProjectArgs): Pr
   return root;
 }
 
-/** Add Chioko to a folder, preserving existing documents and configured workspaces. */
+/** Add Choko to a folder, preserving existing documents and configured workspaces. */
 export async function initializeProject(root: string, name?: string): Promise<void> {
   const path = node.path();
   const fsp = node.fsp();
@@ -53,7 +53,7 @@ export async function initializeProject(root: string, name?: string): Promise<vo
     const actualRoot = await fsp.realpath((await git.revparse(['--show-toplevel'])).trim());
     if (path.relative(actualRoot, await fsp.realpath(root)) !== '') throw new Error('Выбрана папка внутри другого Git-проекта. Откройте его корневую папку.');
   }
-  await migrateChiokoData(root);
+  await migrateChokoData(root);
   const configPath = await resolveRepoWritePath(root, CONFIG_REL);
   let raw: string | null = null;
   try { raw = await fsp.readFile(configPath, 'utf8'); }
@@ -63,8 +63,8 @@ export async function initializeProject(root: string, name?: string): Promise<vo
   if (!isRepo) {
     await git.init(false, ['--initial-branch=main']);
     // A fresh standalone install can keep local history without global Git setup.
-    if (!(await git.getConfig('user.name')).value) await git.addConfig('user.name', 'Chioko', false, 'local');
-    if (!(await git.getConfig('user.email')).value) await git.addConfig('user.email', 'local@chioko.invalid', false, 'local');
+    if (!(await git.getConfig('user.name')).value) await git.addConfig('user.name', 'Choko', false, 'local');
+    if (!(await git.getConfig('user.email')).value) await git.addConfig('user.email', 'local@choko.invalid', false, 'local');
   }
   if (!config.data.workspaces.length) {
     await writeFileAtomic(root, CONFIG_REL, serializeConfigYaml({
@@ -79,6 +79,6 @@ export async function initializeProject(root: string, name?: string): Promise<vo
   await fsp.mkdir(path.dirname(runs), { recursive: true });
   await fsp.writeFile(runs, '', { flag: 'a' });
   const ignore = await resolveRepoWritePath(root, '.ch/.gitignore');
-  try { await fsp.writeFile(ignore, CHIOKO_GITIGNORE, { flag: 'wx' }); }
+  try { await fsp.writeFile(ignore, CHOKO_GITIGNORE, { flag: 'wx' }); }
   catch (error) { if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error; }
 }

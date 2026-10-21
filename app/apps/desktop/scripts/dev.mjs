@@ -41,7 +41,7 @@ writeFileSync(
   join(devDir, 'package.json'),
   JSON.stringify(
     {
-      name: automation ? 'chioko-automation' : 'chioko-dev',
+      name: automation ? 'choko-automation' : 'choko-dev',
       main: automation ? `${url}?automation=1` : url,
       // `<all_urls>` so Node/`nw` is granted to BOTH the dev server URL (the main window) and
       // local file:// pages — the latter is the report preview window, opened from a temp

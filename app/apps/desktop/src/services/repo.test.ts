@@ -75,7 +75,7 @@ async function mkRepo(prefix: string): Promise<string> {
 async function gitInit(dir: string): Promise<void> {
   const git = node.simpleGit()(dir);
   await git.init();
-  await git.addConfig('user.email', 'test@chioko.dev', false, 'local');
+  await git.addConfig('user.email', 'test@choko.dev', false, 'local');
   await git.addConfig('user.name', 'Test', false, 'local');
   await git.addConfig('commit.gpgsign', 'false', false, 'local');
   await git.add('.');
@@ -501,7 +501,7 @@ describe('toRepoRelative', () => {
   const path = node.path();
   // `path.resolve` yields a genuinely absolute, platform-native path (the contract the
   // helper documents), so these exercise real `path.isAbsolute`/root handling.
-  const repo = path.resolve('home', 'user', 'chioko');
+  const repo = path.resolve('home', 'user', 'choko');
 
   it('returns "" for the repo root itself', () => {
     expect(toRepoRelative(repo, repo)).toBe('');

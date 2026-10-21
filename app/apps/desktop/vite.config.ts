@@ -7,13 +7,13 @@ import { fileURLToPath } from 'node:url';
 // Expose the app version to the renderer as a compile-time constant so the About
 // dialog — and the auto-updater's "current version" comparison — can read it
 // without bundling the whole manifest. CI passes the release version via
-// CHIOKO_VERSION (the same env the packaging step uses), so __APP_VERSION__
+// CHOKO_VERSION (the same env the packaging step uses), so __APP_VERSION__
 // always matches the published release tag even when package.json on disk hasn't
 // been bumped yet; locally it falls back to package.json.
 const { version: PKG_VERSION } = JSON.parse(
   readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf8'),
 ) as { version: string };
-const APP_VERSION = (process.env.CHIOKO_VERSION || PKG_VERSION).replace(/^v/, '');
+const APP_VERSION = (process.env.CHOKO_VERSION || PKG_VERSION).replace(/^v/, '');
 
 // Node-only libs are pulled in at runtime via the `src/lib/node.ts` bridge
 // (a dynamic `require(...)` that Vite's static analysis can't see), so they are

@@ -290,7 +290,7 @@ export function createGitSlice(set: StoreSet, get: StoreGet, ctx: StoreCtx): Git
 
         // 2. Stash everything else (case edits, run sidecars, new files — untracked included)
         //    so the merge itself always runs on a clean tree.
-        const stashed = await runGit(() => stashPush(repoPath, 'chioko: auto-stash before pull'));
+        const stashed = await runGit(() => stashPush(repoPath, 'choko: auto-stash before pull'));
 
         // 3. Pull. A failure here means divergent *committed* history — banner as before; the
         //    stash and snapshots are parked and restored when the user aborts the merge.

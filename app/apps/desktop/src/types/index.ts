@@ -5,7 +5,7 @@ import type { RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
 export type { RunArgumentsSnapshot, RunGlossaryEntry, RunSnapshot, RunSnapshotMiss } from '@/schemas/run-snapshot';
 
 /* ============================================================
-   Chioko — domain model
+   Choko — domain model
    ============================================================ */
 
 export type Status = 'active' | 'draft' | 'deprecated';

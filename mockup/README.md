@@ -1,6 +1,6 @@
-# Chioko — Concept Mockup
+# Choko — Concept Mockup
 
-Standalone React mockup of the Chioko frontend in a neutral
+Standalone React mockup of the Choko frontend in a neutral
 Cursor / Claude / Zed-inspired style. Warm-gray surfaces, terracotta accent,
 Inter + JetBrains Mono, light + dark themes.
 

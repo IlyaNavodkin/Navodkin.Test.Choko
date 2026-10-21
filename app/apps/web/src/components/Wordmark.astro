@@ -1,7 +1,7 @@
 ---
-// The Chioko wordmark - the shared brand mark (@chioko/brand) plus the name.
+// The Choko wordmark - the shared brand mark (@choko/brand) plus the name.
 // Using the real mark here keeps the site in lockstep with the desktop app icon.
-import logoMark from '@chioko/brand/logo-mark.svg?url';
+import logoMark from '@choko/brand/logo-mark.svg?url';
 import { withBase } from '../consts';
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 const { href = withBase() } = Astro.props;
 ---
 
-<a class="wordmark" href={href} aria-label="Chioko home">
+<a class="wordmark" href={href} aria-label="Choko home">
   <img class="mark" src={logoMark} width="28" height="28" alt="" />
-  <span class="name">chioko</span>
+  <span class="name">choko</span>
 </a>

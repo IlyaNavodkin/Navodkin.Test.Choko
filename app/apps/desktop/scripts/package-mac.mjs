@@ -7,14 +7,14 @@
 //      papaparse) there, so the app ships a real, flat node_modules — pnpm's
 //      symlinked store can't be copied into a distributable.
 //   4. nw-builder merges the staged app into a normal-flavor NW.js runtime
-//      under build/mac-out/Chioko.app.
+//      under build/mac-out/Choko.app.
 //   5. Ad-hoc code-sign the bundle (required to launch an arm64 app after the
 //      runtime's original signature has been invalidated by renaming/settings).
 //   6. Zip the .app with `ditto` so the bundle metadata survives.
 //
 // Output (all under apps/desktop/build/, gitignored):
-//   build/mac-out/Chioko.app              — the application
-//   build/Chioko-<version>-mac-arm64.zip  — portable distribution
+//   build/mac-out/Choko.app              — the application
+//   build/Choko-<version>-mac-arm64.zip  — portable distribution
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -30,12 +30,12 @@ const outDir = join(buildDir, 'mac-out');
 const cacheDir = join(desktopRoot, '.nwcache');
 const icnsPath = join(buildDir, 'icon.icns');
 const licensePath = join(desktopRoot, '..', '..', '..', 'LICENSE');
-const mascotPath = join(desktopRoot, '..', '..', 'packages', 'brand', 'chioko-mascot.png');
+const mascotPath = join(desktopRoot, '..', '..', 'packages', 'brand', 'choko-mascot.png');
 
 const pkg = JSON.parse(readFileSync(join(desktopRoot, 'package.json'), 'utf8'));
 
-// Version: CI passes the release tag via CHIOKO_VERSION; otherwise package.json.
-const version = (process.env.CHIOKO_VERSION || pkg.version).replace(/^v/, '');
+// Version: CI passes the release tag via CHOKO_VERSION; otherwise package.json.
+const version = (process.env.CHOKO_VERSION || pkg.version).replace(/^v/, '');
 
 // Pin the NW.js runtime to the same version as the dev SDK (`nw` devDep), normal flavor.
 const nwVersion = (pkg.devDependencies.nw || '').replace(/-sdk$|-nacl$/, '') || 'latest';
@@ -88,7 +88,7 @@ if (iconutil.status !== 0) {
 }
 console.log(`  ✓ generated ${icnsPath}`);
 
-console.log(`\n▶ Packaging Chioko ${version} (NW.js ${nwVersion}, osx-arm64)\n`);
+console.log(`\n▶ Packaging Choko ${version} (NW.js ${nwVersion}, osx-arm64)\n`);
 
 // ── 2. stage ────────────────────────────────────────────────────────────────
 rmSync(stagingDir, { recursive: true, force: true });
@@ -96,8 +96,8 @@ rmSync(outDir, { recursive: true, force: true });
 mkdirSync(stagingDir, { recursive: true });
 
 const manifest = {
-  name: 'chioko',
-  productName: 'Chioko',
+  name: 'choko',
+  productName: 'Choko',
   version,
   main: 'dist/index.html',
   // Carry node-remote through so the report preview window (a local file:// page) gets the
@@ -154,20 +154,20 @@ await nwbuild({
   downloadUrl: process.env.NWJS_DOWNLOAD_URL || 'https://dl.nwjs.io',
   shaSum: process.env.NWJS_SHASUM !== 'false',
   app: {
-    name: 'Chioko',
+    name: 'Choko',
     icon: icnsPath,
     LSApplicationCategoryType: 'public.app-category.developer-tools',
-    CFBundleIdentifier: 'app.chioko.desktop',
-    CFBundleName: 'Chioko',
-    CFBundleDisplayName: 'Chioko',
-    CFBundleSpokenName: 'Chioko',
+    CFBundleIdentifier: 'app.choko.desktop',
+    CFBundleName: 'Choko',
+    CFBundleDisplayName: 'Choko',
+    CFBundleSpokenName: 'Choko',
     CFBundleVersion: version,
     CFBundleShortVersionString: version,
-    NSHumanReadableCopyright: `© ${year} Jim Buck and Chioko contributors`,
+    NSHumanReadableCopyright: `© ${year} Jim Buck and Choko contributors`,
   },
 });
 
-const appPath = join(outDir, 'Chioko.app');
+const appPath = join(outDir, 'Choko.app');
 if (!existsSync(appPath)) {
   console.error(`✗ nw-builder did not produce ${appPath}`);
   process.exit(1);
@@ -225,7 +225,7 @@ if (verify.status !== 0) {
 console.log('  ✓ ad-hoc signed and verified');
 
 // ── 7. portable zip ──────────────────────────────────────────────────────────
-const zipPath = join(buildDir, `Chioko-${version}-mac-arm64.zip`);
+const zipPath = join(buildDir, `Choko-${version}-mac-arm64.zip`);
 rmSync(zipPath, { force: true });
 const ditto = spawnSync('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', appPath, zipPath], {
   stdio: 'inherit',

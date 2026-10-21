@@ -1,19 +1,19 @@
-# @chioko/desktop
+# @choko/desktop
 
-The Chioko desktop application — _a bespoke editor for manual test cases; markdown on
+The Choko desktop application — _a bespoke editor for manual test cases; markdown on
 disk, Git as the data store._ Built with **NW.js + React + TypeScript** (Vite).
 
 ## Running
 
 ### First launch of a Windows release
 
-Extract the entire release ZIP and run `Chioko.exe`. The included `git/` directory
+Extract the entire release ZIP and run `Choko.exe`. The included `git/` directory
 provides Git without a separate installation. Do not move the executable alone.
 
 On the start screen, choose **Создать проект**, provide its name and a parent
-folder, then create the first case. Chioko initializes local Git and `.ch/` with
+folder, then create the first case. Choko initializes local Git and `.ch/` with
 a root workspace automatically. GitHub is optional. **Открыть проект** accepts
-an existing repository root or ordinary folder and offers to add Chioko settings
+an existing repository root or ordinary folder and offers to add Choko settings
 without replacing existing documents. Recent projects are shown on this screen;
 return through **File → Projects…**. Startup never opens the last project silently.
 
@@ -37,8 +37,8 @@ the **SDK flavor** (`nw@0.112.0-sdk`), so DevTools are available (`F12`).
 ### Production build
 
 ```bash
-pnpm --filter @chioko/desktop build   # Vite → dist/
-pnpm --filter @chioko/desktop start    # nw . → loads dist/index.html
+pnpm --filter @choko/desktop build   # Vite → dist/
+pnpm --filter @choko/desktop start    # nw . → loads dist/index.html
 ```
 
 The NW.js manifest (`package.json`) sets `main: dist/index.html`; Vite emits **relative** asset
@@ -64,7 +64,7 @@ focus scopes and dismissal layers share one context.
 
 Run the interaction checks with `pnpm exec playwright install chromium`, then
 `pnpm test:ui`. These headless tests use disposable HTTP mockup data. Optionally set
-`CHIOKO_BROWSER_PATH` to an existing Chrome executable. They cover keyboard/focus,
+`CHOKO_BROWSER_PATH` to an existing Chrome executable. They cover keyboard/focus,
 Undo, empty values, disabled items, long lists, nested dialogs and calendar years.
 
 ```
@@ -103,13 +103,13 @@ src/
 ```
 
 The UI is **Tailwind v4 + shadcn/ui (Radix)**; the `ui/` primitives keep a stable export
-surface (`<Button variant="primary" size="sm">`). The Chioko brand tokens in
-[`@chioko/brand`](../../packages/brand) are bridged into Tailwind via `@theme inline` in
+surface (`<Button variant="primary" size="sm">`). The Choko brand tokens in
+[`@choko/brand`](../../packages/brand) are bridged into Tailwind via `@theme inline` in
 `styles/app.css` and remain the single source of truth (shared with the marketing site).
 
 **Data layer.** The Git repository _is_ the data store. A repo is marked by a **`.ch/`**
 folder at its root (`config.yaml` + a central `runs/` + an auto-managed `.gitignore`), and each
-workspace declares itself with a **`chioko.yaml`** — discovered by a one-time walk on open, so
+workspace declares itself with a **`choko.yaml`** — discovered by a one-time walk on open, so
 there is no central registry to maintain. `services/repo.ts` validates `.ch/`, discovers
 workspaces, loads the suite/case tree + repo-level run CSVs, and writes cases/suites/runs and
 workspace config back as plain files (`initRepo` scaffolds `.ch/` for an un-initialized
@@ -117,7 +117,7 @@ repo); `services/git.ts` drives status/commit/push/pull. Node-only modules (`fs`
 `gray-matter`, `papaparse`) load at runtime through the `lib/node.ts` bridge (NW.js shares Node with
 the renderer), so they're never bundled.
 
-A chioko repository looks like:
+A choko repository looks like:
 
 ```
 my-repo/
@@ -130,17 +130,17 @@ my-repo/
 │   ├── defects/             # defect snapshots + evidence
 │   └── .gitignore           # keeps cache/ out of Git (config.yaml + runs/ are committed)
 ├── areas/payments/
-│   ├── chioko.yaml      # presence declares this folder a workspace (name, displayIdPrefix)
+│   ├── choko.yaml      # presence declares this folder a workspace (name, displayIdPrefix)
 │   ├── Authentication/      # suites are just folders
 │   │   └── PAY-0001-….md    # cases are markdown files
 │   └── Billing/…
 └── areas/onboarding/
-    ├── chioko.yaml
+    ├── choko.yaml
     └── Activation/…
 ```
 
-Workspaces don't nest (the walk stops at the first `chioko.yaml`); if the root itself has a
-`chioko.yaml`, the whole repo is a single workspace.
+Workspaces don't nest (the walk stops at the first `choko.yaml`); if the root itself has a
+`choko.yaml`, the whole repo is a single workspace.
 
 External changes are picked up **live** — `services/watch.ts` watches the working tree (Node's
 recursive `fs.watch`) and, on a debounced tick, re-runs discovery + load so cases / suites /
@@ -251,9 +251,9 @@ maximization. Do not emulate a viewport on a native NW.js window: use a separate
 headless browser for viewport and screenshot checks.
 
 ```bash
-pnpm --filter @chioko/desktop test            # Vitest: format round-trips, schema coercion, repo/git integration
-pnpm --filter @chioko/desktop fixture         # materialize a real .fixture/ repo from the seed
-pnpm --filter @chioko/desktop fixture --with-origin   # …plus a bare .fixture-origin.git remote
+pnpm --filter @choko/desktop test            # Vitest: format round-trips, schema coercion, repo/git integration
+pnpm --filter @choko/desktop fixture         # materialize a real .fixture/ repo from the seed
+pnpm --filter @choko/desktop fixture --with-origin   # …plus a bare .fixture-origin.git remote
 ```
 
 `scripts/make-fixture.mts` turns the seed in `src/data/sample.ts` into a **real Git repository**
@@ -286,14 +286,14 @@ nothing. To rebuild/republish a specific version by hand (e.g. a build that fail
 cut), run **Build desktop release** from the **Actions** tab and supply the version. Each run
 produces two assets:
 
-- **`Chioko-Setup-<version>.exe`** — a per-user installer (no admin/UAC), with a Start-Menu
-  shortcut and uninstaller. Built with **Inno Setup** ([`build-resources/chioko.iss`](build-resources/chioko.iss)).
-- **`Chioko-<version>-win-x64.zip`** — a portable build (unzip and run `Chioko.exe`).
+- **`Choko-Setup-<version>.exe`** — a per-user installer (no admin/UAC), with a Start-Menu
+  shortcut and uninstaller. Built with **Inno Setup** ([`build-resources/choko.iss`](build-resources/choko.iss)).
+- **`Choko-<version>-win-x64.zip`** — a portable build (unzip and run `Choko.exe`).
 
 ### Building locally
 
 ```bash
-pnpm --filter @chioko/desktop package:win   # vite build → stage → nw-builder → portable zip
+pnpm --filter @choko/desktop package:win   # vite build → stage → nw-builder → portable zip
 ```
 
 This runs [`scripts/package-win.mjs`](scripts/package-win.mjs), which:
@@ -303,16 +303,16 @@ This runs [`scripts/package-win.mjs`](scripts/package-win.mjs), which:
    the libs Vite leaves un-bundled (`lib/node.ts`). pnpm's symlinked store can't be copied into a
    distributable, so the app ships its own flat `node_modules`.
 3. Runs **`nw-builder`** (pinned to the same NW.js version as the dev `nw` devDep, _normal_ flavor)
-   to merge the staged app into `build/out/Chioko.exe` (+ the Chromium runtime), with the icon
+   to merge the staged app into `build/out/Choko.exe` (+ the Chromium runtime), with the icon
    and version metadata embedded.
-4. **Zips** `build/out/` into `build/Chioko-<version>-win-x64.zip`.
+4. **Zips** `build/out/` into `build/Choko-<version>-win-x64.zip`.
 
 The installer step (Inno Setup) runs in CI; build it locally with
-`ISCC.exe /DMyAppVersion=0.1.0 build-resources/chioko.iss` if you have Inno Setup 6 installed.
+`ISCC.exe /DMyAppVersion=0.1.0 build-resources/choko.iss` if you have Inno Setup 6 installed.
 
-The app **icon** (`build-resources/icon.ico`) is generated from the supplied Chioko mascot
-(`@chioko/brand/chioko-mascot.png`) by [`scripts/make-icon.mjs`](scripts/make-icon.mjs); it's
-committed, so packaging needs no rasterizer. Re-run `pnpm --filter @chioko/desktop make-icon`
+The app **icon** (`build-resources/icon.ico`) is generated from the supplied Choko mascot
+(`@choko/brand/choko-mascot.png`) by [`scripts/make-icon.mjs`](scripts/make-icon.mjs); it's
+committed, so packaging needs no rasterizer. Re-run `pnpm --filter @choko/desktop make-icon`
 whenever the mark changes. Everything under `build/` and `.nwcache/` is gitignored.
 
 ## Status & next steps

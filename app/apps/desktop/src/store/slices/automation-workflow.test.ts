@@ -17,7 +17,7 @@ const entry: CatalogEntry = { automationId: 'count', title: 'Count values', proj
   expectedStatus: 'passed', arguments: [], archived: false, revision: 'r1' };
 const store = () => useAppStore.getState();
 beforeEach(async () => {
-  repo = await mkdtemp(join(tmpdir(), 'chioko-automation-ui-'));
+  repo = await mkdtemp(join(tmpdir(), 'choko-automation-ui-'));
   useAppStore.setState({ repoPath: repo, cases: structuredClone(cases), runs: structuredClone(runs),
     automationCatalog: [structuredClone(entry)], automationBindings: [], automationIssues: [], runAutomation: {}, refs: [] });
 });

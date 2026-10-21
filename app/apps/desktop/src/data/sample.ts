@@ -1,10 +1,10 @@
 /* ============================================================
-   Chioko — seed data (NOT app data)
+   Choko — seed data (NOT app data)
 
    The running app reads real files from disk via the repo + git services; it no
    longer imports this module. This is the canonical seed for:
      • `scripts/make-fixture.mts` — materializes it into a real Git fixture repo
-       (`.ch/` layout: config.yaml + central runs/ + per-workspace chioko.yaml)
+       (`.ch/` layout: config.yaml + central runs/ + per-workspace choko.yaml)
      • `services/format/*.test.ts` — serialize/parse round-trip tests
    The `conflict` export illustrates the merge model for the deferred 3-way engine.
 

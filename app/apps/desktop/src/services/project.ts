@@ -1,4 +1,4 @@
-import { node } from '@/lib/node';
+import { GitUnavailableError, node } from '@/lib/node';
 import { ConfigYamlSchema } from '@/schemas';
 import { migrateChokoData } from './choko-migration';
 import { CHOKO_GITIGNORE, serializeConfigYaml } from './format/config';
@@ -17,7 +17,10 @@ export function projectFolderName(name: string): string {
 
 async function ensureGitAvailable(directory: string): Promise<void> {
   try { await node.simpleGit()(directory).version(); }
-  catch { throw new Error('Git недоступен. Используйте полную сборку Choko или установите Git для запуска из исходников.'); }
+  catch (error) {
+    if (error instanceof GitUnavailableError) throw error;
+    throw new GitUnavailableError(error instanceof Error ? error.message : String(error));
+  }
 }
 
 /** Create only a new child folder. Existing folders are opened/adopted through a separate explicit action. */

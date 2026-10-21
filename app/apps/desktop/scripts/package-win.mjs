@@ -9,6 +9,9 @@
 //      into Choko.exe (+ Chromium runtime) under build/out.
 //   4. Zip build/out into a portable Choko-<version>-win-x64.zip.
 //
+// Git is deliberately NOT bundled: Choko uses the Git installation on the host
+// OS and shows an actionable error when it is missing.
+//
 // Output (all under apps/desktop/build/, gitignored):
 //   build/out/Choko.exe            — the app folder (consumed by the installer)
 //   build/Choko-<version>-win-x64.zip — portable distribution
@@ -17,7 +20,6 @@ import { cpSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } fr
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import nwbuild from 'nw-builder';
-import { ensureBundledGit } from './bundle-git.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url)); // apps/desktop/scripts
 const desktopRoot = join(here, '..');
@@ -49,7 +51,6 @@ if (!existsSync(join(distDir, 'index.html'))) {
 }
 
 console.log(`\n▶ Packaging Choko ${version} (NW.js ${nwVersion}, win-x64)\n`);
-const bundledGit = await ensureBundledGit(cacheDir);
 
 // ── 1. stage ───────────────────────────────────────────────────────────────
 rmSync(stagingDir, { recursive: true, force: true });
@@ -128,8 +129,6 @@ await nwbuild({
 
 const exePath = join(outDir, 'Choko.exe');
 cpSync(licensePath, join(outDir, 'LICENSE'));
-// External executables must sit next to Choko.exe, outside the app's NW archive.
-cpSync(bundledGit, join(outDir, 'git'), { recursive: true });
 if (!existsSync(exePath)) {
   console.error(`✗ nw-builder did not produce ${exePath}`);
   process.exit(1);

@@ -7,8 +7,9 @@ disk, Git as the data store._ Built with **NW.js + React + TypeScript** (Vite).
 
 ### First launch of a Windows release
 
-Extract the entire release ZIP and run `Choko.exe`. The included `git/` directory
-provides Git without a separate installation. Do not move the executable alone.
+Install Git for Windows and confirm that `git --version` works in a terminal. Choko
+uses the system Git installation and shows an actionable error when Git is missing.
+Then extract the entire release ZIP and run `Choko.exe`.
 
 On the start screen, choose **Создать проект**, provide its name and a parent
 folder, then create the first case. Choko initializes local Git and `.ch/` with
@@ -19,7 +20,7 @@ return through **File → Projects…**. Startup never opens the last project si
 
 ### Development
 
-Install Git when running from source. The bundled Git is added by `pnpm package:win`.
+Install Git before running from source. Choko uses the `git` executable from `PATH`.
 
 From the **repo root**:
 
@@ -268,27 +269,29 @@ intentionally red test. Run `npm install` once inside that folder, then use the 
 section (Trust this project → Discover tests → bind a test to an open case). See
 `.fixture/.ch/autotests/README.md` for the exact flow and expected results.
 
-## Packaging & releases (Windows)
+## Packaging & releases
 
-Releases are **fully automatic** and driven by [Conventional Commits](https://www.conventionalcommits.org).
-On every push to `main`, the **Release** workflow ([`.github/workflows/release.yml`](../../.github/workflows/release.yml))
-runs [semantic-release](https://semantic-release.gitbook.io): it reads the commits since the last
-tag, decides the next version (`fix:` → patch, `feat:` → minor, `feat!:` / `BREAKING CHANGE` →
-major), bumps `CHANGELOG.md` + both `package.json` versions, and pushes the `v<version>` tag. It
-then triggers the reusable **Build desktop release** workflow
-([`.github/workflows/release-desktop.yml`](../../.github/workflows/release-desktop.yml)), which
-builds on `windows-latest` and publishes the GitHub Release **with the installer attached** (so the
-Release never appears without its download — important for the in-app auto-updater). See
-[`RELEASING.md`](../../RELEASING.md) for the full flow and the protected-branch caveat.
+Official builds run through
+[`.github/workflows/build-desktop.yml`](../../.github/workflows/build-desktop.yml):
 
-A push with no releasable commits (only `chore`/`docs`/`refactor`/`style`/`test`/`ci`) ships
-nothing. To rebuild/republish a specific version by hand (e.g. a build that failed after the tag was
-cut), run **Build desktop release** from the **Actions** tab and supply the version. Each run
-produces two assets:
+- **Manual build:** Actions → **Build desktop binaries** → **Run workflow**. No tag
+  is required; the run uploads Windows and macOS artifacts.
+- **Release build:** from the `app/` directory, run `pnpm release` and choose
+  `patch`, `minor`, or `major`. The script bumps both package versions, commits,
+  tags, and optionally pushes; the tag starts the workflow, which validates the tag
+  against both `package.json` files and attaches the binaries to a GitHub Release.
 
-- **`Choko-Setup-<version>.exe`** — a per-user installer (no admin/UAC), with a Start-Menu
+Each release can contain:
+
+- **`Choko-Setup-<version>.exe`** — a per-user installer, with a Start-Menu
   shortcut and uninstaller. Built with **Inno Setup** ([`build-resources/choko.iss`](build-resources/choko.iss)).
 - **`Choko-<version>-win-x64.zip`** — a portable build (unzip and run `Choko.exe`).
+- **`Choko-<version>-mac-arm64.zip`** — the macOS arm64 app bundle.
+
+Choko requires **Git installed on the host OS**; it is deliberately not bundled.
+The app shows an actionable installation error when `git --version` fails.
+See [`RELEASING.md`](../../RELEASING.md) for version rules, free-tier limits, and
+signing notes.
 
 ### Building locally
 

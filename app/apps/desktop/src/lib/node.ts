@@ -32,6 +32,18 @@ export class NotInNwjsError extends Error {
   }
 }
 
+/** Thrown when the OS Git installation cannot be found or executed. */
+export class GitUnavailableError extends Error {
+  constructor(detail?: string) {
+    super(
+      'Git не найден или не запускается. Установите Git для вашей ОС (https://git-scm.com/downloads) ' +
+        'и проверьте, что команда "git --version" работает в терминале.' +
+        (detail ? ` Детали: ${detail}` : ''),
+    );
+    this.name = 'GitUnavailableError';
+  }
+}
+
 let cachedRequire: NodeRequire | undefined;
 
 function nodeRequire(): NodeRequire {
@@ -47,32 +59,27 @@ function nodeRequire(): NodeRequire {
 const moduleCache = new Map<string, unknown>();
 let gitFactory: typeof SimpleGitFactory | undefined;
 
-/**
- * Put the bundled Git's `cmd/` directory first on PATH.
- *
- * `simple-git`'s `customBinary()` rejects paths containing spaces, which is
- * exactly what `C:\Program Files\...` produces. Letting `git` resolve through
- * PATH keeps the bundled runtime usable from any install directory.
- */
-export function prependBundledGitPath(runtime: { env?: NodeJS.ProcessEnv }, gitDir: string): void {
-  if (!runtime.env) return;
-  const pathKey = Object.keys(runtime.env).find((key) => key.toLowerCase() === 'path') ?? 'PATH';
-  const current = runtime.env[pathKey] ?? '';
-  const already = current.split(';').some((entry) => entry.toLowerCase() === gitDir.toLowerCase());
-  if (!already) runtime.env[pathKey] = `${gitDir};${current}`;
+/** The OS Git version (`git --version`), or null when Git is missing or broken. */
+export function systemGitVersion(): string | null {
+  try {
+    const childProcess = load<ChildProc>('node:child_process');
+    const env = (globalThis as { process?: { env?: NodeJS.ProcessEnv } }).process?.env;
+    const result = childProcess.spawnSync('git', ['--version'], {
+      shell: false,
+      windowsHide: true,
+      env,
+    });
+    if (result.error || result.status !== 0) return null;
+    return (result.stdout?.toString() ?? '').trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 function runtimeGit(): typeof SimpleGitFactory {
   if (gitFactory) return gitFactory;
   const factory = load<typeof SimpleGitFactory>('simple-git');
-  const runtime = (globalThis as { process?: { platform?: string; execPath?: string; env?: NodeJS.ProcessEnv } }).process;
-  if (runtime?.platform === 'win32' && runtime.execPath) {
-    const path = load<PathMod>('node:path');
-    const binary = path.join(path.dirname(runtime.execPath), 'git', 'cmd', 'git.exe');
-    if (load<FsMod>('node:fs').existsSync(binary)) {
-      prependBundledGitPath(runtime, path.dirname(binary));
-    }
-  }
+  if (!systemGitVersion()) throw new GitUnavailableError();
   gitFactory = factory;
   return factory;
 }

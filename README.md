@@ -64,12 +64,14 @@ Nunito Sans typefaces. Fonts are bundled with the app and the PDF export.
 Download the latest Windows or macOS build from
 [GitHub Releases](https://github.com/IlyaNavodkin/Navodkin.Test.Choko/releases).
 
+**All platforms:** Choko uses the Git installed on your system. Install Git and
+confirm that `git --version` works in a terminal. If Git is missing, Choko shows an
+actionable installation error instead of silently failing.
+
 **Windows**
 
 1. Extract the entire ZIP archive and run **Choko.exe**.
-2. Keep the `git/` directory and the other files next to the executable. Git is
-   included in the distribution.
-3. Choose **Create project**, enter a name and folder, and Choko will prepare a local
+2. Choose **Create project**, enter a name and folder, and Choko will prepare a local
    Git repository, `.ch` settings, and the first workspace.
 
 **macOS**
@@ -210,5 +212,5 @@ Choko is distributed under the [MIT License](LICENSE). The license keeps Jim Buc
 original copyright notice and adds a notice for Choko changes.
 
 Fonts are distributed with their own
-[SIL Open Font License](app/packages/brand/fonts) files. Third-party components,
-including the bundled Git distribution, retain their own licenses.
+[SIL Open Font License](app/packages/brand/fonts) files. Third-party components
+retain their own licenses.

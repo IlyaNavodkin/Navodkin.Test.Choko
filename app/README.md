@@ -28,6 +28,8 @@ choko/
 
 - **Node** ≥ 22 (`.nvmrc` pins 22; `fnm use` / `nvm use` will pick it up)
 - **pnpm** ≥ 11 — `corepack enable` provides the pinned version from `packageManager`
+- **Git** — the desktop app uses the system `git` executable and reports an
+  actionable error when it is missing
 
 Build-script approvals and pnpm 11's supply-chain `minimumReleaseAge` gate are configured in
 [`pnpm-workspace.yaml`](pnpm-workspace.yaml) (the age gate is set to `0` so tracking the latest

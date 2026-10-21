@@ -1,0 +1,147 @@
+name: Build desktop binaries
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to embed (defaults to apps/desktop/package.json)
+        required: false
+        type: string
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Windows x64
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            value="$INPUT_VERSION"
+          elif [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            value="${GITHUB_REF_NAME#v}"
+          else
+            value="$(node -p "require('./app/apps/desktop/package.json').version")"
+          fi
+          echo "value=$value" >> "$GITHUB_OUTPUT"
+
+      - name: Build portable app
+        working-directory: app
+        env:
+          CHOKO_VERSION: ${{ steps.version.outputs.value }}
+        run: pnpm --filter @choko/desktop package:win
+
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Build installer
+        working-directory: app/apps/desktop
+        shell: pwsh
+        env:
+          CHOKO_VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          & $iscc "/DMyAppVersion=$env:CHOKO_VERSION" 'build-resources\choko.iss'
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: choko-windows
+          if-no-files-found: error
+          retention-days: 7
+          path: |
+            app/apps/desktop/build/Choko-*-win-x64.zip
+            app/apps/desktop/build/Choko-Setup-*.exe
+
+  macos:
+    name: macOS arm64
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.5.2
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: app/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: app
+        run: pnpm install --frozen-lockfile
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            value="$INPUT_VERSION"
+          elif [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            value="${GITHUB_REF_NAME#v}"
+          else
+            value="$(node -p "require('./app/apps/desktop/package.json').version")"
+          fi
+          echo "value=$value" >> "$GITHUB_OUTPUT"
+
+      - name: Build app bundle
+        working-directory: app
+        env:
+          CHOKO_VERSION: ${{ steps.version.outputs.value }}
+        run: pnpm --filter @choko/desktop package:mac
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: choko-macos-arm64
+          if-no-files-found: error
+          retention-days: 7
+          path: app/apps/desktop/build/Choko-*-mac-arm64.zip
+
+  release:
+    name: Attach binaries to GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

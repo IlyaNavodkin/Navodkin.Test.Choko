@@ -6,8 +6,8 @@ import { openExternal, runtimeVersions } from '@/lib/nwjs';
 import { repoInfo, type RepoInfo } from '@/services/git';
 import { useApp } from '@/store/app-store';
 
-export const GITHUB_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko';
-export const WEBSITE_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/';
+export const GITHUB_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Choko';
+export const WEBSITE_URL = 'https://github.com/IlyaNavodkin/Navodkin.Test.Choko/';
 export const DOCS_URL = `${GITHUB_URL}#readme`;
 
 const baseName = (p: string): string => p.replace(/[/\\]+$/, '').split(/[/\\]/).pop() || 'repository';

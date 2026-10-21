@@ -15,7 +15,7 @@ import { node } from '@/lib/node';
 import { execPath, quitApp } from '@/lib/nwjs';
 import { isNewer } from '@/utils/semver';
 
-const REPO = 'IlyaNavodkin/Navodkin.Test.Chioko';
+const REPO = 'IlyaNavodkin/Navodkin.Test.Choko';
 const LATEST_RELEASE_API = `https://api.github.com/repos/${REPO}/releases/latest`;
 
 /** The Inno per-user install directory: %LocalAppData%\Programs\Choko. */

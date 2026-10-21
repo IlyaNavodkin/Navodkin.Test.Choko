@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Choko marketing site \u0432\u0402\u201d static, built with Astro, deployed to GitHub Pages.",
-  "homepage": "https://github.com/IlyaNavodkin/Navodkin.Test.Chioko",
+  "homepage": "https://github.com/IlyaNavodkin/Navodkin.Test.Choko",
   "license": "MIT",
   "scripts": {
     "dev": "astro dev",

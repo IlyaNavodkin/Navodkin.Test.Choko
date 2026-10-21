@@ -11,7 +11,7 @@
 
 #define MyAppName "Choko"
 #define MyAppPublisher "Jim Buck"
-#define MyAppURL "https://github.com/IlyaNavodkin/Navodkin.Test.Chioko"
+#define MyAppURL "https://github.com/IlyaNavodkin/Navodkin.Test.Choko"
 #define MyAppExeName "Choko.exe"
 
 [Setup]

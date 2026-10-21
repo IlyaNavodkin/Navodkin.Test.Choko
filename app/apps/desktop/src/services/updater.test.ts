@@ -34,7 +34,7 @@ function mockFetchOnce(body: unknown, ok = true, status = 200) {
 
 const release = (over: Partial<Record<string, unknown>> = {}) => ({
   tag_name: 'v0.2.0',
-  html_url: 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/releases/tag/v0.2.0',
+  html_url: 'https://github.com/IlyaNavodkin/Navodkin.Test.Choko/releases/tag/v0.2.0',
   draft: false,
   prerelease: false,
   assets: [
@@ -56,7 +56,7 @@ describe('fetchLatestUpdate', () => {
     expect(info).toEqual({
       version: '0.2.0',
       setupUrl: 'https://example/Choko-Setup-0.2.0.exe',
-      htmlUrl: 'https://github.com/IlyaNavodkin/Navodkin.Test.Chioko/releases/tag/v0.2.0',
+      htmlUrl: 'https://github.com/IlyaNavodkin/Navodkin.Test.Choko/releases/tag/v0.2.0',
     });
   });
 

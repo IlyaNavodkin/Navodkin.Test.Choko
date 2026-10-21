@@ -1,6 +1,6 @@
 {
   "name": "choko",
-  "version": "0.16.0",
+  "version": "0.16.1",
   "private": true,
   "description": "A git-backed desktop application for writing and running test cases.",
   "license": "MIT",

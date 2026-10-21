@@ -36,6 +36,18 @@ jobs:
         working-directory: app
         run: pnpm install --frozen-lockfile
 
+      - name: Verify tag matches package versions
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          root="$(node -p "require('./app/package.json').version")"
+          desktop="$(node -p "require('./app/apps/desktop/package.json').version")"
+          if [ "$root" != "$tag" ] || [ "$desktop" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package versions (root=$root, desktop=$desktop). Bump both package.json files first."
+            exit 1
+          fi
+
       - name: Resolve version
         id: version
         shell: bash
@@ -99,6 +111,17 @@ jobs:
       - name: Install dependencies
         working-directory: app
         run: pnpm install --frozen-lockfile
+
+      - name: Verify tag matches package versions
+        if: github.ref_type == 'tag'
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          root="$(node -p "require('./app/package.json').version")"
+          desktop="$(node -p "require('./app/apps/desktop/package.json').version")"
+          if [ "$root" != "$tag" ] || [ "$desktop" != "$tag" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package versions (root=$root, desktop=$desktop). Bump both package.json files first."
+            exit 1
+          fi
 
       - name: Resolve version
         id: version

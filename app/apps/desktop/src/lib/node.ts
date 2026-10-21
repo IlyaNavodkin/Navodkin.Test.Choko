@@ -47,19 +47,30 @@ function nodeRequire(): NodeRequire {
 const moduleCache = new Map<string, unknown>();
 let gitFactory: typeof SimpleGitFactory | undefined;
 
+/**
+ * Put the bundled Git's `cmd/` directory first on PATH.
+ *
+ * `simple-git`'s `customBinary()` rejects paths containing spaces, which is
+ * exactly what `C:\Program Files\...` produces. Letting `git` resolve through
+ * PATH keeps the bundled runtime usable from any install directory.
+ */
+export function prependBundledGitPath(runtime: { env?: NodeJS.ProcessEnv }, gitDir: string): void {
+  if (!runtime.env) return;
+  const pathKey = Object.keys(runtime.env).find((key) => key.toLowerCase() === 'path') ?? 'PATH';
+  const current = runtime.env[pathKey] ?? '';
+  const already = current.split(';').some((entry) => entry.toLowerCase() === gitDir.toLowerCase());
+  if (!already) runtime.env[pathKey] = `${gitDir};${current}`;
+}
+
 function runtimeGit(): typeof SimpleGitFactory {
   if (gitFactory) return gitFactory;
   const factory = load<typeof SimpleGitFactory>('simple-git');
-  const runtime = (globalThis as { process?: { platform?: string; execPath?: string } }).process;
+  const runtime = (globalThis as { process?: { platform?: string; execPath?: string; env?: NodeJS.ProcessEnv } }).process;
   if (runtime?.platform === 'win32' && runtime.execPath) {
     const path = load<PathMod>('node:path');
     const binary = path.join(path.dirname(runtime.execPath), 'git', 'cmd', 'git.exe');
     if (load<FsMod>('node:fs').existsSync(binary)) {
-      gitFactory = new Proxy(factory, { apply: (target, receiver, args) => {
-        const instance = Reflect.apply(target, receiver, args) as ReturnType<typeof SimpleGitFactory>;
-        return instance.customBinary(binary);
-      } });
-      return gitFactory;
+      prependBundledGitPath(runtime, path.dirname(binary));
     }
   }
   gitFactory = factory;

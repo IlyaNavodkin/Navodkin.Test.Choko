@@ -62,27 +62,32 @@ pnpm dev:desktop    # launches the NW.js desktop app
 
 ## Deploying the marketing site
 
-[`.github/workflows/deploy-web.yml`](.github/workflows/deploy-web.yml) builds `apps/web` and
-publishes it to **GitHub Pages** on every push to `main` that touches the site.
-
-To turn it on: **Settings → Pages → Build and deployment → Source: _GitHub Actions_.** The
-workflow derives the correct `site` and `base` automatically (project site → `/choko`,
-user/org site → `/`), so no config edit is needed. Commit `pnpm-lock.yaml` so the frozen
+The site builds to `apps/web/dist` with `pnpm build:web`. To publish it on GitHub
+Pages, configure **Settings → Pages → Build and deployment → Source: _GitHub
+Actions_** and add a Pages workflow that builds this directory. The Astro config
+already reads `SITE_URL` and `BASE_PATH` from the environment, so the same build
+works for project and user/org Pages sites. Commit `pnpm-lock.yaml` so the frozen
 install resolves in CI.
 
-## Releasing the desktop app
+## Building and releasing the desktop app
 
-Releases are **automatic** — there's nothing to tag by hand. [`.github/workflows/release.yml`](.github/workflows/release.yml)
-runs [semantic-release](https://semantic-release.gitbook.io) on every push to `main`: it reads the
-[Conventional Commits](https://www.conventionalcommits.org) since the last release, picks the next
-version (`fix:` → patch, `feat:` → minor, `feat!:`/`BREAKING CHANGE` → major), bumps the changelog
-and versions, tags it, then builds and publishes the Windows release the in-app updater consumes.
-Just write conventional-commit messages and merge to `main`. Full flow and caveats: [`RELEASING.md`](RELEASING.md).
+Official builds run through
+[`.github/workflows/build-desktop.yml`](../.github/workflows/build-desktop.yml).
+
+- **Manual build:** Actions → **Build desktop binaries** → **Run workflow**. No tag
+  is required; the run uploads Windows and macOS artifacts.
+- **Release build:** bump both `package.json` and `apps/desktop/package.json`,
+  commit and push `main`, then create and push a `v*` tag. The workflow verifies
+  that the tag matches both versions and attaches the binaries to a GitHub Release.
+
+Windows builds include a portable ZIP and an Inno Setup installer. macOS builds are
+arm64-only and ad-hoc signed. Full version rules, free-tier limits, and signing
+notes are in [`RELEASING.md`](RELEASING.md).
 
 ## Status
 
 The desktop app is a **React + TypeScript** application (Vite-built, NW.js-hosted), architected
 into typed `components/` (with shadcn-style `ui/` primitives), `store/`, `data/`, `utils/`, and
 `types/`. Productionization follow-ups (native `nw.Shell` wiring, a filesystem + Git data layer,
-a Windows release build) are tracked in [`apps/desktop/README.md`](apps/desktop/README.md).
+cross-platform release builds) are tracked in [`apps/desktop/README.md`](apps/desktop/README.md).
 The marketing site is a complete static landing page built on the shared brand tokens.

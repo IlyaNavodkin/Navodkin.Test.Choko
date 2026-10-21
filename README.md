@@ -1,112 +1,134 @@
 <p align="center">
-  <img src="app/packages/brand/choko-mascot.png" width="140" alt="Логотип Choko — чихуахуа в бордовой толстовке" />
+  <img src="app/packages/brand/choko-mascot.png" width="140" alt="Choko logo: a Chihuahua in a burgundy hoodie" />
 </p>
 
 <h1 align="center">Choko</h1>
 
 <p align="center">
-  Тест-кейсы, ручные прогоны и автотесты в одном desktop-приложении.<br />
-  Markdown для данных. Git для истории. Понятный интерфейс для ежедневной работы QA.
+  Test cases, manual runs, and automated tests in one desktop app.<br />
+  Markdown on disk. Git for history. A focused interface for everyday QA work.
 </p>
 
 <p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-900c30" alt="Лицензия MIT" /></a>
-  <img src="https://img.shields.io/badge/desktop-Windows-573c42" alt="Desktop-сборка для Windows" />
-  <img src="https://img.shields.io/badge/data-Markdown%20%2B%20Git-573c42" alt="Данные в Markdown и Git" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-900c30" alt="MIT license" /></a>
+  <img src="https://img.shields.io/badge/platform-Windows%20%7C%20macOS-573c42" alt="Windows and macOS desktop app" />
+  <img src="https://img.shields.io/badge/data-Markdown%20%2B%20Git-573c42" alt="Markdown and Git data" />
 </p>
 
 <p align="center">
-  <a href="#возможности">Возможности</a> ·
-  <a href="#начать-работу">Начать работу</a> ·
-  <a href="#разработка">Разработка</a> ·
-  <a href="#благодарности">Благодарности</a>
+  <a href="#features">Features</a> ·
+  <a href="#getting-started">Getting started</a> ·
+  <a href="#data-layout">Data layout</a> ·
+  <a href="#development">Development</a> ·
+  <a href="#building-and-releasing">Building and releasing</a>
 </p>
 
-**Choko** помогает вести тестовую документацию, выполнять проверки и разбирать
-результаты в одном проекте. Кейсы остаются обычными файлами: их можно читать,
-редактировать в IDE и использовать в работе с агентом. История изменений хранится
-в Git, а синхронизацию с удалённым репозиторием можно подключить позже.
+**Choko** keeps test documentation, test runs, and their results in one local
+project. Cases remain ordinary files: you can read them, edit them in an IDE, or
+work with them through an agent. Git stores the history, and a remote can be added
+later when the team needs it.
 
-Choko — форк [Casewright](https://github.com/jimbuck/casewright), созданного
-[Jim Buck](https://github.com/jimbuck), с собственным интерфейсом и развитием
-сценариев работы с кейсами, справочником и автотестами.
+Choko is a fork of [Casewright](https://github.com/jimbuck/casewright) by
+[Jim Buck](https://github.com/jimbuck), with its own interface and additional
+workflows for cases, reference data, and automated tests.
 
-![Редактор тест-кейса в Choko: навигация, статусы, описание и шаги проверки](docs/images/choko-desktop.png)
+![Choko desktop editor with navigation, statuses, description, and verification steps](docs/images/choko-desktop.png)
 
-*На скриншоте — демонстрационные данные.*
+*Screenshot uses demo data.*
 
-## Возможности
+## Features
 
-| Раздел | Что можно делать |
+| Area | What you can do |
 | --- | --- |
-| **Cases** | Создавать кейсы с описанием, предусловиями, шагами и ожидаемыми результатами; группировать их по папкам и workspace, задавать статусы и теги. |
-| **Runs** | Собирать прогоны, фиксировать результаты проверок, фильтровать кейсы по статусам и смотреть активность по дням и годам. |
-| **Reference** | Хранить ссылки, описания и наборы аргументов для разных окружений; вставлять записи в кейсы и читать их через карточки. |
-| **Autotests** | Просматривать тесты в структуре исходных файлов, связывать несколько автотестов с одним кейсом и выбирать аргументы из справочника. |
+| **Cases** | Create cases with descriptions, preconditions, steps, and expected results; group them by folder and workspace; assign statuses and tags. |
+| **Runs** | Build test runs, record check results, filter cases by status, and review activity by day and year. |
+| **Reference** | Store links, descriptions, and argument sets for different environments; insert entries into cases and read them as cards. |
+| **Autotests** | Browse tests in the source-file structure, bind multiple automated tests to one case, and choose arguments from the reference book. |
 
-- **Запуск и разбор автотестов:** отдельный тест, все выбранные или проваленные; результат и вывод по каждому тесту, включая повторные попытки.
-- **Баг-репорты:** черновик на основе кейса и результатов прогона, редактирование фактического результата и добавление доказательств.
-- **Отчёты:** предпросмотр и экспорт в PDF с оформлением Choko.
-- **Git:** локальная история, просмотр изменений, коммиты, Pull и Push.
-- **Навигация:** переходы назад и вперёд, быстрый доступ к модулям и открытие папки репозитория.
+- **Run and inspect automated tests:** a single test, all selected tests, or only failed
+  tests; inspect results and output for every test, including retries.
+- **Defect reports:** draft a report from a case and run results, edit the actual result,
+  and attach evidence.
+- **Reports:** preview and export to PDF with Choko branding.
+- **Git:** local history, diffs, commits, pull, and push.
+- **Navigation:** back and forward history, quick module access, and opening the
+  repository folder.
 
-Интерфейс использует светлые поверхности, бордовый акцент и шрифты Onest, Rubik
-и Nunito Sans. Шрифты включены в приложение и PDF-экспорт.
+The interface uses light surfaces, burgundy accents, and the Onest, Rubik, and
+Nunito Sans typefaces. Fonts are bundled with the app and the PDF export.
 
-## Начать работу
+## Getting started
 
-### Готовая Windows-сборка
+### Download a build
 
-1. Распакуйте ZIP-архив целиком и запустите **Choko.exe**. Папка `git/` и остальные файлы должны оставаться рядом с приложением: Git уже включён в поставку.
-2. Выберите **Создать проект**, укажите название и папку. Choko подготовит локальный Git-репозиторий, настройки `.ch` и первый workspace.
-3. Создайте первый тест-кейс, затем добавьте его в прогон и запишите результат проверки.
+Download the latest Windows or macOS build from
+[GitHub Releases](https://github.com/IlyaNavodkin/Navodkin.Test.Choko/releases).
 
-Чтобы продолжить работу с существующей папкой, нажмите **Открыть проект**.
-Если в ней ещё нет настроек Choko, приложение предложит добавить их, сохранив
-имеющиеся документы. Недавние проекты доступны на стартовом экране;
-вернуться к нему можно через **File → Projects…**.
+**Windows**
 
-Для работы с ручными кейсами GitHub и командная строка не требуются.
-Для настоящего запуска автотестов нужны Node.js 22+, зависимости Playwright
-в тестовом проекте и установленный браузер Playwright.
+1. Extract the entire ZIP archive and run **Choko.exe**.
+2. Keep the `git/` directory and the other files next to the executable. Git is
+   included in the distribution.
+3. Choose **Create project**, enter a name and folder, and Choko will prepare a local
+   Git repository, `.ch` settings, and the first workspace.
 
-## Как хранятся данные
+**macOS**
 
-**Проект** — корневая папка репозитория. **Workspace** — область тестирования
-внутри проекта, например «Витрина», «Личный кабинет» или «API».
-Для начала достаточно одного workspace, который создаётся автоматически.
+1. Extract the ZIP archive and open **Choko.app**.
+2. The build is for Apple Silicon (arm64) and is ad-hoc signed, not notarized.
+   If Gatekeeper blocks the first launch, use right-click → **Open**, or run:
 
-Choko поддерживает хранение кейсов внутри `.ch/areas`. Пример компактной структуры:
+   ```bash
+   xattr -dr com.apple.quarantine Choko.app
+   ```
+
+To continue with an existing folder, choose **Open project**. If the folder does not
+have Choko settings yet, the app offers to add them without changing existing
+documents. Recent projects are available on the start screen and through
+**File → Projects…**.
+
+GitHub and a command-line setup are not required for manual cases. Running automated
+tests requires Node.js 22+, Playwright dependencies in the test project, and an
+installed Playwright browser.
+
+## Data layout
+
+A **project** is the repository root. A **workspace** is a testing area inside the
+project, such as Storefront, Account, or API. One workspace is enough to start and
+is created automatically.
+
+Choko stores its data inside `.ch/`:
 
 ```text
 my-project/
-├── .git/                  # история Git всего проекта
+├── .git/                  # Git history for the whole project
 └── .ch/
-    ├── config.yaml        # настройки и список workspace
+    ├── config.yaml        # project settings and workspace list
     ├── areas/
-    │   └── web-tools/     # workspace: папки и Markdown-кейсы
-    ├── runs/              # прогоны и результаты
-    ├── glossary/          # справочник и наборы аргументов
-    ├── autotests/         # проект Playwright
-    ├── automation/        # связи с кейсами и результаты автотестов
-    └── defects/           # сохранённые баг-репорты и вложения
+    │   └── web-tools/     # workspace: folders and Markdown cases
+    ├── runs/              # runs and results
+    ├── glossary/          # reference book and argument sets
+    ├── autotests/         # Playwright project
+    ├── automation/        # case bindings and automated-test results
+    └── defects/           # saved defect reports and evidence
 ```
 
-Пути workspace задаются в `.ch/config.yaml`: они также могут находиться
-в корне проекта или в других его папках. `.git` остаётся в корне репозитория.
+Workspace paths are configured in `.ch/config.yaml`; they may live at the project
+root or in other folders. `.git` always stays at the repository root.
 
-Для переноса данных предыдущей версии в `.ch` доступна команда:
+To migrate data from an earlier version into `.ch`:
 
 ```powershell
 cd app/apps/desktop
 pnpm migrate:choko D:\path\to\test-repository
 ```
 
-Подробности формата и рабочих сценариев — в [документации desktop-приложения](app/apps/desktop/README.md).
+For the detailed storage format and desktop workflows, see the
+[desktop application documentation](app/apps/desktop/README.md).
 
-## Разработка
+## Development
 
-Нужны **Node.js 22+**, **pnpm 11+** и **Git**.
+Requirements: **Node.js 22+**, **pnpm 11+**, and **Git**.
 
 ```powershell
 cd app
@@ -114,17 +136,16 @@ pnpm install
 pnpm dev:desktop
 ```
 
-Откроется настоящее desktop-окно с обновлением при изменении исходников.
-Терминал с dev-сервером должен оставаться запущенным.
+This opens the real desktop window with hot reload. Keep the terminal running.
 
-Для HTTP-предпросмотра с временными демоданными:
+For an HTTP preview with disposable demo data:
 
 ```powershell
 cd app/apps/desktop
 pnpm dev:mockup
 ```
 
-Проверки и сборка из папки `app`:
+Checks and builds from the `app` directory:
 
 ```powershell
 pnpm --filter @choko/desktop typecheck
@@ -133,7 +154,7 @@ pnpm --filter @choko/desktop build
 pnpm --filter @choko/desktop package:win
 ```
 
-Браузерные проверки компонентов:
+Browser component checks:
 
 ```powershell
 cd apps/desktop
@@ -141,23 +162,53 @@ pnpm exec playwright install chromium
 pnpm test:ui
 ```
 
-Основа приложения — **React + TypeScript + NW.js**, сборка — **Vite**,
-монорепозиторий — **pnpm workspaces**. Общие цвета, шрифты и графика находятся
-в [`app/packages/brand`](app/packages/brand).
+The app is built with **React + TypeScript + NW.js** and **Vite**. The monorepo uses
+**pnpm workspaces**. Shared colors, fonts, and graphics live in
+[`app/packages/brand`](app/packages/brand).
 
-## Благодарности
+## Building and releasing
 
-Особая благодарность **[Jim Buck](https://github.com/jimbuck)** — создателю
+Official desktop builds are produced by GitHub Actions:
+
+- Workflow: [`.github/workflows/build-desktop.yml`](.github/workflows/build-desktop.yml)
+- Manual build: **Actions → Build desktop binaries → Run workflow**. No tag is
+  required; the workflow uploads Windows and macOS artifacts.
+- Release build: bump both `app/package.json` and `app/apps/desktop/package.json`,
+  commit and push `main`, then create and push a `v*` tag. The workflow verifies
+  that the tag matches both package versions and attaches the binaries to a GitHub
+  Release.
+
+Windows builds include a portable ZIP and an Inno Setup installer. macOS builds are
+arm64-only and ad-hoc signed. Full instructions, version rules, free-tier limits,
+and signing notes are in [`app/RELEASING.md`](app/RELEASING.md).
+
+## Project layout
+
+```text
+app/
+├── apps/
+│   ├── desktop/        # Choko desktop app — NW.js + React + TypeScript
+│   └── web/            # marketing site — Astro, GitHub Pages
+├── packages/
+│   └── brand/          # @choko/brand — shared design tokens and artwork
+├── turbo.json
+└── pnpm-workspace.yaml
+```
+
+## Credits
+
+Special thanks to **[Jim Buck](https://github.com/jimbuck)**, creator of
 **[Casewright](https://github.com/jimbuck/casewright)**.
 
-**Choko является форком его приложения.** Спасибо за оригинальный проект,
-исходный код и основу для дальнейшего развития инструмента. Мы сохраняем
-указание авторства и уведомление об авторских правах оригинального Casewright.
+**Choko is a fork of his application.** Thank you for the original project, the
+source code, and the foundation for further development. We preserve the original
+Casewright attribution and copyright notice.
 
-## Лицензия
+## License
 
-Код Choko распространяется по [лицензии MIT](LICENSE). В ней сохранено
-авторское уведомление Jim Buck и добавлено уведомление для изменений Choko.
+Choko is distributed under the [MIT License](LICENSE). The license keeps Jim Buck's
+original copyright notice and adds a notice for Choko changes.
 
-Шрифты поставляются со своими [лицензиями SIL Open Font License](app/packages/brand/fonts).
-Сторонние компоненты, включая поставляемый Git, сохраняют собственные лицензии.
+Fonts are distributed with their own
+[SIL Open Font License](app/packages/brand/fonts) files. Third-party components,
+including the bundled Git distribution, retain their own licenses.

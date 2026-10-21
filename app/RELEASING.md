@@ -1,75 +1,198 @@
-# Releasing Choko
+# Building and releasing Choko
 
-Releases are **fully automatic** and driven by [Conventional Commits](https://www.conventionalcommits.org).
-You never choose a version number or push a tag by hand — you write good commit messages and merge
-to `main`.
+This is the **required process** for official desktop builds. GitHub Actions is the
+supported release pipeline; local packaging is only for smoke tests.
 
-## How it works
+- Workflow: [`.github/workflows/build-desktop.yml`](../.github/workflows/build-desktop.yml)
+- Repository: `IlyaNavodkin/Navodkin.Test.Choko`
+- Targets: Windows x64 and macOS arm64 (Apple Silicon)
 
-Every push to `main` runs [`.github/workflows/release.yml`](.github/workflows/release.yml):
+## Workflow triggers
 
-1. **[semantic-release](https://semantic-release.gitbook.io)** reads every commit since the last
-   `v*` tag and decides whether a release is due and what the version is:
+The workflow runs in two cases:
 
-   | Commit type                          | Bump  | `0.3.0` →     |
-   | ------------------------------------ | ----- | ------------- |
-   | `fix:` (and `perf:`)                 | patch | `0.3.1`       |
-   | `feat:`                              | minor | `0.4.0`       |
-   | `feat!:` / any `BREAKING CHANGE:`    | major | `1.0.0`       |
-   | `chore:` `docs:` `refactor:` `style:` `test:` `ci:` | none — no release | — |
+1. **Manual build** — Actions → **Build desktop binaries** → **Run workflow**.
+   No tag is needed. The run only uploads downloadable artifacts.
+2. **Release build** — push a tag matching `v*` (for example `v0.17.0`).
+   The run builds both platforms and attaches the files to a GitHub Release.
 
-   When a release is due it updates [`CHANGELOG.md`](CHANGELOG.md) and both `package.json` versions
-   (root + `apps/desktop`, via [`scripts/sync-version.mjs`](scripts/sync-version.mjs)), commits that
-   as `chore(release): vX.Y.Z [skip ci]`, and pushes the `vX.Y.Z` tag. It does **not** create the
-   GitHub Release yet.
+## Manual build (no tag)
 
-2. If a version was cut, [`.github/workflows/release-desktop.yml`](.github/workflows/release-desktop.yml)
-   builds the Windows app + Inno Setup installer and **publishes the GitHub Release with the assets
-   attached** — `Choko-Setup-<v>.exe` and `Choko-<v>-win-x64.zip`.
+Use this for a test build or when you need binaries without publishing a release.
 
-The two-step ordering is deliberate: the Release only becomes visible once the installer is present,
-so the in-app auto-updater never sees a release it can't download. The version flows into the build
-via `CHOKO_VERSION`, which sets both the packaged manifest and `__APP_VERSION__` (the value the
-running app compares against the latest release), keeping the updater's comparison correct.
+1. Push the commit you want to build to `main`.
+2. Open **Actions → Build desktop binaries**.
+3. Click **Run workflow**.
+4. Select the `main` branch.
+5. Optionally enter a version. If left empty, the workflow uses the version from
+   `apps/desktop/package.json`.
+6. Run the workflow.
 
-## What you do
+When it finishes, download the artifacts:
 
-Nothing release-specific. Write [conventional commits](https://www.conventionalcommits.org):
+| Artifact | Contents |
+| --- | --- |
+| `choko-windows` | `Choko-<version>-win-x64.zip` and `Choko-Setup-<version>.exe` |
+| `choko-macos-arm64` | `Choko-<version>-mac-arm64.zip` containing `Choko.app` |
 
-```text
-feat(runs): add per-case test-date override
-fix(editor): stop dropping the trailing newline on save
-feat!: require config.yaml at the repo root
+Artifacts are kept for **7 days**. For long-term distribution use a GitHub Release.
 
-BREAKING CHANGE: the legacy choko.json registry is no longer read.
+## Release build (tag required)
+
+A release is created only from a pushed `v*` tag.
+
+### 1. Bump both package versions
+
+The tag must match **both** version fields:
+
+- `app/package.json`
+- `app/apps/desktop/package.json`
+
+Example for version `0.17.0`:
+
+```json
+{
+  "version": "0.17.0"
+}
 ```
 
-Merge to `main`. If anything releasable landed, a new version ships a few minutes later; if not,
-nothing happens.
+Both files must contain the same value, without the leading `v`.
 
-## Manual / fallback release
+### 2. Commit and push
 
-To rebuild and republish a specific version by hand — e.g. the build failed *after* the tag was
-already created, so re-running won't re-tag — run **Build desktop release** from the **Actions** tab
-and supply the version (e.g. `0.4.0`). It rebuilds and updates that version's existing Release.
+```bash
+git add app/package.json app/apps/desktop/package.json
+git commit -m "chore(release): 0.17.0"
+git push origin main
+```
 
-## One-time setup caveat — protected `main`
+### 3. Create and push the tag
 
-semantic-release pushes the release commit and tag using the built-in `GITHUB_TOKEN`. If `main` is a
-**protected branch** (required pull requests / status checks), that push is rejected and the release
-step fails. Fix by allowing the GitHub Actions bot to bypass the rule:
+```bash
+git tag v0.17.0
+git push origin v0.17.0
+```
 
-- **Rulesets:** Settings → Rules → Rulesets → your `main` ruleset → **Bypass list** → add the
-  repository's GitHub Actions bot (or "Repository admin").
-- Or use a **Personal Access Token / GitHub App token** with push rights as the workflow's checkout
-  token instead of the default `GITHUB_TOKEN`.
+A local tag alone does nothing. GitHub only sees it after `git push origin v0.17.0`.
 
-If `main` is unprotected (the default for this repo), no setup is needed — it just works.
+### 4. Let the workflow run
 
-## Notes
+The tag push starts the workflow automatically. Before building, it verifies that
+the tag matches both `package.json` files. If they differ, the run fails with:
 
-- The pushed release commit carries `[skip ci]` and is authored by `GITHUB_TOKEN`, so it never
-  re-triggers the release workflow (no loops).
-- `CHANGELOG.md` is generated — don't hand-edit it.
-- semantic-release and its plugins aren't project dependencies; the workflow installs them
-  ephemerally, keeping the lockfile lean.
+```text
+Tag v0.17.0 does not match package versions (root=0.16.0, desktop=0.16.0). Bump both package.json files first.
+```
+
+Fix the versions, commit them, delete the bad tag, and create a new tag on the
+correct commit:
+
+```bash
+git tag -d v0.17.0
+git push origin :refs/tags/v0.17.0
+# bump versions, commit, push main, then create and push the tag again
+```
+
+### 5. Release assets
+
+When the tag build succeeds, the GitHub Release contains:
+
+- `Choko-Setup-<version>.exe` — per-user Windows installer;
+- `Choko-<version>-win-x64.zip` — portable Windows build;
+- `Choko-<version>-mac-arm64.zip` — macOS arm64 app bundle.
+
+## Where the version comes from
+
+The workflow has a **Resolve version** step with this order:
+
+1. Manual `version` input, if provided.
+2. Tag name without the leading `v` (`v0.17.0` → `0.17.0`).
+3. Otherwise, the version from `app/apps/desktop/package.json`.
+
+The resolved value is passed as `CHOKO_VERSION` to:
+
+- `apps/desktop/scripts/package-win.mjs`;
+- `apps/desktop/scripts/package-mac.mjs`;
+- `apps/desktop/vite.config.ts`, which sets `__APP_VERSION__` for the running app.
+
+The tag is the source of truth for release builds. The package version guard keeps
+the repository manifest, built manifest, artifact names, and in-app updater aligned.
+
+## Local builds
+
+Local packaging is useful for smoke tests, but it is not a release.
+
+```bash
+cd app
+pnpm install
+pnpm --filter @choko/desktop typecheck
+pnpm --filter @choko/desktop test
+pnpm --filter @choko/desktop package:win
+```
+
+`package:mac` must run on macOS because it uses `sips`, `iconutil`, `codesign`, and
+`ditto`:
+
+```bash
+cd app
+pnpm --filter @choko/desktop package:mac
+```
+
+Outputs are written under `apps/desktop/build/` and are gitignored.
+
+## GitHub Actions cost and limits
+
+### Public repository
+
+Standard GitHub-hosted runners are free for public repositories, including Windows
+and macOS. There is no monthly minute quota for these runners.
+
+Technical limits still apply:
+
+- 20 concurrent jobs on GitHub Free;
+- 5 concurrent macOS jobs;
+- 6 hours per job;
+- artifact storage limits and retention (this workflow uses 7 days).
+
+Larger and GPU runners are always billed and are not used by this workflow.
+
+### Private repository
+
+GitHub Free includes **2,000 minutes per month**. Windows jobs consume the quota at
+**2×** and macOS jobs at **10×**. Artifact storage is **500 MB** on GitHub Free.
+
+A typical Windows + macOS run consumes roughly 60–120 billable minutes, so the free
+quota covers about 15–30 builds per month. Making the repository public removes the
+minute quota.
+
+### Signing and notarization
+
+The Windows executable and macOS app are **not code-signed or notarized** by
+default. This costs nothing extra but can show OS warnings:
+
+- Windows SmartScreen may warn on first launch.
+- macOS Gatekeeper may block the app; open it with right-click → **Open**, or run
+  `xattr -dr com.apple.quarantine Choko.app`.
+
+For warning-free distribution:
+
+- Apple Developer Program membership is required for notarization (about $99/year);
+- a Windows code-signing certificate is required for SmartScreen reputation.
+
+Neither is required for personal use or internal testing. The GitHub build itself
+remains free either way.
+
+## macOS architecture
+
+The current `package:mac` script builds **arm64** only, for Apple Silicon MacBooks.
+For an Intel Mac, change `arch: 'arm64'` and the output name in
+`apps/desktop/scripts/package-mac.mjs`.
+
+## Required checks before merging
+
+- `pnpm --filter @choko/desktop typecheck`
+- `pnpm --filter @choko/desktop test`
+- `pnpm --filter @choko/desktop build`
+- `pnpm --filter @choko/web build`
+
+All four must pass before a release tag is pushed.

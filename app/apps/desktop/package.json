@@ -32,6 +32,7 @@
     "migrate:chioko": "vite-node scripts/migrate-chioko.mts",
     "make-icon": "node scripts/make-icon.mjs",
     "package:win": "vite build && node scripts/package-win.mjs",
+    "package:mac": "vite build && node scripts/package-mac.mjs",
     "start": "nw ."
   },
   "dependencies": {

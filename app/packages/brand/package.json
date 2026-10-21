@@ -7,6 +7,7 @@
   "type": "module",
   "exports": {
     "./tokens.css": "./tokens.css",
+    "./chrome-pattern.svg": "./chrome-pattern.svg",
     "./fonts.css": "./fonts.css",
     "./chioko-mascot.png": "./chioko-mascot.png",
     "./logo.svg": "./logo.svg",
@@ -16,6 +17,7 @@
   },
   "files": [
     "tokens.css",
+    "chrome-pattern.svg",
     "fonts.css",
     "fonts",
     "chioko-mascot.png",

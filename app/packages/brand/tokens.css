@@ -29,6 +29,14 @@
   --accent-ink: #800c2d;
   --select: #ebbac8;
 
+  /* Branded app frame; keep document surfaces quiet and light. */
+  --rail-bg: #800c2d;
+  --rail-fg: #fff4f4;
+  --rail-hover: #ffffff1a;
+  --rail-pattern: #f3b5c0;
+  --chrome-bg: #f4e3dc;
+  --chrome-pattern: #900c30;
+
   /* Supporting mascot colors; never substitutes for result states. */
   --brand-gold: #e9a347;
   --brand-cocoa: #673a24;

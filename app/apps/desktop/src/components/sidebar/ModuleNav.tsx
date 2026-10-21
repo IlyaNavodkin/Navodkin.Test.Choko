@@ -43,7 +43,7 @@ export function ModuleNav({ casesSidebarOpen, onToggleCases }: ModuleNavProps) {
   ];
 
   return (
-    <nav aria-label="Modules" className="flex w-14 shrink-0 flex-col items-center gap-1 border-r border-border bg-panel-2 px-2 py-3">
+    <nav aria-label="Modules" className="brand-rail flex w-14 shrink-0 flex-col items-center gap-1 px-2 py-3">
       <MascotButton />
       {modules.map((module) => (
         <button
@@ -55,7 +55,7 @@ export function ModuleNav({ casesSidebarOpen, onToggleCases }: ModuleNavProps) {
           aria-controls={module.label === 'Cases' ? 'cases-sidebar' : undefined}
           aria-expanded={module.label === 'Cases' ? casesActive && casesSidebarOpen : undefined}
           onClick={module.onClick}
-          className="module-nav-button grid size-10 shrink-0 place-items-center rounded-md text-ink transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="module-nav-button grid size-10 shrink-0 place-items-center rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           <span className="module-nav-icon" aria-hidden="true">{module.icon({ size: 20 })}</span>
         </button>

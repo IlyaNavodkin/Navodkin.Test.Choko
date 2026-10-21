@@ -111,10 +111,10 @@ export function TitleBar() {
   const title = screen === 'main' && ctx.workspace ? `${ctx.workspace.name} — Chioko` : 'Chioko';
 
   return (
-    <div className="relative z-50 flex h-[34px] flex-none items-stretch select-none border-b border-border bg-panel-2 [-webkit-app-region:drag]">
+    <div className="brand-titlebar relative z-50 flex h-9 flex-none items-stretch select-none [-webkit-app-region:drag]">
       <span className="flex items-center px-3 font-brand text-[16px] font-black text-accent-ink" onDoubleClick={toggleMax}>Chioko</span>
       {screen === 'main' && (
-        <div className="flex items-stretch [-webkit-app-region:no-drag]">
+        <div className="brand-menubar flex items-stretch [-webkit-app-region:no-drag]">
           {menus.map((m) => (
             <Menu
               key={m.label}
@@ -131,13 +131,13 @@ export function TitleBar() {
       )}
 
       <div
-        className="flex min-w-0 flex-1 items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-3 text-[12px] tracking-[0.01em] text-ink-3"
+        className="brand-window-title flex min-w-0 flex-1 items-center justify-center overflow-hidden text-ellipsis whitespace-nowrap px-3 text-[12px] tracking-[0.01em] text-ink-3"
         onDoubleClick={toggleMax}
       >
         {title}
       </div>
 
-      <div className="flex items-stretch [-webkit-app-region:no-drag]">
+      <div className="brand-window-controls flex items-stretch [-webkit-app-region:no-drag]">
         <button className={winBtn + ' hover:bg-raise'} onClick={minimize} title="Minimize" aria-label="Minimize">
           <WinMin />
         </button>

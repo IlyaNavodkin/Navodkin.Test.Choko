@@ -26,7 +26,7 @@ export function TopBar() {
   const repoName = baseName(repoPath);
 
   return (
-    <div className="flex h-[46px] flex-none items-center gap-2.5 border-b border-border bg-panel-2 px-3">
+    <div className="brand-topbar flex h-12 flex-none items-center gap-2.5 border-b border-border px-3">
       <nav aria-label="Navigation history" className="flex shrink-0 gap-0.5 border-r border-border pr-2">
         <Button variant="ghost" size="sm" aria-label="Go back" title="Go back (Alt+Left)" disabled={!canNavigateBack || !!modal || !!dialog || !!refPicker} onClick={navigateBack}>
           {I.back({ size: 16 })}
@@ -35,7 +35,7 @@ export function TopBar() {
           {I.chevron({ size: 16 })}
         </Button>
       </nav>
-      <div className="flex min-w-0 items-baseline gap-2" title={`${workspaces.length} workspace(s) · .ch/`}>
+      <div className="project-location flex min-w-0 items-baseline gap-2" title={`${workspaces.length} workspace(s) · .ch/`}>
         <span className="whitespace-nowrap font-semibold">{repoName}</span>
         <span className="whitespace-nowrap font-mono text-[12px] text-ink-3">
           {workspaces.length} workspace{workspaces.length === 1 ? '' : 's'}
@@ -64,7 +64,7 @@ export function TopBar() {
         ) : null}
       </span>
 
-      <div className="ml-auto flex items-center gap-[7px]">
+      <div className="git-actions ml-auto flex items-center gap-[7px]">
         <Button
           onClick={doPull}
           disabled={gitBusy}

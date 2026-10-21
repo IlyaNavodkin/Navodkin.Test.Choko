@@ -124,17 +124,59 @@
   }
 }
 
-/* Every module uses the brand accent. Semantic colors belong to results. */
-.module-nav-icon { color: var(--accent-ink); }
+/* Decorative masks never intercept input or enter the accessibility tree. */
+.brand-rail { position: relative; background: var(--rail-bg); color: var(--rail-fg); }
+.brand-rail > * { position: relative; }
+.brand-rail .mascot-playground > .pointer-events-none { z-index: 60; }
+.brand-chrome { position: relative; flex: none; background: var(--chrome-bg); }
+.brand-rail::before,
+.brand-chrome::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  mask: url('@chioko/brand/chrome-pattern.svg') repeat;
+}
+.brand-rail::before {
+  background: var(--rail-pattern);
+  opacity: .14;
+  mask-size: 160px 240px;
+  mask-position: 0 72px;
+}
+.brand-chrome::before {
+  background: var(--chrome-pattern);
+  z-index: 0;
+  opacity: .065;
+  mask-size: 240px 360px;
+  mask-position: 300px -6px;
+}
+.brand-titlebar { background: transparent; }
+.brand-topbar { position: relative; background: color-mix(in srgb, var(--panel) 22%, transparent); }
+.project-location { overflow: hidden; }
+.project-location > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.git-actions { flex-shrink: 0; }
+@media (max-width: 700px) {
+  .brand-titlebar { height: auto; min-height: 36px; flex-wrap: wrap; }
+  .brand-window-title { display: none; }
+  .brand-window-controls { height: 36px; margin-left: auto; }
+  .brand-menubar { order: 1; width: 100%; height: 28px; }
+  .brand-topbar { height: auto; flex-wrap: wrap; padding-block: 8px; gap: 8px; }
+  .project-location { flex: 1; }
+  .git-actions { width: 100%; justify-content: flex-end; }
+}
+.brand-rail .mascot-trigger { border-radius: 50%; background: var(--panel-2); }
+.module-nav-icon { color: inherit; }
+.module-nav-button { color: var(--rail-fg); outline-color: var(--rail-fg); }
 .module-nav-button:hover {
-  background: var(--raise);
-  color: var(--accent-ink);
+  background: var(--rail-hover);
 }
 .module-nav-button[aria-current='page'] {
-  background: var(--accent);
-  color: var(--accent-fg);
+  background: var(--panel);
+  color: var(--accent-ink);
+  box-shadow: 0 1px 3px var(--shadow);
 }
-.module-nav-button[aria-current='page'] .module-nav-icon { color: var(--accent-fg); }
+.module-nav-button[aria-current='page']:hover { background: var(--accent-soft); }
 
 /* The supplied artwork has a white canvas; multiply integrates it into ivory. */
 .brand-mascot {
